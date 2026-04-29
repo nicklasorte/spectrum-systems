@@ -7,31 +7,31 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from spectrum_systems.modules.prl.failure_classifier import aggregate_control_signal
+from spectrum_systems.modules.prl.failure_classifier import aggregate_gate_signal
 from spectrum_systems.modules.prl.failure_parser import ParsedFailure, parse_log
 
 
 class TestAggregateDecisionLogic:
-    """Unit tests for the gate's control decision aggregation."""
+    """Unit tests for the gate's signal aggregation."""
 
-    def test_zero_failures_produces_allow(self):
-        assert aggregate_control_signal([]) == "allow"
+    def test_zero_failures_produces_passed_gate(self):
+        assert aggregate_gate_signal([]) == "passed_gate"
 
-    def test_block_failure_produces_block(self):
-        signals = ["block"]
-        assert aggregate_control_signal(signals) == "block"
+    def test_failed_gate_failure_produces_failed_gate(self):
+        signals = ["failed_gate"]
+        assert aggregate_gate_signal(signals) == "failed_gate"
 
-    def test_freeze_only_produces_freeze(self):
-        assert aggregate_control_signal(["freeze"]) == "freeze"
+    def test_gate_hold_only_produces_gate_hold(self):
+        assert aggregate_gate_signal(["gate_hold"]) == "gate_hold"
 
-    def test_warn_only_produces_warn(self):
-        assert aggregate_control_signal(["warn"]) == "warn"
+    def test_gate_warn_only_produces_gate_warn(self):
+        assert aggregate_gate_signal(["gate_warn"]) == "gate_warn"
 
-    def test_mixed_block_and_warn_produces_block(self):
-        assert aggregate_control_signal(["warn", "block"]) == "block"
+    def test_mixed_failed_gate_and_warn_produces_failed_gate(self):
+        assert aggregate_gate_signal(["gate_warn", "failed_gate"]) == "failed_gate"
 
-    def test_mixed_freeze_and_warn_produces_freeze(self):
-        assert aggregate_control_signal(["freeze", "warn"]) == "freeze"
+    def test_mixed_gate_hold_and_warn_produces_gate_hold(self):
+        assert aggregate_gate_signal(["gate_hold", "gate_warn"]) == "gate_hold"
 
 
 class TestGateRunFunction:
@@ -41,7 +41,7 @@ class TestGateRunFunction:
         from scripts.run_pre_pr_reliability_gate import run_gate
         return run_gate
 
-    def test_clean_run_produces_allow(self):
+    def test_clean_run_produces_passed_gate(self):
         run_gate = self._import_run_gate()
         with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
             mock_check.return_value = (0, "")
@@ -51,11 +51,11 @@ class TestGateRunFunction:
                 skip_pytest=True,
             )
         assert result["artifact_type"] == "prl_gate_result"
-        assert result["control_decision"] == "allow"
+        assert result["gate_recommendation"] == "passed_gate"
         assert result["gate_passed"] is True
         assert result["failure_count"] == 0
 
-    def test_authority_violation_produces_block(self):
+    def test_authority_violation_produces_failed_gate(self):
         run_gate = self._import_run_gate()
         with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
             mock_check.return_value = (1, "authority_shape_violation detected in foo.py")
@@ -64,12 +64,12 @@ class TestGateRunFunction:
                 trace_id="trace-test-block",
                 skip_pytest=True,
             )
-        assert result["control_decision"] == "block"
+        assert result["gate_recommendation"] == "failed_gate"
         assert result["gate_passed"] is False
         assert result["failure_count"] > 0
         assert "authority_shape_violation" in result["failure_classes"]
 
-    def test_unknown_failure_produces_freeze(self):
+    def test_unknown_failure_produces_gate_hold(self):
         run_gate = self._import_run_gate()
         with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
             mock_check.return_value = (1, "something completely unrecognized happened")
@@ -78,10 +78,10 @@ class TestGateRunFunction:
                 trace_id="trace-test-freeze",
                 skip_pytest=True,
             )
-        assert result["control_decision"] == "freeze"
+        assert result["gate_recommendation"] == "gate_hold"
         assert result["gate_passed"] is False
 
-    def test_pytest_warn_produces_warn(self):
+    def test_pytest_warn_produces_gate_warn(self):
         run_gate = self._import_run_gate()
         with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
             def side_effect(label, cmd, **kwargs):
@@ -94,7 +94,7 @@ class TestGateRunFunction:
                 trace_id="trace-test-warn",
                 skip_pytest=False,
             )
-        assert result["control_decision"] == "warn"
+        assert result["gate_recommendation"] == "gate_warn"
         assert result["gate_passed"] is False
 
     def test_gate_result_has_all_required_fields(self):
@@ -114,7 +114,7 @@ class TestGateRunFunction:
             "run_id",
             "trace_id",
             "trace_refs",
-            "control_decision",
+            "gate_recommendation",
             "failure_count",
             "failure_classes",
             "failure_packet_refs",
@@ -137,7 +137,7 @@ class TestGateRunFunction:
             )
         assert result["id"].startswith("prl-gate-")
 
-    def test_blocking_reasons_populated_on_block(self):
+    def test_blocking_reasons_populated_on_failed_gate(self):
         run_gate = self._import_run_gate()
         with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
             mock_check.return_value = (1, "system_registry_mismatch: canonical owner missing")
@@ -200,7 +200,7 @@ class TestFullPipelineArtifactChain:
         from spectrum_systems.modules.prl.eval_generator import (
             build_generation_record,
             generate_eval_case_candidate,
-            promote_to_eval_case,
+            advance_to_eval_case,
         )
         from spectrum_systems.modules.prl.failure_classifier import classify
         from spectrum_systems.modules.prl.repair_generator import generate_repair_candidate
@@ -252,24 +252,24 @@ class TestFullPipelineArtifactChain:
             trace_id=trace_id,
         )
         assert candidate["failure_packet_ref"] == f"pre_pr_failure_packet:{packet['id']}"
-        assert candidate["promotion_eligible"] is True
+        assert candidate["gate_eligible"] is True
 
-        promoted = promote_to_eval_case(
+        gated = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
             run_id=run_id,
             trace_id=trace_id,
         )
-        assert promoted is not None
-        assert promoted["candidate_ref"] == f"eval_case_candidate:{candidate['id']}"
+        assert gated is not None
+        assert gated["candidate_ref"] == f"eval_case_candidate:{candidate['id']}"
 
         gen_record = build_generation_record(
             failure_packet=packet,
             candidate=candidate,
-            promoted_eval=promoted,
+            gated_eval=gated,
             run_id=run_id,
             trace_id=trace_id,
         )
         assert gen_record["candidate_id"] == candidate["id"]
-        assert gen_record["promoted_eval_id"] == promoted["id"]
-        assert gen_record["promotion_status"] == "promoted"
+        assert gen_record["gated_eval_id"] == gated["id"]
+        assert gen_record["gate_status"] == "advanced"

@@ -4,16 +4,16 @@
 Runs all governed preflight checks, captures failures as structured PRL artifacts,
 generates repair candidates and eval candidates, and emits a prl_gate_result.
 
-Control decision mapping:
-  block  — schema violation, registry mismatch, authority violation, trace missing
-  freeze — unknown_failure, replay mismatch, timeout, rate limited
-  warn   — non-critical pytest failures
-  allow  — zero failures
+Gate signal mapping:
+  failed_gate — schema violation, registry mismatch, authority violation, trace missing
+  gate_hold   — unknown_failure, replay mismatch, timeout, rate limited
+  gate_warn   — non-critical pytest failures
+  passed_gate — zero failures
 
 Exit codes:
-  0  — allow
-  1  — block or freeze
-  2  — warn (non-zero to surface warnings in CI; can be overridden per policy)
+  0  — passed_gate
+  1  — failed_gate or gate_hold
+  2  — gate_warn (non-zero to surface warnings in CI; can be overridden per policy)
 
 All output is emitted to stdout as newline-delimited JSON artifact records.
 The final line is the prl_gate_result.
@@ -22,7 +22,6 @@ The final line is the prl_gate_result.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import subprocess
 import sys
@@ -38,7 +37,7 @@ if str(REPO_ROOT) not in sys.path:
 from spectrum_systems.modules.prl.failure_parser import parse_log
 from spectrum_systems.modules.prl.failure_classifier import (
     classify,
-    aggregate_control_signal,
+    aggregate_gate_signal,
 )
 from spectrum_systems.modules.prl.artifact_builder import (
     build_capture_record,
@@ -47,7 +46,7 @@ from spectrum_systems.modules.prl.artifact_builder import (
 from spectrum_systems.modules.prl.repair_generator import generate_repair_candidate
 from spectrum_systems.modules.prl.eval_generator import (
     generate_eval_case_candidate,
-    promote_to_eval_case,
+    advance_to_eval_case,
     build_generation_record,
 )
 from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
@@ -114,7 +113,7 @@ def _build_gate_result(
     *,
     run_id: str,
     trace_id: str,
-    control_decision: str,
+    gate_recommendation: str,
     failure_classes: list[str],
     failure_packet_refs: list[str],
     repair_candidate_refs: list[str],
@@ -124,7 +123,7 @@ def _build_gate_result(
     ts = _now_iso()
     payload = {
         "run_id": run_id,
-        "control_decision": control_decision,
+        "gate_recommendation": gate_recommendation,
         "failure_count": len(failure_packet_refs),
     }
     artifact_id = deterministic_id(
@@ -146,14 +145,14 @@ def _build_gate_result(
         "run_id": run_id,
         "trace_id": trace_id,
         "trace_refs": envelope["trace_refs"],
-        "control_decision": control_decision,
+        "gate_recommendation": gate_recommendation,
         "failure_count": len(failure_packet_refs),
         "failure_classes": sorted(set(failure_classes)),
         "failure_packet_refs": failure_packet_refs,
         "repair_candidate_refs": repair_candidate_refs,
         "eval_candidate_refs": eval_candidate_refs,
         "blocking_reasons": blocking_reasons,
-        "gate_passed": control_decision == "allow",
+        "gate_passed": gate_recommendation == "passed_gate",
     }
     schema = _load_gate_schema()
     try:
@@ -260,41 +259,41 @@ def run_gate(
             )
             _emit(candidate)
 
-            promoted = promote_to_eval_case(
+            gated = advance_to_eval_case(
                 candidate=candidate,
                 classification=classification,
                 run_id=run_id,
                 trace_id=trace_id,
             )
-            if promoted is not None:
-                _emit(promoted)
+            if gated is not None:
+                _emit(gated)
 
             gen_record = build_generation_record(
                 failure_packet=packet,
                 candidate=candidate,
-                promoted_eval=promoted,
+                gated_eval=gated,
                 run_id=run_id,
                 trace_id=trace_id,
             )
             _emit(gen_record)
 
-            all_signals.append(classification.control_signal)
+            all_signals.append(classification.gate_signal)
             failure_classes.append(classification.failure_class)
             failure_packet_refs.append(f"pre_pr_failure_packet:{packet['id']}")
             repair_candidate_refs.append(f"repair_candidate:{repair['id']}")
             eval_candidate_refs.append(f"eval_case_candidate:{candidate['id']}")
 
-            if classification.control_signal == "block":
+            if classification.gate_signal == "failed_gate":
                 blocking_reasons.append(
                     f"{classification.failure_class}: {parsed.normalized_message}"
                 )
 
-    control_decision = aggregate_control_signal(all_signals)
+    gate_recommendation = aggregate_gate_signal(all_signals)
 
     gate_result = _build_gate_result(
         run_id=run_id,
         trace_id=trace_id,
-        control_decision=control_decision,
+        gate_recommendation=gate_recommendation,
         failure_classes=failure_classes,
         failure_packet_refs=failure_packet_refs,
         repair_candidate_refs=repair_candidate_refs,
@@ -324,20 +323,25 @@ def main() -> int:
     )
     parser.add_argument(
         "pytest_args",
-        nargs="*",
-        help="Additional arguments passed to pytest",
+        nargs=argparse.REMAINDER,
+        help="Additional arguments passed to pytest (use -- before pytest flags)",
     )
     args = parser.parse_args()
 
     run_id = args.run_id or _new_run_id()
     trace_id = args.trace_id or _new_trace_id()
 
+    # Strip leading '--' separator that argparse.REMAINDER may include
+    pytest_args = args.pytest_args or []
+    if pytest_args and pytest_args[0] == "--":
+        pytest_args = pytest_args[1:]
+
     try:
         gate_result = run_gate(
             run_id=run_id,
             trace_id=trace_id,
             skip_pytest=args.skip_pytest,
-            pytest_args=args.pytest_args or None,
+            pytest_args=pytest_args or None,
         )
     except Exception as exc:
         error_record = {
@@ -350,10 +354,10 @@ def main() -> int:
         print(json.dumps(error_record, sort_keys=True), file=sys.stderr, flush=True)
         return 1
 
-    decision = gate_result["control_decision"]
-    if decision == "allow":
+    decision = gate_result["gate_recommendation"]
+    if decision == "passed_gate":
         return 0
-    if decision == "warn":
+    if decision == "gate_warn":
         return 2
     return 1
 

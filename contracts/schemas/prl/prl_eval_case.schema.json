@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/prl/prl_eval_case.schema.json",
   "title": "PRL Eval Case",
-  "description": "PRL-03: promoted eval case consumed by EVL for regression gating. Owned by PRL; authority over gate pass/fail remains with EVL.",
+  "description": "PRL-03: advanced eval case consumed by EVL for regression gating. Owned by PRL; gate pass/fail authority remains with EVL.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,7 +20,7 @@
     "pass_condition",
     "required",
     "threshold",
-    "promoted_at"
+    "gated_at"
   ],
   "properties": {
     "artifact_type": {
@@ -99,7 +99,7 @@
       "minimum": 0.0,
       "maximum": 1.0
     },
-    "promoted_at": {
+    "gated_at": {
       "type": "string",
       "minLength": 1
     }

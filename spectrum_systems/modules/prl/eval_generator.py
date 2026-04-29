@@ -1,6 +1,6 @@
-"""PRL-03: Failure → eval generation and promotion pipeline.
+"""PRL-03: Failure → eval generation pipeline.
 
-Promotion rule: eval_case_candidate → prl_eval_case ONLY IF:
+Gate rule: eval_case_candidate → prl_eval_case ONLY IF:
   1. failure_class is in KNOWN_FAILURE_CLASSES (and not unknown_failure)
   2. deterministic validation exists (eval_type in _DETERMINISTIC_EVAL_TYPES)
   3. schema + threshold defined in _EVAL_TEMPLATES
@@ -71,7 +71,7 @@ _EVAL_TEMPLATES: dict[str, dict[str, Any]] = {
     },
     "policy_mismatch": {
         "eval_type": "policy_alignment",
-        "target_artifact": "trust_policy_decision",
+        "target_artifact": "policy_alignment_evidence",
         "pass_condition": "policy alignment check passes with zero violations",
         "threshold": 1.0,
     },
@@ -125,11 +125,11 @@ def _validate(artifact: dict[str, Any], schema_name: str) -> None:
         ) from exc
 
 
-def _is_promotable(classification: Classification) -> tuple[bool, str]:
-    """Promotion eligibility check. Fail-closed: unknown → not eligible."""
+def _is_gate_eligible(classification: Classification) -> tuple[bool, str]:
+    """Gate eligibility check. Fail-closed: unknown → not eligible."""
     fc = classification.failure_class
     if fc not in KNOWN_FAILURE_CLASSES or fc == "unknown_failure":
-        return False, "unknown_failure requires human review before eval promotion"
+        return False, "unknown_failure requires human review before eval case is advanced"
     template = _EVAL_TEMPLATES.get(fc)
     if template is None:
         return False, f"no eval template defined for failure_class={fc}"
@@ -145,14 +145,14 @@ def generate_eval_case_candidate(
     run_id: str,
     trace_id: str,
 ) -> dict[str, Any]:
-    """Generate an eval_case_candidate. Step 1 of the eval promotion pipeline."""
+    """Generate an eval_case_candidate. Step 1 of the eval pipeline."""
     ts = _now_iso()
     packet_ref = f"pre_pr_failure_packet:{failure_packet['id']}"
     template = _EVAL_TEMPLATES.get(
         classification.failure_class,
         _EVAL_TEMPLATES["unknown_failure"],
     )
-    promotable, block_reason = _is_promotable(classification)
+    eligible, block_reason = _is_gate_eligible(classification)
 
     payload = {
         "packet_ref": packet_ref,
@@ -186,22 +186,22 @@ def generate_eval_case_candidate(
         "target_artifact": template["target_artifact"],
         "pass_condition": template["pass_condition"],
         "required": True,
-        "promotion_eligible": promotable,
-        "promotion_blocked_reason": block_reason if not promotable else "",
+        "gate_eligible": eligible,
+        "gate_block_reason": block_reason if not eligible else "",
     }
     _validate(artifact, "eval_case_candidate")
     return artifact
 
 
-def promote_to_eval_case(
+def advance_to_eval_case(
     *,
     candidate: dict[str, Any],
     classification: Classification,
     run_id: str,
     trace_id: str,
 ) -> Optional[dict[str, Any]]:
-    """Promote eval_case_candidate → prl_eval_case if eligible. Returns None otherwise."""
-    if not candidate.get("promotion_eligible", False):
+    """Advance eval_case_candidate → prl_eval_case if eligible. Returns None otherwise."""
+    if not candidate.get("gate_eligible", False):
         return None
 
     ts = _now_iso()
@@ -241,7 +241,7 @@ def promote_to_eval_case(
         "pass_condition": template["pass_condition"],
         "required": True,
         "threshold": template["threshold"],
-        "promoted_at": ts,
+        "gated_at": ts,
     }
     _validate(artifact, "prl_eval_case")
     return artifact
@@ -251,7 +251,7 @@ def build_generation_record(
     *,
     failure_packet: dict[str, Any],
     candidate: dict[str, Any],
-    promoted_eval: Optional[dict[str, Any]],
+    gated_eval: Optional[dict[str, Any]],
     run_id: str,
     trace_id: str,
 ) -> dict[str, Any]:
@@ -259,19 +259,19 @@ def build_generation_record(
     ts = _now_iso()
     packet_ref = f"pre_pr_failure_packet:{failure_packet['id']}"
 
-    if promoted_eval is not None:
-        promotion_status = "promoted"
-        promoted_eval_id: Optional[str] = promoted_eval["id"]
+    if gated_eval is not None:
+        gate_status = "advanced"
+        gated_eval_id: Optional[str] = gated_eval["id"]
         block_reason = ""
     else:
-        block_reason = candidate.get("promotion_blocked_reason", "")
-        promotion_status = "requires_human_review" if block_reason else "blocked"
-        promoted_eval_id = None
+        block_reason = candidate.get("gate_block_reason", "")
+        gate_status = "requires_human_review" if block_reason else "blocked"
+        gated_eval_id = None
 
     payload = {
         "packet_ref": packet_ref,
         "candidate_id": candidate["id"],
-        "promotion_status": promotion_status,
+        "gate_status": gate_status,
         "run_id": run_id,
     }
     artifact_id = deterministic_id(
@@ -296,11 +296,11 @@ def build_generation_record(
         "trace_refs": envelope["trace_refs"],
         "failure_packet_ref": packet_ref,
         "candidate_id": candidate["id"],
-        "promotion_status": promotion_status,
-        "promotion_blocked_reason": block_reason,
+        "gate_status": gate_status,
+        "gate_block_reason": block_reason,
     }
-    if promoted_eval_id is not None:
-        artifact["promoted_eval_id"] = promoted_eval_id
+    if gated_eval_id is not None:
+        artifact["gated_eval_id"] = gated_eval_id
 
     _validate(artifact, "prl_eval_generation_record")
     return artifact

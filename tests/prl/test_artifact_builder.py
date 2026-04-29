@@ -180,7 +180,7 @@ class TestBuildFailurePacket:
         assert packet["id"].startswith("prl-pkt-")
         assert packet["run_id"] == RUN_ID
         assert packet["trace_id"] == TRACE_ID
-        assert packet["control_signal"] in {"block", "freeze", "warn", "allow"}
+        assert packet["control_signal"] in {"failed_gate", "gate_hold", "gate_warn", "passed_gate"}
         assert packet["failure_class"] == "authority_shape_violation"
 
     def test_capture_record_ref_format(self):

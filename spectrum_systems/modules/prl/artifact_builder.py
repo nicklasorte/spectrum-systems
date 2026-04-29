@@ -51,11 +51,16 @@ def build_capture_record(
     run_id: str,
     trace_id: str,
 ) -> dict[str, Any]:
-    """Build a validated pr_failure_capture_record. Fails closed on schema error."""
+    """Build a validated pr_failure_capture_record. Fails closed on schema error.
+
+    raw_excerpt is included in the ID payload so repeated failures from different
+    preflight checks with identical class/message produce distinct artifact IDs.
+    """
     ts = _now_iso()
     payload = {
         "failure_class": classification.failure_class,
         "normalized_message": parsed.normalized_message,
+        "raw_excerpt": parsed.raw_excerpt[:200],
         "source": source,
         "run_id": run_id,
         "trace_id": trace_id,
@@ -108,7 +113,7 @@ def build_failure_packet(
     payload = {
         "capture_ref": capture_ref,
         "failure_class": classification.failure_class,
-        "control_signal": classification.control_signal,
+        "gate_signal": classification.gate_signal,
         "run_id": run_id,
     }
     artifact_id = deterministic_id(
@@ -134,7 +139,7 @@ def build_failure_packet(
         "capture_record_ref": capture_ref,
         "failure_class": classification.failure_class,
         "owning_system": classification.owning_system,
-        "control_signal": classification.control_signal,
+        "control_signal": classification.gate_signal,
         "normalized_message": capture_record["normalized_message"],
         "file_refs": capture_record["file_refs"],
         "remediation_hint": classification.remediation_hint,

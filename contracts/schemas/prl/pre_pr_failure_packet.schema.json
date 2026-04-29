@@ -79,7 +79,7 @@
     },
     "control_signal": {
       "type": "string",
-      "enum": ["block", "freeze", "warn", "allow"]
+      "enum": ["failed_gate", "gate_hold", "gate_warn", "passed_gate"]
     },
     "normalized_message": {
       "type": "string",

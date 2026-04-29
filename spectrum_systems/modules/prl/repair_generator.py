@@ -1,8 +1,7 @@
 """PRL-02: Bounded repair candidate generator.
 
 INVARIANT: auto_apply is always False. This module MUST NOT apply any fix.
-All output is advisory. Canonical enforcement authority remains with SEL.
-Fail-closed: schema validation failure raises — no partial artifacts emitted.
+All output is advisory. Fail-closed: schema validation failure raises — no partial artifacts.
 """
 
 from __future__ import annotations
@@ -33,7 +32,7 @@ _REPAIR_TEMPLATES: dict[str, dict[str, str]] = {
     "authority_shape_violation": {
         "repair_prompt": (
             "Fix the authority shape violation in the changed file. "
-            "Remove enforcement, promotion, or control-decision logic from non-owner modules. "
+            "Remove authority-bearing logic from non-owner modules. "
             "Consult docs/architecture/system_registry.md for canonical ownership assignments."
         ),
         "minimal_fix_scope": "Remove authority-leaked logic and route to canonical owner module",
@@ -93,7 +92,7 @@ _REPAIR_TEMPLATES: dict[str, dict[str, str]] = {
             "Update the artifact or execution flow to comply with the declared policy. "
             "Check contracts/governance/policy-registry-manifest.json for current active policy."
         ),
-        "minimal_fix_scope": "Align artifact or execution decision with canonical policy definition",
+        "minimal_fix_scope": "Align artifact or execution path with canonical policy definition",
         "safety_classification": "requires_review",
     },
     "timeout": {
@@ -118,7 +117,7 @@ _REPAIR_TEMPLATES: dict[str, dict[str, str]] = {
         "repair_prompt": (
             "This failure could not be classified automatically. "
             "Inspect the raw_log_excerpt in the capture record manually. "
-            "Route to FRE (Failure Repair Engine) for structured root-cause diagnosis. "
+            "Route to FRE for structured root-cause diagnosis. "
             "Do not proceed until failure_class is determined."
         ),
         "minimal_fix_scope": "Manual investigation required — route to FRE for structured diagnosis",
@@ -148,7 +147,7 @@ def generate_repair_candidate(
 ) -> dict[str, Any]:
     """Generate a bounded repair candidate artifact.
 
-    NEVER applies fixes. NEVER invokes enforcement. Advisory only.
+    NEVER applies fixes. Advisory only.
     """
     ts = _now_iso()
     packet_ref = f"pre_pr_failure_packet:{failure_packet['id']}"

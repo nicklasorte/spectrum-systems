@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/prl/prl_gate_result.schema.json",
   "title": "PRL Gate Result",
-  "description": "PRL final gate decision artifact. Feeds CDE. control_decision authority remains with CDE; this record is PRL-emitted evidence only. Owned by PRL.",
+  "description": "PRL evidence artifact fed to CDE as input signal. gate_recommendation uses neutral gate vocabulary. CDE retains full authority over the resulting action. Owned by PRL.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,7 +13,7 @@
     "run_id",
     "trace_id",
     "trace_refs",
-    "control_decision",
+    "gate_recommendation",
     "failure_count",
     "failure_classes",
     "failure_packet_refs",
@@ -54,9 +54,9 @@
         "related": { "type": "array", "items": { "type": "string" } }
       }
     },
-    "control_decision": {
+    "gate_recommendation": {
       "type": "string",
-      "enum": ["block", "freeze", "warn", "allow"]
+      "enum": ["failed_gate", "gate_hold", "gate_warn", "passed_gate"]
     },
     "failure_count": {
       "type": "integer",

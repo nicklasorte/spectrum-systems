@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/prl/prl_eval_generation_record.schema.json",
   "title": "PRL Eval Generation Record",
-  "description": "PRL-03: tracks the full pipeline from failure → eval_case_candidate → prl_eval_case. Owned by PRL.",
+  "description": "PRL-03: tracks the full pipeline from failure to eval_case_candidate to prl_eval_case. Owned by PRL.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,8 +15,8 @@
     "trace_refs",
     "failure_packet_ref",
     "candidate_id",
-    "promotion_status",
-    "promotion_blocked_reason"
+    "gate_status",
+    "gate_block_reason"
   ],
   "properties": {
     "artifact_type": {
@@ -58,15 +58,15 @@
       "type": "string",
       "minLength": 1
     },
-    "promoted_eval_id": {
+    "gated_eval_id": {
       "type": "string",
       "minLength": 1
     },
-    "promotion_status": {
+    "gate_status": {
       "type": "string",
-      "enum": ["promoted", "requires_human_review", "blocked"]
+      "enum": ["advanced", "requires_human_review", "blocked"]
     },
-    "promotion_blocked_reason": {
+    "gate_block_reason": {
       "type": "string"
     }
   }

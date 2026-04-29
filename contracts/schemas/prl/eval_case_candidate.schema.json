@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/prl/eval_case_candidate.schema.json",
   "title": "Eval Case Candidate",
-  "description": "PRL-03: candidate eval case for regression prevention. Not yet promoted to prl_eval_case. Owned by PRL.",
+  "description": "PRL-03: candidate eval case for regression prevention. Evidence artifact. Gate authority remains with EVL. Owned by PRL.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -19,8 +19,8 @@
     "target_artifact",
     "pass_condition",
     "required",
-    "promotion_eligible",
-    "promotion_blocked_reason"
+    "gate_eligible",
+    "gate_block_reason"
   ],
   "properties": {
     "artifact_type": {
@@ -94,10 +94,10 @@
     "required": {
       "const": true
     },
-    "promotion_eligible": {
+    "gate_eligible": {
       "type": "boolean"
     },
-    "promotion_blocked_reason": {
+    "gate_block_reason": {
       "type": "string"
     }
   }

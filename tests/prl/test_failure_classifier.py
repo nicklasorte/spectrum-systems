@@ -5,11 +5,11 @@ from __future__ import annotations
 import pytest
 
 from spectrum_systems.modules.prl.failure_classifier import (
-    CONTROL_SIGNAL,
+    GATE_SIGNAL,
     KNOWN_FAILURE_CLASSES,
     OWNING_SYSTEM,
     Classification,
-    aggregate_control_signal,
+    aggregate_gate_signal,
     classify,
 )
 from spectrum_systems.modules.prl.failure_parser import ParsedFailure
@@ -43,44 +43,44 @@ class TestKnownFailureClasses:
         }
         assert required == KNOWN_FAILURE_CLASSES
 
-    def test_all_classes_have_control_signal(self):
+    def test_all_classes_have_gate_signal(self):
         for fc in KNOWN_FAILURE_CLASSES:
-            assert fc in CONTROL_SIGNAL, f"Missing CONTROL_SIGNAL for {fc}"
+            assert fc in GATE_SIGNAL, f"Missing GATE_SIGNAL for {fc}"
 
     def test_all_classes_have_owning_system(self):
         for fc in KNOWN_FAILURE_CLASSES:
             assert fc in OWNING_SYSTEM, f"Missing OWNING_SYSTEM for {fc}"
 
-    def test_all_control_signals_are_valid(self):
-        valid = {"block", "freeze", "warn", "allow"}
-        for fc, signal in CONTROL_SIGNAL.items():
+    def test_all_gate_signals_are_valid(self):
+        valid = {"failed_gate", "gate_hold", "gate_warn", "passed_gate"}
+        for fc, signal in GATE_SIGNAL.items():
             assert signal in valid, f"{fc} has invalid signal {signal}"
 
 
 class TestClassify:
     @pytest.mark.parametrize("failure_class,expected_signal", [
-        ("authority_shape_violation", "block"),
-        ("system_registry_mismatch", "block"),
-        ("contract_schema_violation", "block"),
-        ("missing_required_artifact", "block"),
-        ("trace_missing", "block"),
-        ("policy_mismatch", "block"),
-        ("replay_mismatch", "freeze"),
-        ("timeout", "freeze"),
-        ("rate_limited", "freeze"),
-        ("unknown_failure", "freeze"),
-        ("pytest_selection_missing", "warn"),
+        ("authority_shape_violation", "failed_gate"),
+        ("system_registry_mismatch", "failed_gate"),
+        ("contract_schema_violation", "failed_gate"),
+        ("missing_required_artifact", "failed_gate"),
+        ("trace_missing", "failed_gate"),
+        ("policy_mismatch", "failed_gate"),
+        ("replay_mismatch", "gate_hold"),
+        ("timeout", "gate_hold"),
+        ("rate_limited", "gate_hold"),
+        ("unknown_failure", "gate_hold"),
+        ("pytest_selection_missing", "gate_warn"),
     ])
-    def test_control_signal_mapping(self, failure_class: str, expected_signal: str):
+    def test_gate_signal_mapping(self, failure_class: str, expected_signal: str):
         parsed = _make_parsed(failure_class)
         result = classify(parsed)
-        assert result.control_signal == expected_signal
+        assert result.gate_signal == expected_signal
 
     def test_unknown_class_maps_to_unknown_failure(self):
         parsed = _make_parsed("completely_invented_class")
         result = classify(parsed)
         assert result.failure_class == "unknown_failure"
-        assert result.control_signal == "freeze"
+        assert result.gate_signal == "gate_hold"
         assert result.is_known is False
 
     def test_known_class_is_known_true(self):
@@ -124,27 +124,27 @@ class TestClassify:
             assert result.remediation_hint, f"Empty remediation_hint for {fc}"
 
 
-class TestAggregateControlSignal:
-    def test_block_wins_over_all(self):
-        assert aggregate_control_signal(["block", "freeze", "warn", "allow"]) == "block"
+class TestAggregateGateSignal:
+    def test_failed_gate_wins_over_all(self):
+        assert aggregate_gate_signal(["failed_gate", "gate_hold", "gate_warn", "passed_gate"]) == "failed_gate"
 
-    def test_freeze_wins_over_warn_allow(self):
-        assert aggregate_control_signal(["freeze", "warn", "allow"]) == "freeze"
+    def test_gate_hold_wins_over_warn_passed(self):
+        assert aggregate_gate_signal(["gate_hold", "gate_warn", "passed_gate"]) == "gate_hold"
 
-    def test_warn_wins_over_allow(self):
-        assert aggregate_control_signal(["warn", "allow"]) == "warn"
+    def test_gate_warn_wins_over_passed(self):
+        assert aggregate_gate_signal(["gate_warn", "passed_gate"]) == "gate_warn"
 
-    def test_all_allow_returns_allow(self):
-        assert aggregate_control_signal(["allow", "allow"]) == "allow"
+    def test_all_passed_returns_passed_gate(self):
+        assert aggregate_gate_signal(["passed_gate", "passed_gate"]) == "passed_gate"
 
-    def test_empty_returns_allow(self):
-        assert aggregate_control_signal([]) == "allow"
+    def test_empty_returns_passed_gate(self):
+        assert aggregate_gate_signal([]) == "passed_gate"
 
-    def test_single_block(self):
-        assert aggregate_control_signal(["block"]) == "block"
+    def test_single_failed_gate(self):
+        assert aggregate_gate_signal(["failed_gate"]) == "failed_gate"
 
-    def test_single_freeze(self):
-        assert aggregate_control_signal(["freeze"]) == "freeze"
+    def test_single_gate_hold(self):
+        assert aggregate_gate_signal(["gate_hold"]) == "gate_hold"
 
-    def test_single_warn(self):
-        assert aggregate_control_signal(["warn"]) == "warn"
+    def test_single_gate_warn(self):
+        assert aggregate_gate_signal(["gate_warn"]) == "gate_warn"

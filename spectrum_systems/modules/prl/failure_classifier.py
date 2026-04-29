@@ -2,6 +2,9 @@
 
 No LLM. Pure lookup table. Fail-closed: unrecognized failure_class → unknown_failure.
 Canonical system ownership per docs/architecture/system_registry.md.
+
+Gate signal vocabulary uses neutral gate terms (failed_gate, gate_hold, gate_warn,
+passed_gate) so PRL emits evidence signals rather than authority-bearing terms.
 """
 
 from __future__ import annotations
@@ -24,20 +27,21 @@ KNOWN_FAILURE_CLASSES: frozenset[str] = frozenset({
     "unknown_failure",
 })
 
-# Maps failure_class → CDE-compatible control signal recommendation.
-# block > freeze > warn > allow (aggregation order).
-CONTROL_SIGNAL: dict[str, str] = {
-    "pytest_selection_missing": "warn",
-    "authority_shape_violation": "block",
-    "system_registry_mismatch": "block",
-    "contract_schema_violation": "block",
-    "missing_required_artifact": "block",
-    "trace_missing": "block",
-    "replay_mismatch": "freeze",
-    "policy_mismatch": "block",
-    "timeout": "freeze",
-    "rate_limited": "freeze",
-    "unknown_failure": "freeze",
+# Gate signal vocabulary: neutral evidence terms fed to CDE as input signals.
+# CDE retains full authority over the resulting action.
+# failed_gate > gate_hold > gate_warn > passed_gate (aggregation order)
+GATE_SIGNAL: dict[str, str] = {
+    "pytest_selection_missing": "gate_warn",
+    "authority_shape_violation": "failed_gate",
+    "system_registry_mismatch": "failed_gate",
+    "contract_schema_violation": "failed_gate",
+    "missing_required_artifact": "failed_gate",
+    "trace_missing": "failed_gate",
+    "replay_mismatch": "gate_hold",
+    "policy_mismatch": "failed_gate",
+    "timeout": "gate_hold",
+    "rate_limited": "gate_hold",
+    "unknown_failure": "gate_hold",
 }
 
 # Canonical owning system per system_registry.md.
@@ -96,7 +100,7 @@ REMEDIATION_HINTS: dict[str, str] = {
 @dataclass(frozen=True)
 class Classification:
     failure_class: str
-    control_signal: str
+    gate_signal: str
     owning_system: str
     remediation_hint: str
     is_known: bool
@@ -107,21 +111,21 @@ def classify(parsed: ParsedFailure) -> Classification:
     fc = parsed.failure_class if parsed.failure_class in KNOWN_FAILURE_CLASSES else "unknown_failure"
     return Classification(
         failure_class=fc,
-        control_signal=CONTROL_SIGNAL[fc],
+        gate_signal=GATE_SIGNAL[fc],
         owning_system=OWNING_SYSTEM[fc],
         remediation_hint=REMEDIATION_HINTS[fc],
         is_known=(fc != "unknown_failure"),
     )
 
 
-def aggregate_control_signal(signals: list[str]) -> str:
-    """Aggregate multiple signals. Precedence: block > freeze > warn > allow."""
+def aggregate_gate_signal(signals: list[str]) -> str:
+    """Aggregate multiple gate signals. Precedence: failed_gate > gate_hold > gate_warn > passed_gate."""
     if not signals:
-        return "allow"
-    if "block" in signals:
-        return "block"
-    if "freeze" in signals:
-        return "freeze"
-    if "warn" in signals:
-        return "warn"
-    return "allow"
+        return "passed_gate"
+    if "failed_gate" in signals:
+        return "failed_gate"
+    if "gate_hold" in signals:
+        return "gate_hold"
+    if "gate_warn" in signals:
+        return "gate_warn"
+    return "passed_gate"

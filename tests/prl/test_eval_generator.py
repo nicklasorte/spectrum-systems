@@ -1,4 +1,4 @@
-"""Tests for PRL-03 eval_generator: failure → eval case generation and promotion."""
+"""Tests for PRL-03 eval_generator: failure → eval case generation and gating."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from spectrum_systems.modules.prl.artifact_builder import (
 from spectrum_systems.modules.prl.eval_generator import (
     build_generation_record,
     generate_eval_case_candidate,
-    promote_to_eval_case,
+    advance_to_eval_case,
 )
 from spectrum_systems.modules.prl.failure_classifier import classify
 from spectrum_systems.modules.prl.failure_parser import ParsedFailure
@@ -19,7 +19,7 @@ from spectrum_systems.modules.prl.failure_parser import ParsedFailure
 RUN_ID = "run-eval-test-001"
 TRACE_ID = "trace-eval-test-abc"
 
-_PROMOTABLE_CLASSES = [
+_GATE_ELIGIBLE_CLASSES = [
     "pytest_selection_missing",
     "authority_shape_violation",
     "system_registry_mismatch",
@@ -32,7 +32,7 @@ _PROMOTABLE_CLASSES = [
     "rate_limited",
 ]
 
-_NON_PROMOTABLE_CLASSES = [
+_NON_ELIGIBLE_CLASSES = [
     "unknown_failure",
 ]
 
@@ -89,7 +89,7 @@ class TestGenerateEvalCaseCandidate:
         assert candidate["run_id"] == RUN_ID
         assert candidate["trace_id"] == TRACE_ID
         assert candidate["required"] is True
-        assert isinstance(candidate["promotion_eligible"], bool)
+        assert isinstance(candidate["gate_eligible"], bool)
 
     def test_eval_type_is_valid_enum(self):
         valid_types = {
@@ -98,7 +98,7 @@ class TestGenerateEvalCaseCandidate:
             "replay_consistency",
             "failure_regression_check",
         }
-        for fc in _PROMOTABLE_CLASSES + _NON_PROMOTABLE_CLASSES:
+        for fc in _GATE_ELIGIBLE_CLASSES + _NON_ELIGIBLE_CLASSES:
             packet = _make_packet(fc)
             classification = classify(_parsed(fc))
             candidate = generate_eval_case_candidate(
@@ -110,7 +110,7 @@ class TestGenerateEvalCaseCandidate:
             assert candidate["eval_type"] in valid_types, f"Invalid eval_type for {fc}"
 
     def test_pass_condition_non_empty(self):
-        for fc in _PROMOTABLE_CLASSES:
+        for fc in _GATE_ELIGIBLE_CLASSES:
             packet = _make_packet(fc)
             classification = classify(_parsed(fc))
             candidate = generate_eval_case_candidate(
@@ -121,8 +121,8 @@ class TestGenerateEvalCaseCandidate:
             )
             assert candidate["pass_condition"], f"Empty pass_condition for {fc}"
 
-    def test_promotable_classes_are_eligible(self):
-        for fc in _PROMOTABLE_CLASSES:
+    def test_eligible_classes_are_gate_eligible(self):
+        for fc in _GATE_ELIGIBLE_CLASSES:
             packet = _make_packet(fc)
             classification = classify(_parsed(fc))
             candidate = generate_eval_case_candidate(
@@ -131,7 +131,7 @@ class TestGenerateEvalCaseCandidate:
                 run_id=RUN_ID,
                 trace_id=TRACE_ID,
             )
-            assert candidate["promotion_eligible"] is True, f"{fc} should be promotion_eligible"
+            assert candidate["gate_eligible"] is True, f"{fc} should be gate_eligible"
 
     def test_unknown_failure_not_eligible(self):
         packet = _make_packet("unknown_failure")
@@ -142,8 +142,8 @@ class TestGenerateEvalCaseCandidate:
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        assert candidate["promotion_eligible"] is False
-        assert candidate["promotion_blocked_reason"]
+        assert candidate["gate_eligible"] is False
+        assert candidate["gate_block_reason"]
 
     def test_failure_packet_ref_format(self):
         packet = _make_packet("trace_missing")
@@ -174,8 +174,8 @@ class TestGenerateEvalCaseCandidate:
         assert c1["id"] == c2["id"]
 
 
-class TestPromoteToEvalCase:
-    def test_promotable_candidate_promotes(self):
+class TestAdvanceToEvalCase:
+    def test_eligible_candidate_advances(self):
         packet = _make_packet("authority_shape_violation")
         classification = classify(_parsed("authority_shape_violation"))
         candidate = generate_eval_case_candidate(
@@ -184,20 +184,20 @@ class TestPromoteToEvalCase:
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        promoted = promote_to_eval_case(
+        gated = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        assert promoted is not None
-        assert promoted["artifact_type"] == "prl_eval_case"
-        assert promoted["id"].startswith("prl-evl-")
-        assert promoted["required"] is True
-        assert 0.0 <= promoted["threshold"] <= 1.0
-        assert promoted["promoted_at"]
+        assert gated is not None
+        assert gated["artifact_type"] == "prl_eval_case"
+        assert gated["id"].startswith("prl-evl-")
+        assert gated["required"] is True
+        assert 0.0 <= gated["threshold"] <= 1.0
+        assert gated["gated_at"]
 
-    def test_non_promotable_returns_none(self):
+    def test_non_eligible_returns_none(self):
         packet = _make_packet("unknown_failure")
         classification = classify(_parsed("unknown_failure"))
         candidate = generate_eval_case_candidate(
@@ -206,7 +206,7 @@ class TestPromoteToEvalCase:
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        result = promote_to_eval_case(
+        result = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
             run_id=RUN_ID,
@@ -214,7 +214,7 @@ class TestPromoteToEvalCase:
         )
         assert result is None
 
-    def test_candidate_ref_format_in_promoted(self):
+    def test_candidate_ref_format_in_gated(self):
         packet = _make_packet("replay_mismatch")
         classification = classify(_parsed("replay_mismatch"))
         candidate = generate_eval_case_candidate(
@@ -223,14 +223,14 @@ class TestPromoteToEvalCase:
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        promoted = promote_to_eval_case(
+        gated = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        assert promoted is not None
-        assert promoted["candidate_ref"].startswith("eval_case_candidate:")
+        assert gated is not None
+        assert gated["candidate_ref"].startswith("eval_case_candidate:")
 
     def test_replay_mismatch_threshold_is_0_95(self):
         packet = _make_packet("replay_mismatch")
@@ -241,17 +241,17 @@ class TestPromoteToEvalCase:
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        promoted = promote_to_eval_case(
+        gated = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        assert promoted is not None
-        assert promoted["threshold"] == 0.95
+        assert gated is not None
+        assert gated["threshold"] == 0.95
 
-    def test_all_promotable_classes_produce_prl_eval_case(self):
-        for fc in _PROMOTABLE_CLASSES:
+    def test_all_eligible_classes_produce_prl_eval_case(self):
+        for fc in _GATE_ELIGIBLE_CLASSES:
             packet = _make_packet(fc)
             classification = classify(_parsed(fc))
             candidate = generate_eval_case_candidate(
@@ -260,18 +260,18 @@ class TestPromoteToEvalCase:
                 run_id=RUN_ID,
                 trace_id=TRACE_ID,
             )
-            promoted = promote_to_eval_case(
+            gated = advance_to_eval_case(
                 candidate=candidate,
                 classification=classification,
                 run_id=RUN_ID,
                 trace_id=TRACE_ID,
             )
-            assert promoted is not None, f"{fc} should promote"
-            assert promoted["artifact_type"] == "prl_eval_case"
+            assert gated is not None, f"{fc} should advance"
+            assert gated["artifact_type"] == "prl_eval_case"
 
 
 class TestBuildGenerationRecord:
-    def test_promoted_status(self):
+    def test_advanced_status(self):
         packet = _make_packet("contract_schema_violation")
         classification = classify(_parsed("contract_schema_violation"))
         candidate = generate_eval_case_candidate(
@@ -280,7 +280,7 @@ class TestBuildGenerationRecord:
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        promoted = promote_to_eval_case(
+        gated = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
             run_id=RUN_ID,
@@ -289,13 +289,13 @@ class TestBuildGenerationRecord:
         record = build_generation_record(
             failure_packet=packet,
             candidate=candidate,
-            promoted_eval=promoted,
+            gated_eval=gated,
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
         assert record["artifact_type"] == "prl_eval_generation_record"
-        assert record["promotion_status"] == "promoted"
-        assert record["promoted_eval_id"] == promoted["id"]
+        assert record["gate_status"] == "advanced"
+        assert record["gated_eval_id"] == gated["id"]
 
     def test_requires_human_review_status(self):
         packet = _make_packet("unknown_failure")
@@ -309,13 +309,13 @@ class TestBuildGenerationRecord:
         record = build_generation_record(
             failure_packet=packet,
             candidate=candidate,
-            promoted_eval=None,
+            gated_eval=None,
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        assert record["promotion_status"] == "requires_human_review"
-        assert "promoted_eval_id" not in record
-        assert record["promotion_blocked_reason"]
+        assert record["gate_status"] == "requires_human_review"
+        assert "gated_eval_id" not in record
+        assert record["gate_block_reason"]
 
     def test_record_has_trace_refs(self):
         packet = _make_packet("trace_missing")
@@ -326,7 +326,7 @@ class TestBuildGenerationRecord:
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        promoted = promote_to_eval_case(
+        gated = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
             run_id=RUN_ID,
@@ -335,7 +335,7 @@ class TestBuildGenerationRecord:
         record = build_generation_record(
             failure_packet=packet,
             candidate=candidate,
-            promoted_eval=promoted,
+            gated_eval=gated,
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
@@ -354,14 +354,14 @@ class TestBuildGenerationRecord:
         r1 = build_generation_record(
             failure_packet=packet,
             candidate=candidate,
-            promoted_eval=None,
+            gated_eval=None,
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
         r2 = build_generation_record(
             failure_packet=packet,
             candidate=candidate,
-            promoted_eval=None,
+            gated_eval=None,
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )

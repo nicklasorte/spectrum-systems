@@ -95,6 +95,10 @@ class RegistryDriftValidator:
             clean = artifact_type.lower().replace(" ", "_").replace("-", "_")
             candidate_paths = [self.schema_dir / f"{clean}.schema.json"]
             # Also accept system-namespaced layouts:
+            # contracts/schemas/<system_lower>/<artifact_full_name>.schema.json
+            candidate_paths.append(
+                self.schema_dir / system_id.lower() / f"{clean}.schema.json"
+            )
             # contracts/schemas/<system_lower>/<artifact_minus_prefix>.schema.json
             system_prefix = f"{system_id.lower()}_"
             if clean.startswith(system_prefix):

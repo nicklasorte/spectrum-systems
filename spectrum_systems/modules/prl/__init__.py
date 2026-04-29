@@ -5,5 +5,6 @@ PRL-02: Bounded Repair Candidate Generator
 PRL-03: Failure → Eval Generation + Prevention Gates
 
 Authority boundary: PRL emits evidence artifacts only.
-Control decisions remain with CDE. Enforcement with SEL. Promotion with PRA/GOV.
+Gate signal authority remains with CDE. SEL retains fail-closed execution.
+PRA/GOV retain advancement authority.
 """
