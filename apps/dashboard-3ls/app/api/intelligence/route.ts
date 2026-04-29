@@ -3,6 +3,11 @@ import path from 'path';
 import { NextResponse } from 'next/server';
 import { getRepoRoot, loadArtifact } from '@/lib/artifactLoader';
 import { buildSourceEnvelope } from '@/lib/sourceClassification';
+import {
+  AI_PROGRAMMING_GOVERNED_PATH_ARTIFACT_PATH,
+  computeGovernedPathSummary,
+  type AiProgrammingGovernedPathRecord,
+} from '@/lib/aiProgrammingGovernance';
 import type {
   CheckpointSummary,
   RepoSnapshot,
@@ -106,6 +111,9 @@ const ARTIFACT_PATHS = {
     'artifacts/dashboard_metrics/misleading_signal_detection_record.json',
   signalIntegrityCheck:
     'artifacts/dashboard_metrics/signal_integrity_check_record.json',
+  mergeConflictPressure:
+    'artifacts/dashboard_metrics/merge_conflict_pressure_record.json',
+  aiProgrammingGovernedPath: AI_PROGRAMMING_GOVERNED_PATH_ARTIFACT_PATH,
 };
 
 interface BottleneckRecord {
@@ -416,6 +424,11 @@ export async function GET() {
     classified_paths?: Array<Record<string, unknown>>;
   }>(ARTIFACT_PATHS.metGeneratedArtifactClassification);
 
+  // AEX-PQX-DASH-01 — AI programming governed-path observation. MET reads only.
+  const aiProgrammingGovernedPath = loadArtifact<AiProgrammingGovernedPathRecord>(
+    ARTIFACT_PATHS.aiProgrammingGovernedPath,
+  );
+
   const ownerReadObservationLedger = loadArtifact<{
     data_source?: string;
     source_artifacts_used?: string[];
@@ -556,6 +569,13 @@ export async function GET() {
     integrity_summary?: Record<string, unknown>;
     integrity_checks?: Array<Record<string, unknown>>;
   }>(ARTIFACT_PATHS.signalIntegrityCheck);
+  const mergeConflictPressure = loadArtifact<GenericMetEnvelope & {
+    base_ref?: string;
+    head_ref?: string;
+    overall_state?: string;
+    counts?: Record<string, number>;
+    items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.mergeConflictPressure);
 
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
@@ -626,6 +646,8 @@ export async function GET() {
     { path: ARTIFACT_PATHS.metricGamingDetection, loaded: metricGamingDetection !== null },
     { path: ARTIFACT_PATHS.misleadingSignalDetection, loaded: misleadingSignalDetection !== null },
     { path: ARTIFACT_PATHS.signalIntegrityCheck, loaded: signalIntegrityCheck !== null },
+    { path: ARTIFACT_PATHS.mergeConflictPressure, loaded: mergeConflictPressure !== null },
+    { path: ARTIFACT_PATHS.aiProgrammingGovernedPath, loaded: aiProgrammingGovernedPath !== null },
   ];
 
   const envelope = buildSourceEnvelope({
@@ -684,6 +706,12 @@ export async function GET() {
       ...(metricGamingDetection?.warnings ?? []),
       ...(misleadingSignalDetection?.warnings ?? []),
       ...(signalIntegrityCheck?.warnings ?? []),
+      ...(mergeConflictPressure?.warnings ?? []),
+      ...(Array.isArray(aiProgrammingGovernedPath?.warnings)
+        ? (aiProgrammingGovernedPath?.warnings ?? []).filter(
+            (w): w is string => typeof w === 'string',
+          )
+        : []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -1518,6 +1546,11 @@ export async function GET() {
     integrity_summary: {} as Record<string, unknown>,
     integrity_checks: [] as Array<Record<string, unknown>>,
   });
+  const mergeConflictPressureBlock = metBlock(mergeConflictPressure, ARTIFACT_PATHS.mergeConflictPressure, {
+    overall_state: 'unknown',
+    counts: {} as Record<string, number>,
+    items: [] as Array<Record<string, unknown>>,
+  });
 
   // MET-FULL-ROADMAP — registry status block. Read directly from
   // docs/architecture/system_registry.md so any registry edit (or missing
@@ -1599,13 +1632,20 @@ export async function GET() {
       return m[1].split(',').map((s) => s.trim()).filter(Boolean);
     }
 
+    // Forbidden tokens are written inline in the registry as a comma-separated
+    // sentence on the same line as `**Forbidden:**`. The previous nested-bullet
+    // parser dropped them silently. Normalise to underscore tokens (e.g.
+    // 'decision ownership' → 'decision_ownership') so dashboard consumers that
+    // gate on token shape see consistent values.
+    const forbiddenTokens = inlineList('Forbidden').map((s) =>
+      s.replace(/[.\s]+$/, '').toLowerCase().replace(/\s+/g, '_'),
+    );
+
     return {
       registry_id: 'MET',
       status,
       authority: authority === 'NONE' ? 'NONE' : authority || 'unknown',
-      forbidden: bulletsAfter('Forbidden').length
-        ? bulletsAfter('Forbidden')[0].split(',').map((s) => s.trim().replace(/[.\s]+$/, ''))
-        : [],
+      forbidden: forbiddenTokens,
       invariant: invariantMatch?.[1]?.trim() ?? 'unknown',
       failure_prevented: bulletsAfter('Failure Prevented'),
       signal_improved: bulletsAfter('Signal Improved'),
@@ -1787,6 +1827,7 @@ export async function GET() {
     recurrence_state: recurrenceState,
     anti_gaming_state:
       (signalIntegrityCheckBlock as { integrity_summary?: { overall_integrity_state?: string } }).integrity_summary?.overall_integrity_state ?? 'unknown',
+    merge_conflict_pressure_state: mergeConflictPressure?.overall_state ?? 'unknown',
     ...(() => {
       // Provenance is derived from actual loaded slots so degraded data is
       // never reported as fully artifact-backed. data_source = 'artifact_store'
@@ -1824,6 +1865,38 @@ export async function GET() {
       };
     })(),
     status: 'warn',
+  };
+
+  // AEX-PQX-DASH-01 — AI programming governed-path block.
+  //
+  // MET observation only. Fail-closed: missing artifact degrades to status
+  // 'unknown' and unknown counts (never 0). Repo-mutating Codex or Claude
+  // work with missing AEX or PQX evidence renders 'block' so the panel
+  // cannot read green when admission or execution proof is absent.
+  const governedPathSummary = computeGovernedPathSummary(aiProgrammingGovernedPath);
+  const aiProgrammingGovernedPathBlock = {
+    status: governedPathSummary.status,
+    data_source: governedPathSummary.data_source,
+    source_artifacts_used: governedPathSummary.source_artifacts_used,
+    warnings: aiProgrammingGovernedPath
+      ? governedPathSummary.warnings
+      : [
+          ...governedPathSummary.warnings,
+          `${ARTIFACT_PATHS.aiProgrammingGovernedPath} unavailable; ai_programming_governed_path_record missing.`,
+        ],
+    reason_codes: governedPathSummary.reason_codes,
+    failure_prevented: governedPathSummary.failure_prevented,
+    signal_improved: governedPathSummary.signal_improved,
+    total_ai_programming_work_items: governedPathSummary.total_ai_programming_work_items,
+    codex_work_count: governedPathSummary.codex_work_count,
+    claude_work_count: governedPathSummary.claude_work_count,
+    governed_work_count: governedPathSummary.governed_work_count,
+    bypass_risk_count: governedPathSummary.bypass_risk_count,
+    unknown_path_count: governedPathSummary.unknown_path_count,
+    aex_present_count: governedPathSummary.aex_present_count,
+    pqx_present_count: governedPathSummary.pqx_present_count,
+    ai_programming_work_items: governedPathSummary.ai_programming_work_items,
+    top_attention_items: governedPathSummary.top_attention_items,
   };
 
   // MET-04 — feedback items list (filter to sourced items only).
@@ -1917,6 +1990,8 @@ export async function GET() {
     metric_gaming_detection: metricGamingDetectionBlock,
     misleading_signal_detection: misleadingSignalDetectionBlock,
     signal_integrity: signalIntegrityCheckBlock,
+    merge_conflict_pressure: mergeConflictPressureBlock,
+    ai_programming_governed_path: aiProgrammingGovernedPathBlock,
     source_artifacts_used: Array.from(
       new Set([
         ...(envelope.source_artifacts_used ?? []),
@@ -1971,6 +2046,12 @@ export async function GET() {
         ...(metricGamingDetection?.source_artifacts_used ?? []),
         ...(misleadingSignalDetection?.source_artifacts_used ?? []),
         ...(signalIntegrityCheck?.source_artifacts_used ?? []),
+        ...(mergeConflictPressure?.source_artifacts_used ?? []),
+        ...(Array.isArray(aiProgrammingGovernedPath?.source_artifacts_used)
+          ? (aiProgrammingGovernedPath?.source_artifacts_used ?? []).filter(
+              (s): s is string => typeof s === 'string',
+            )
+          : []),
       ])
     ),
     intelligence_summary: {

@@ -85,6 +85,83 @@ Each prompt must declare exactly one primary type:
 - **PR traceability**: every PR must reference the governed artifact, work item, or prompt
   type that authorized the change.
 
+## AEX Admission Rule
+
+All repo-mutating agent work must begin with an AEX-style admission step before implementation.
+
+Before editing any files, the agent must identify:
+
+- request type and intended outcome
+- exact changed surfaces (files, workflows, schemas, tests, docs)
+- authority-shape risks across canonical-owner boundaries (per `docs/architecture/system_registry.md`)
+- required tests and eval coverage
+- required schema or artifact updates
+- required governance mappings, where they exist (e.g. test-gating, selection, and ownership mappings declared in `docs/architecture/system_registry.md` or `docs/governance/`)
+- required replay and observability updates
+- whether the scope is too large and must be split
+
+If the work touches any governed surface, including:
+
+- `.github/workflows/`
+- `scripts/`
+- `contracts/`
+- `spectrum_systems/`
+- `tests/`
+- `docs/governance/`
+- system registry or architecture artifacts
+
+then the agent must either:
+
+1. Update all corresponding mappings, tests, schemas, and governance artifacts in the same change
+1. OR stop and report the missing mapping before proceeding
+
+### Authority Boundary
+
+AEX is an admission boundary only.
+
+It may produce:
+
+- admission evidence
+- policy observations
+- normalized execution requests
+- downstream input signals
+- trace / provenance / lineage
+
+It must NOT claim or implement:
+
+- enforcement authority
+- certification authority
+- promotion authority
+- final control decisions
+
+All such authority remains with the canonical owner declared in `docs/architecture/system_registry.md`. AEX emits admission evidence and downstream support inputs only; it does not redefine any 3-letter system's ownership.
+
+### Fail-Closed Principle
+
+If required signals, mappings, or coverage are missing, the agent must fail closed:
+
+- do not proceed with implementation
+- do not create partial or unmapped changes
+- do not assume downstream systems will "handle it"
+
+Instead:
+
+- report the gap
+- propose the minimal required fix
+- or split the work into smaller, admissible slices
+
+### Intent
+
+This rule ensures:
+
+- no orphaned workflows, scripts, or schemas
+- no missing test coverage for governed surfaces
+- no authority-shape violations
+- no hidden logic outside governed artifacts
+- no CI drift caused by agent-generated changes
+
+All changes must be admissible, traceable, testable, and governed before execution.
+
 ## Terminology normalization
 
 Use these terms consistently:

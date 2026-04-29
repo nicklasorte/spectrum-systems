@@ -35,7 +35,7 @@
         "docs": [
           "docs/rca_guide.md",
           "docs/reviews/2026-04-12T220000Z_opx_implementation_review.md",
-          "docs/reviews/BATCH-AUT-07-FIX-DELIVERY-REPORT.md",
+          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
           "docs/reviews/BATCH-AUT-REG-04-DELIVERY-REPORT.md",
           "docs/reviews/BATCH-AUT-REG-05A-DELIVERY-REPORT.md",
           "docs/reviews/BATCH-AUT-RUN-01-DELIVERY-REPORT.md",
@@ -95,6 +95,7 @@
           "scripts/pqx_runner.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
+          "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_ops_master_01.py",
           "scripts/run_repair_latency_24_01.py",
           "scripts/run_repair_standardization_24_01.py",
@@ -131,7 +132,7 @@
           "tests/test_tlc_hardening.py"
         ]
       },
-      "evidence_count": 112,
+      "evidence_count": 113,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -327,6 +328,7 @@
           "scripts/build_system_registry_artifact.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
+          "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_pra_nsx_prg_automation.py",
           "scripts/run_repair_latency_24_01.py",
           "scripts/run_repair_standardization_24_01.py",
@@ -366,7 +368,7 @@
           "tests/test_top_level_conductor.py"
         ]
       },
-      "evidence_count": 116,
+      "evidence_count": 117,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -1240,7 +1242,7 @@
         "docs": [
           "docs/examples/artifact-bus-message.example.json",
           "docs/governance/cdx_02_3ls_roadmap.json",
-          "docs/review-actions/PLAN-PRA-NSX-PRG-001-2026-04-17.md",
+          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
           "docs/reviews/DSH-11-visual-dashboard.md",
           "docs/reviews/H01_delivery_report.md",
           "docs/reviews/MET-01-02-dashboard-seed-loop.md",
@@ -1822,11 +1824,11 @@
           "scripts/build_system_registry_artifact.py",
           "scripts/generate_repo_dashboard_snapshot.py",
           "scripts/pqx_runner.py",
-          "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_codex_to_pqx_wrapper.py",
           "scripts/run_github_pr_autofix_contract_preflight.py",
           "scripts/run_harness_integrity_bundle.py",
           "scripts/run_map_review_orchestration.py",
+          "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_next_governed_cycle.py",
           "scripts/run_next_roadmap_batch.py",
           "scripts/run_operator_shakeout.py",
@@ -2144,6 +2146,7 @@
         ],
         "docs": [
           "docs/governance/cdx_02_3ls_roadmap.json",
+          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
           "docs/reviews/DSH-11-visual-dashboard.md",
           "docs/reviews/MET-01-02-dashboard-seed-loop.md",
           "docs/reviews/MET-03-measurement-layer.md",
@@ -2165,7 +2168,6 @@
           "docs/reviews/SLH-001_delivery_report.md",
           "docs/reviews/system_hardening_full_stack_review.md",
           "docs/roadmaps/rfx_cross_system_roadmap.md",
-          "docs/runbooks/rge_justification_gate_failures.md",
           "docs/runbooks/rge_loop_contribution_failures.md",
           "docs/system-registry.md"
         ],
@@ -2616,6 +2618,7 @@
           "scripts/run_control_surface_gap_extraction.py",
           "scripts/run_control_surface_obedience.py",
           "scripts/run_fast_trust_gate.py",
+          "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_repair_latency_24_01.py",
           "scripts/run_repair_standardization_24_01.py",
           "scripts/run_review_artifact_validation.py",
@@ -2657,7 +2660,7 @@
           "tests/test_top_level_conductor.py"
         ]
       },
-      "evidence_count": 123,
+      "evidence_count": 124,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "SEL"

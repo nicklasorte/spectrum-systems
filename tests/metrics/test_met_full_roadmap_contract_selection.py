@@ -57,6 +57,7 @@ MET_FULL_ROADMAP_ARTIFACT_FILES = (
     "metric_gaming_detection_record.json",
     "misleading_signal_detection_record.json",
     "signal_integrity_check_record.json",
+    "merge_conflict_pressure_record.json",
 )
 
 ENVELOPE_FIELDS = (
@@ -93,6 +94,7 @@ API_BLOCK_FIELD_NAMES = (
     "recurring_failures:",
     "debug_readiness:",
     "signal_integrity:",
+    "merge_conflict_pressure:",
 )
 
 DASHBOARD_TEST_IDS = (
@@ -182,7 +184,10 @@ def test_artifacts_have_required_envelope(name: str) -> None:
     for field in ENVELOPE_FIELDS:
         assert field in data, f"{name} missing field: {field}"
     assert data["owner_system"] == "MET"
-    assert data["data_source"] == "artifact_store"
+    # Most MET artifacts source from artifact_store; the merge-conflict
+    # pressure record sources from git diff because that is its canonical
+    # input. Both are observation-only.
+    assert data["data_source"] in {"artifact_store", "git_diff"}
     assert isinstance(data["source_artifacts_used"], list) and data["source_artifacts_used"]
 
 

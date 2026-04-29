@@ -28,6 +28,7 @@ const REQUIRED_API_BLOCKS = [
   'recurring_failures:',
   'debug_readiness:',
   'signal_integrity:',
+  'merge_conflict_pressure:',
 ];
 
 const REQUIRED_DASHBOARD_TEST_IDS = [
@@ -74,6 +75,7 @@ describe('MET-FULL-ROADMAP — /api/intelligence cockpit blocks', () => {
       'metric_gaming_detection_record.json',
       'misleading_signal_detection_record.json',
       'signal_integrity_check_record.json',
+      'merge_conflict_pressure_record.json',
     ];
     for (const ref of artifactRefs) {
       expect(intelligenceSrc).toContain(ref);
@@ -100,6 +102,45 @@ describe('MET-FULL-ROADMAP — /api/intelligence cockpit blocks', () => {
     expect(intelligenceSrc).toMatch(
       /readRegistryFile[\s\S]*?return null/,
     );
+  });
+
+  it('met_registry_status.forbidden parses the inline comma-separated list', () => {
+    // Forbidden is written as `- **Forbidden:** decision ownership, approval
+    // ownership, ...` (inline, not nested bullets). The parser must read the
+    // inline list and normalise to underscore tokens.
+    expect(intelligenceSrc).toContain("forbiddenTokens");
+    expect(intelligenceSrc).toMatch(/inlineList\('Forbidden'\)/);
+    // Inline tokens should be normalised: 'decision ownership' →
+    // 'decision_ownership'.
+    expect(intelligenceSrc).toMatch(
+      /\.toLowerCase\(\)\.replace\(\/\\s\+\/g, '_'\)/,
+    );
+    // Dashboard consumers gating on tokens like 'decision_ownership' must see
+    // them after parsing the canonical registry file.
+    const registry = fs.readFileSync(
+      path.resolve(repoRoot, 'docs/architecture/system_registry.md'),
+      'utf-8',
+    );
+    const headerIdx = registry.indexOf('### MET\n');
+    const tail = registry.slice(headerIdx);
+    const nextHeader = tail.slice(8).search(/\n### /);
+    const block = nextHeader > 0 ? tail.slice(0, 8 + nextHeader) : tail;
+    const m = block.match(/\*\*Forbidden:\*\*\s*([^\n]+)/);
+    expect(m).not.toBeNull();
+    const tokens = (m?.[1] ?? '')
+      .split(',')
+      .map((s) => s.trim().replace(/[.\s]+$/, '').toLowerCase().replace(/\s+/g, '_'))
+      .filter(Boolean);
+    for (const expected of [
+      'decision_ownership',
+      'enforcement_ownership',
+      'certification_ownership',
+      'promotion_ownership',
+      'execution_ownership',
+      'admission_ownership',
+    ]) {
+      expect(tokens).toContain(expected);
+    }
   });
 
   it('system_registry.md MET section declares NONE authority and forbidden ownership', () => {
@@ -359,6 +400,34 @@ describe('MET-FULL-ROADMAP — anti-gaming and integrity', () => {
         expect(signal.recommendation_signal).toBe('no_recommendation');
       }
       expect(['SLO', 'CDE', 'SEL']).toContain(signal.recommended_owner_system);
+    }
+  });
+
+  it('merge_conflict_pressure_record exists and is observation-only', () => {
+    const data = JSON.parse(
+      fs.readFileSync(
+        path.resolve(
+          repoRoot,
+          'artifacts/dashboard_metrics/merge_conflict_pressure_record.json',
+        ),
+        'utf-8',
+      ),
+    );
+    expect(data.artifact_type).toBe('merge_conflict_pressure_record');
+    expect(data.owner_system).toBe('MET');
+    expect(typeof data.failure_prevented).toBe('string');
+    expect(typeof data.signal_improved).toBe('string');
+    expect(['no_pressure_observed', 'low_pressure_observed', 'medium_pressure_observed', 'high_pressure_observed', 'unknown']).toContain(
+      data.overall_state,
+    );
+    // Reason codes must affirm observation-only.
+    expect(data.reason_codes).toContain('merge_conflict_pressure_observation_only');
+    expect(data.reason_codes).toContain('no_authority_outcome');
+    // Per-item shape: each item has file_path + risk + next_recommended_input.
+    for (const item of data.items ?? []) {
+      expect(typeof item.file_path).toBe('string');
+      expect(['low', 'medium', 'high', 'unknown']).toContain(item.risk);
+      expect(typeof item.next_recommended_input).toBe('string');
     }
   });
 
