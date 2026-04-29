@@ -1,4 +1,17 @@
 {
+  "AGENTS.md": [
+    "tests/test_system_registry_guard.py"
+  ],
+  "CLAUDE.md": [
+    "tests/test_system_registry_guard.py"
+  ],
+  "docs/governance/pytest_pr_selection_integrity_policy.json": [
+    "tests/test_pytest_selection_integrity.py",
+    "tests/test_governance_doc_preflight_selection_mapping.py"
+  ],
+  "docs/governance/preflight_required_surface_test_overrides.json": [
+    "tests/test_contract_preflight.py"
+  ],
   "spectrum_systems/modules/runtime/ai_adapter.py": [
     "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
   ],
