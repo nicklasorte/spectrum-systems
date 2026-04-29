@@ -40,7 +40,10 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
             r"registry[\._\s]mismatch|system_registry_mismatch"
             r"|validate_system_registry.*FAIL|registry.*not.*registered"
             r"|canonical.*owner.*missing"
-            r"|INCOMPLETE_SYSTEM_REGISTRATION|UNOWNED_SYSTEM_SURFACE",
+            r"|INCOMPLETE_SYSTEM_REGISTRATION|UNOWNED_SYSTEM_SURFACE"
+            r"|SHADOW_OWNERSHIP_OVERLAP|DIRECT_OWNERSHIP_OVERLAP"
+            r"|PROTECTED_AUTHORITY_VIOLATION|NEW_SYSTEM_MISSING_REGISTRATION"
+            r"|AMBIGUOUS_SYSTEM_SURFACE",
             re.IGNORECASE,
         ),
         "System registry mismatch or guard failure",

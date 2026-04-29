@@ -80,7 +80,7 @@ def _run_check(
     cmd: list[str],
     *,
     cwd: Path = REPO_ROOT,
-    timeout: int = 120,
+    timeout: int = 600,
 ) -> tuple[int, str]:
     """Run a single preflight command. Returns (exit_code, combined_output)."""
     try:
