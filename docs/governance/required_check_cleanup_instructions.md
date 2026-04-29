@@ -39,7 +39,7 @@ Under "Require status checks to pass before merging":
 
 | Check Name | Should Be Required? |
 |---|---|
-| `PR / pytest` | **YES** — keep required |
+| `PR / pytest` | **Yes** — keep required |
 | `artifact-boundary / enforce-artifact-boundary` | Optional (informational) |
 | `artifact-boundary / validate-module-architecture` | Optional (informational) |
 | `artifact-boundary / system-registry-guard` | Optional (informational) |

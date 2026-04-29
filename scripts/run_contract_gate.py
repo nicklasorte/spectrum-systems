@@ -378,11 +378,11 @@ def main() -> None:
     details["pytest_execution_record_ref"] = record_ref
     details["pytest_selection_integrity_result_ref"] = selection_ref
 
-    if decision == "BLOCK":
+    if decision in ("BLOCK", "FREEZE"):
         _fail_closed(
-            f"contract preflight decision=BLOCK (exit={rc})",
+            f"contract preflight decision={decision} (exit={rc})",
             _GATE_NAME,
-            f"run_contract_preflight.py returned BLOCK decision",
+            f"run_contract_preflight.py returned {decision} decision",
             "Review contract_preflight_result_artifact.json and contract_preflight_report.md for details",
             [],
             "scripts/run_contract_preflight.py",

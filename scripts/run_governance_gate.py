@@ -94,16 +94,16 @@ def _fail_closed(reason: str, root_cause: str, next_action: str,
 
 
 def _get_changed_files(base_ref: str, head_ref: str, repo_root: str) -> list[str]:
-    try:
-        result = subprocess.run(
-            ["git", "diff", "--name-only", base_ref, head_ref],
-            capture_output=True, text=True, cwd=repo_root
+    result = subprocess.run(
+        ["git", "diff", "--name-only", base_ref, head_ref],
+        capture_output=True, text=True, cwd=repo_root
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"git diff --name-only failed (exit {result.returncode}): "
+            f"{result.stderr.strip() or result.stdout.strip()}"
         )
-        if result.returncode == 0:
-            return [f.strip() for f in result.stdout.splitlines() if f.strip()]
-    except Exception:
-        pass
-    return []
+    return [f.strip() for f in result.stdout.splitlines() if f.strip()]
 
 
 def _paths_touch(changed: list[str], prefixes: frozenset[str]) -> bool:
@@ -141,7 +141,21 @@ def main() -> None:
         "checks_skipped": checks_skipped,
     }
 
-    changed_files = _get_changed_files(args.base_ref, args.head_ref, repo_root)
+    try:
+        changed_files = _get_changed_files(args.base_ref, args.head_ref, repo_root)
+    except RuntimeError as exc:
+        if not args.run_all:
+            _fail_closed(
+                f"git diff failed — cannot determine changed files",
+                str(exc),
+                "Ensure base_ref and head_ref are valid, reachable commits in a full checkout",
+                [],
+                f"git diff --name-only {args.base_ref} {args.head_ref}",
+                [],
+                output_dir,
+                extra_details=details,
+            )
+        changed_files = []
     details["changed_file_count"] = len(changed_files)
 
     # Strategy compliance check (path-gated)
