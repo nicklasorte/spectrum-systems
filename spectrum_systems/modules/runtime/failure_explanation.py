@@ -88,7 +88,9 @@ def _infer_stage_from_artifact_type(artifact_type: str) -> str:
         return "GOV"
     if any(k in low for k in ["observability", "trace_store", "obs"]):
         return "OBS"
-    if any(k in low for k in ["authority_preflight", "authority_repair"]):
+    if any(k in low for k in ["authority_repair"]):
+        return "FRE"
+    if any(k in low for k in ["authority_preflight"]):
         return "AEX"
     return "unknown"
 

@@ -191,7 +191,7 @@ def run_historical_replay_validation(
         raise HistoricalReplayValidatorError("trace_id must be a non-empty string")
 
     corpus = list(_BUILTIN_CORPUS)
-    if additional_cases:
+    if additional_cases is not None:
         if not isinstance(additional_cases, list):
             raise HistoricalReplayValidatorError("additional_cases must be a list")
         corpus.extend(additional_cases)

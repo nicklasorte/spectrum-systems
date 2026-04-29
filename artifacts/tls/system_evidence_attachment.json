@@ -1578,6 +1578,7 @@
           "spectrum_systems/modules/runtime/failure_explanation.py",
           "spectrum_systems/modules/runtime/full_autonomy_execution.py",
           "spectrum_systems/modules/runtime/integration_fabric_ifb.py",
+          "spectrum_systems/modules/runtime/minimality_sweep.py",
           "spectrum_systems/modules/runtime/next24_serial_execution.py",
           "spectrum_systems/modules/runtime/obs_timeout_trend.py",
           "spectrum_systems/modules/runtime/observability_metrics.py",
@@ -1586,8 +1587,7 @@
           "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
           "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
-          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py",
-          "spectrum_systems/modules/runtime/rfx_failure_profile.py"
+          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1619,6 +1619,7 @@
           "tests/test_error_budget.py",
           "tests/test_error_taxonomy.py",
           "tests/test_integration_fabric_ifb.py",
+          "tests/test_minimality_sweep.py",
           "tests/test_ns_reason_codes.py",
           "tests/test_ns_system_justification_v2.py",
           "tests/test_oc_bottleneck_classifier.py",
@@ -1630,8 +1631,7 @@
           "tests/test_rfx_flow_integration.py",
           "tests/test_rfx_loop_04_06_red_team.py",
           "tests/test_rfx_loop_07_08_chaos.py",
-          "tests/test_rfx_observability_replay_consistency.py",
-          "tests/test_rfx_reliability_freeze.py"
+          "tests/test_rfx_observability_replay_consistency.py"
         ]
       },
       "evidence_count": 111,
