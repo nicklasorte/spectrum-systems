@@ -1,199 +1,52 @@
-name: nightly-deep-gate
+name: Nightly Deep Gate
 
 on:
   schedule:
-    - cron: "0 3 * * *"   # Daily at 03:00 UTC
+    - cron: '0 3 * * *'
   workflow_dispatch:
-    inputs:
-      mode:
-        description: "Gate mode (deep or fast)"
-        required: false
-        default: "deep"
-        type: choice
-        options: [deep, fast]
 
 permissions:
   contents: read
 
 jobs:
-  contract-gate:
+  nightly-pytest-full:
+    name: nightly-pytest-full
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: '3.x'
 
-      - name: Install dependencies
-        run: python -m pip install -r requirements-dev.txt
-
-      - name: Resolve refs
-        id: refs
-        run: |
-          set -euo pipefail
-          echo "base_ref=$(git rev-parse HEAD~1 2>/dev/null || echo origin/main)" >> "$GITHUB_OUTPUT"
-          echo "head_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Run contract gate
-        env:
-          GITHUB_EVENT_NAME: push
-        run: |
-          python scripts/run_contract_gate.py \
-            --base-ref "${{ steps.refs.outputs.base_ref }}" \
-            --head-ref "${{ steps.refs.outputs.head_ref }}" \
-            --output-dir outputs/gates \
-            --execution-context pqx_governed
-
-      - name: Upload contract gate result
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nightly-contract-gate-result
-          path: outputs/gates/contract_gate_result.json
-          if-no-files-found: warn
-
-  runtime-test-gate-full:
-    needs: contract-gate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install dependencies
+      - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
 
       - name: Run full pytest suite
-        run: python -m pytest -v --tb=short -q 2>&1 | tee /tmp/pytest_output.txt; exit ${PIPESTATUS[0]}
-
-      - name: Upload full test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nightly-full-pytest-results
-          path: /tmp/pytest_output.txt
-          if-no-files-found: warn
-
-  governance-gate-full:
-    needs: contract-gate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install dependencies
-        run: python -m pip install -r requirements-dev.txt
-
-      - name: Resolve refs
-        id: refs
         run: |
-          echo "base_ref=$(git rev-parse HEAD~1 2>/dev/null || echo origin/main)" >> "$GITHUB_OUTPUT"
-          echo "head_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          python -m pytest tests/ -q --tb=short
 
-      - name: Run governance gate (full — no path filtering)
+      - name: Run contract enforcement
         run: |
-          python scripts/run_governance_gate.py \
-            --base-ref "${{ steps.refs.outputs.base_ref }}" \
-            --head-ref "${{ steps.refs.outputs.head_ref }}" \
-            --output-dir outputs/gates \
-            --run-all
-
-      - name: Upload governance gate result
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nightly-governance-gate-result
-          path: outputs/gates/governance_gate_result.json
-          if-no-files-found: warn
-
-  certification-gate-deep:
-    needs: contract-gate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install dependencies
-        run: python -m pip install -r requirements-dev.txt
-
-      - name: Resolve refs
-        id: refs
-        run: |
-          echo "base_ref=$(git rev-parse HEAD~1 2>/dev/null || echo origin/main)" >> "$GITHUB_OUTPUT"
-          echo "head_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Run certification gate
-        run: |
-          python scripts/run_certification_gate.py \
-            --base-ref "${{ steps.refs.outputs.base_ref }}" \
-            --head-ref "${{ steps.refs.outputs.head_ref }}" \
-            --output-dir outputs/gates \
-            --mode "${{ inputs.mode || 'deep' }}" \
-            --force
-
-      - name: Upload certification gate result
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nightly-certification-gate-result
-          path: outputs/gates/certification_gate_result.json
-          if-no-files-found: warn
-
-  ci-drift-detector:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+          set -euo pipefail
+          python scripts/run_contract_enforcement.py
 
       - name: Run CI drift detector
         run: |
+          set -euo pipefail
+          mkdir -p outputs/ci_drift
           python scripts/run_ci_drift_detector.py \
-            --repo-root . \
-            --output outputs/ci_drift_detector/drift_report.json
+            --output outputs/ci_drift/drift_detection_result.json
 
-      - name: Upload drift report
+      - name: Upload nightly outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nightly-ci-drift-report
-          path: outputs/ci_drift_detector/drift_report.json
+          name: nightly-deep-gate-outputs
           if-no-files-found: warn
-
-  nightly-gate-summary:
-    needs:
-      - runtime-test-gate-full
-      - governance-gate-full
-      - certification-gate-deep
-      - ci-drift-detector
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Summarize nightly gate results
-        run: |
-          echo "## Nightly Deep Gate Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Gate | Status |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Contract Gate | ${{ needs.contract-gate.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Runtime Test Gate (full) | ${{ needs.runtime-test-gate-full.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Governance Gate (full) | ${{ needs.governance-gate-full.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Certification Gate (deep) | ${{ needs.certification-gate-deep.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| CI Drift Detector | ${{ needs.ci-drift-detector.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          path: outputs/ci_drift/

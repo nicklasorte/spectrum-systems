@@ -869,7 +869,6 @@
           "scripts/run_ci_drift_detector.py",
           "scripts/run_contract_enforcement.py",
           "scripts/run_governance_gate.py",
-          "scripts/run_pr_gate.py",
           "scripts/validate_system_registry.py"
         ],
         "tests": [
@@ -900,7 +899,7 @@
           "tests/test_nx_registry_red_team.py"
         ]
       },
-      "evidence_count": 111,
+      "evidence_count": 110,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
@@ -1466,6 +1465,7 @@
           "scripts/run_rh_kernel_24_01.py",
           "scripts/run_rq_master_36_01.py",
           "scripts/run_shift_left_memory_24_01.py",
+          "scripts/select_pr_test_shard.py",
           "scripts/suggest_3ls_authority_repairs.py",
           "scripts/sync_project_design_sources.py",
           "scripts/update_readme_mental_map.py",
@@ -1504,7 +1504,7 @@
           "tests/test_registry_valid.py"
         ]
       },
-      "evidence_count": 126,
+      "evidence_count": 127,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "MAP"

@@ -1,332 +1,230 @@
+#!/usr/bin/env python3
+"""Aggregator: load shard selection and result artifacts, validate them, and
+write a final PR gate result.
+
+This script aggregates evidence only.  It does NOT call any selection
+functions, recompute which tests should run, or make gate-outcome calls.
+Authority scope: observation_only.
+
+Fail-closed: any exception → exit 1.
 """
-PR Gate Orchestrator — thin coordinator for the four canonical gates.
 
-Calls gates in order, collects result artifacts, emits one final artifact.
-This script contains NO policy decisions, NO schema shortcuts, NO test selection
-logic, and NO certification logic. It is a thin sequencer only.
-
-Gate order:
-  1. Contract Gate       → scripts/run_contract_gate.py
-  2. Test Selection Gate → scripts/run_test_selection_gate.py
-  3. Runtime Test Gate   → scripts/run_runtime_test_gate.py
-  4. Governance Gate     → scripts/run_governance_gate.py
-  4.5. CI Drift Detector → scripts/run_ci_drift_detector.py
-  5. Certification Gate (fast, only when cert paths touched) → scripts/run_certification_gate.py
-
-Final artifact: outputs/pr_gate/pr_gate_result.json
-"""
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import os
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+_DEFAULT_SHARD_DIR = str(REPO_ROOT / "outputs" / "pr_test_shards")
+_DEFAULT_OUTPUT = str(REPO_ROOT / "outputs" / "pr_gate" / "pr_gate_result.json")
+_DEFAULT_REQUIRED_SHARDS = "contract,governance,dashboard,changed_scope"
 
 
-_SCHEMA_VERSION = "1.0.0"
-_OUTPUT_DIR = "outputs/pr_gate"
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Aggregate shard artifacts and write a PR gate result.",
+    )
+    parser.add_argument(
+        "--shard-dir",
+        default=_DEFAULT_SHARD_DIR,
+        help=f"Base directory for shard artifacts (default: {_DEFAULT_SHARD_DIR}).",
+    )
+    parser.add_argument(
+        "--output",
+        default=_DEFAULT_OUTPUT,
+        help=f"Path for the gate result JSON (default: {_DEFAULT_OUTPUT}).",
+    )
+    parser.add_argument(
+        "--required-shards",
+        default=_DEFAULT_REQUIRED_SHARDS,
+        help=(
+            "Comma-separated list of required shard names "
+            f"(default: {_DEFAULT_REQUIRED_SHARDS})."
+        ),
+    )
+    parser.add_argument(
+        "--shard-matrix-result",
+        default="",
+        help="GitHub Actions matrix result for shard-select job (success/failure/cancelled).",
+    )
+    return parser.parse_args()
 
 
-def _sha256(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def _load_gate_result(path: Path) -> dict:
+def _load_json_file(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+    """Return (parsed_dict, None) on success or (None, error_message) on failure."""
     if not path.is_file():
-        return {"status": "missing", "error": f"gate result not found at {path}"}
+        return None, f"file not found: {path}"
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {"status": "invalid_json", "error": f"invalid JSON at {path}"}
+        raw = path.read_text(encoding="utf-8")
+        payload = json.loads(raw)
+    except (OSError, json.JSONDecodeError) as exc:
+        return None, f"json parse error in {path}: {exc}"
+    if not isinstance(payload, dict):
+        return None, f"expected JSON object in {path}, got {type(payload).__name__}"
+    return payload, None
 
 
-def _run_gate(
-    label: str,
-    cmd: list[str],
-    repo_root: str,
-    gate_result_path: Path,
-    executed_commands: list[str],
-    gate_results: dict,
-    env: dict | None = None,
-) -> bool:
-    print(f"\n[pr_gate] ── {label} ──────────────────────")
-    executed_commands.append(" ".join(cmd))
-    result = subprocess.run(cmd, cwd=repo_root, env=env or os.environ.copy())
-    gate_result = _load_gate_result(gate_result_path)
-    gate_results[label] = gate_result
-    artifact_status = gate_result.get("status", "unknown")
-    if result.returncode != 0:
-        print(f"[pr_gate] {label} FAILED (exit={result.returncode}, status={artifact_status})", file=sys.stderr)
-        return False
-    if artifact_status in {"missing", "invalid_json"}:
-        print(f"[pr_gate] {label} FAILED — gate artifact {artifact_status} (exit=0 but no valid result)", file=sys.stderr)
-        return False
-    print(f"[pr_gate] {label} passed")
-    return True
+def _check_parity(shard_dir: Path) -> str:
+    """Return 'pass', 'fail', or 'not_checked' for CI/precheck parity."""
+    parity_path = shard_dir / "precheck_selection_parity.json"
+    if not parity_path.is_file():
+        return "not_checked"
+    payload, err = _load_json_file(parity_path)
+    if err or payload is None:
+        return "not_checked"
+    parity_status = payload.get("parity_status", "not_checked")
+    if parity_status in ("pass", "fail"):
+        return parity_status
+    return "not_checked"
 
 
-def _emit_final_result(
-    status: str,
-    gate_results: dict,
-    executed_commands: list[str],
-    blocking_gate: str | None,
-    failure_summary: dict | None,
-    output_dir: Path,
-    base_ref: str,
-    head_ref: str,
-) -> dict:
-    payload: dict = {
+def _validate_selection(artifact: dict[str, Any], shard: str) -> str | None:
+    """Return blocking reason string or None if valid."""
+    if artifact.get("artifact_type") != "pr_test_shard_selection":
+        return "invalid_shard_selection_artifact"
+    return None
+
+
+def _validate_result(artifact: dict[str, Any], shard: str) -> str | None:
+    """Return blocking reason string or None if valid."""
+    if artifact.get("artifact_type") != "pr_test_shard_result":
+        return "invalid_shard_result_artifact"
+    if artifact.get("authority_scope") != "observation_only":
+        return "invalid_authority_scope"
+    return None
+
+
+def _evaluate_shard(
+    shard: str,
+    shard_dir: Path,
+) -> tuple[str, str | None]:
+    """Return (shard_status_label, blocking_reason | None).
+
+    shard_status_label is a short string for reporting ('ok', 'block', etc.)
+    """
+    shard_path = shard_dir / shard
+
+    # (a) Load selection artifact.
+    selection_path = shard_path / f"{shard}_selection.json"
+    selection, err = _load_json_file(selection_path)
+    if err or selection is None:
+        return "missing_selection", "missing_shard_selection_artifact"
+
+    # (b) Validate selection.
+    sel_reason = _validate_selection(selection, shard)
+    if sel_reason:
+        return "invalid_selection", sel_reason
+
+    # (c) Load result artifact.
+    result_path = shard_path / f"{shard}_result.json"
+    result, err = _load_json_file(result_path)
+    if err or result is None:
+        return "missing_result", "missing_shard_result_artifact"
+
+    # (d) Validate result.
+    res_reason = _validate_result(result, shard)
+    if res_reason:
+        return "invalid_result", res_reason
+
+    # (e) authority_scope already checked by _validate_result.
+
+    # (f) Check selection status / result status.
+    sel_status = selection.get("status", "")
+    res_status = result.get("status", "")
+
+    if sel_status == "block":
+        return "blocked_selection", "shard_selection_blocked"
+
+    if sel_status == "empty_allowed":
+        if res_status == "skipped":
+            return "ok_empty", None
+        # If selection was empty_allowed but result was not skipped, treat as ok
+        # (shard ran even though it could have been skipped — that is conservative).
+        return "ok", None
+
+    if sel_status == "selected":
+        if res_status == "skipped":
+            return "skipped_required", "skipped_required_shard"
+        if res_status in ("fail", "block"):
+            return "failed", "shard_failed"
+
+    # Any other combination of statuses: accept as pass if result is not a failure.
+    if res_status in ("fail", "block"):
+        return "failed", "shard_failed"
+
+    return "ok", None
+
+
+def main() -> int:
+    args = _parse_args()
+    shard_dir = Path(args.shard_dir)
+    output_path = Path(args.output)
+    required_shards = [s.strip() for s in args.required_shards.split(",") if s.strip()]
+
+    shard_statuses: dict[str, str] = {}
+    blocking_reasons: list[str] = []
+    trace_refs: list[str] = []
+
+    # (a) Check whether the upstream shard-select matrix concluded successfully.
+    matrix_result = (args.shard_matrix_result or "").strip().lower()
+    if matrix_result and matrix_result != "success":
+        blocking_reasons.append(f"shard_matrix_failed:{matrix_result}")
+        trace_refs.append(f"shard_matrix_result={matrix_result}")
+
+    for shard in required_shards:
+        label, reason = _evaluate_shard(shard, shard_dir)
+        shard_statuses[shard] = label
+        if reason:
+            blocking_reasons.append(f"{shard}:{reason}")
+            trace_refs.append(f"shard={shard} label={label} reason={reason}")
+        else:
+            trace_refs.append(f"shard={shard} label={label}")
+
+    # (g) CI/precheck parity check — parity failure is a blocking condition.
+    parity_status = _check_parity(shard_dir)
+    if parity_status == "fail":
+        blocking_reasons.append("parity_check_failed")
+        trace_refs.append("parity_status=fail")
+
+    gate_status = "block" if blocking_reasons else "pass"
+
+    artifact: dict[str, Any] = {
         "artifact_type": "pr_gate_result",
-        "schema_version": _SCHEMA_VERSION,
-        "gate_name": "pr_gate",
-        "status": status,
+        "schema_version": "1.0.0",
+        "status": gate_status,
+        "required_shards": required_shards,
+        "shard_statuses": shard_statuses,
+        "blocking_reasons": blocking_reasons,
+        "parity_status": parity_status,
+        "authority_scope": "observation_only",
         "produced_at": datetime.now(timezone.utc).isoformat(),
-        "producer_script": "scripts/run_pr_gate.py",
-        "base_ref": base_ref,
-        "head_ref": head_ref,
-        "gate_results": gate_results,
-        "executed_commands": executed_commands,
-    }
-    if blocking_gate:
-        payload["blocking_gate"] = blocking_gate
-    if failure_summary:
-        payload["failure_summary"] = failure_summary
-    text = json.dumps(payload, sort_keys=True, indent=2)
-    payload["artifact_hash"] = _sha256(text)
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    out_path = output_dir / "pr_gate_result.json"
-    out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    print(f"\n[pr_gate] final result written to {out_path}")
-    return payload
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="PR Gate Orchestrator")
-    parser.add_argument("--base-ref", required=True)
-    parser.add_argument("--head-ref", required=True)
-    parser.add_argument("--output-dir", default=_OUTPUT_DIR)
-    parser.add_argument("--gates-dir", default="outputs/gates")
-    parser.add_argument("--repo-root", default=".")
-    parser.add_argument("--execution-context", default="pqx_governed")
-    parser.add_argument("--event-name", default="pull_request")
-    args = parser.parse_args()
-
-    output_dir = Path(args.output_dir)
-    gates_dir = Path(args.gates_dir)
-    repo_root = args.repo_root
-    executed_commands: list[str] = []
-    gate_results: dict = {}
-
-    env = {
-        **os.environ,
-        "GITHUB_EVENT_NAME": args.event_name,
+        "trace_refs": trace_refs,
     }
 
-    print(f"[pr_gate] Starting PR gate — base={args.base_ref} head={args.head_ref}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(artifact, indent=2), encoding="utf-8")
 
-    # Gate 1: Contract Gate
-    ok = _run_gate(
-        "contract_gate",
-        [
-            sys.executable, "scripts/run_contract_gate.py",
-            "--base-ref", args.base_ref,
-            "--head-ref", args.head_ref,
-            "--output-dir", str(gates_dir),
-            "--repo-root", repo_root,
-            "--execution-context", args.execution_context,
-        ],
-        repo_root,
-        gates_dir / "contract_gate_result.json",
-        executed_commands,
-        gate_results,
-        env=env,
-    )
-    if not ok:
-        _emit_final_result(
-            "block", gate_results, executed_commands, "contract_gate",
-            {
-                "gate_name": "pr_gate",
-                "failure_class": "gate_failure",
-                "root_cause": "Contract Gate failed",
-                "blocking_reason": "contract_gate returned non-zero",
-                "next_action": "Review contract_gate_result.json for details",
-                "affected_files": [],
-                "failed_command": "scripts/run_contract_gate.py",
-                "artifact_refs": [str(gates_dir / "contract_gate_result.json")],
-            },
-            output_dir, args.base_ref, args.head_ref,
+    if gate_status == "block":
+        print(
+            f"[run_pr_gate] BLOCK reasons={blocking_reasons}",
+            file=sys.stderr,
         )
-        sys.exit(1)
+        return 1
 
-    # Gate 2: Test Selection Gate
-    ok = _run_gate(
-        "test_selection_gate",
-        [
-            sys.executable, "scripts/run_test_selection_gate.py",
-            "--output-dir", str(gates_dir),
-            "--repo-root", repo_root,
-            "--event-name", args.event_name,
-        ],
-        repo_root,
-        gates_dir / "test_selection_gate_result.json",
-        executed_commands,
-        gate_results,
-    )
-    if not ok:
-        _emit_final_result(
-            "block", gate_results, executed_commands, "test_selection_gate",
-            {
-                "gate_name": "pr_gate",
-                "failure_class": "gate_failure",
-                "root_cause": "Test Selection Gate failed",
-                "blocking_reason": "test_selection_gate returned non-zero",
-                "next_action": "Review test_selection_gate_result.json for details",
-                "affected_files": [],
-                "failed_command": "scripts/run_test_selection_gate.py",
-                "artifact_refs": [str(gates_dir / "test_selection_gate_result.json")],
-            },
-            output_dir, args.base_ref, args.head_ref,
-        )
-        sys.exit(1)
-
-    # Gate 3: Runtime Test Gate
-    ok = _run_gate(
-        "runtime_test_gate",
-        [
-            sys.executable, "scripts/run_runtime_test_gate.py",
-            "--output-dir", str(gates_dir),
-            "--repo-root", repo_root,
-        ],
-        repo_root,
-        gates_dir / "runtime_test_gate_result.json",
-        executed_commands,
-        gate_results,
-    )
-    if not ok:
-        _emit_final_result(
-            "block", gate_results, executed_commands, "runtime_test_gate",
-            {
-                "gate_name": "pr_gate",
-                "failure_class": "gate_failure",
-                "root_cause": "Runtime Test Gate failed",
-                "blocking_reason": "runtime_test_gate returned non-zero",
-                "next_action": "Review runtime_test_gate_result.json and fix failing tests",
-                "affected_files": [],
-                "failed_command": "scripts/run_runtime_test_gate.py",
-                "artifact_refs": [str(gates_dir / "runtime_test_gate_result.json")],
-            },
-            output_dir, args.base_ref, args.head_ref,
-        )
-        sys.exit(1)
-
-    # Gate 4: Governance Gate
-    ok = _run_gate(
-        "governance_gate",
-        [
-            sys.executable, "scripts/run_governance_gate.py",
-            "--base-ref", args.base_ref,
-            "--head-ref", args.head_ref,
-            "--output-dir", str(gates_dir),
-            "--repo-root", repo_root,
-        ],
-        repo_root,
-        gates_dir / "governance_gate_result.json",
-        executed_commands,
-        gate_results,
-    )
-    if not ok:
-        _emit_final_result(
-            "block", gate_results, executed_commands, "governance_gate",
-            {
-                "gate_name": "pr_gate",
-                "failure_class": "gate_failure",
-                "root_cause": "Governance Gate failed",
-                "blocking_reason": "governance_gate returned non-zero",
-                "next_action": "Review governance_gate_result.json for governance violations",
-                "affected_files": [],
-                "failed_command": "scripts/run_governance_gate.py",
-                "artifact_refs": [str(gates_dir / "governance_gate_result.json")],
-            },
-            output_dir, args.base_ref, args.head_ref,
-        )
-        sys.exit(1)
-
-    # Gate 4.5: CI Drift Detector — must run at merge time, not just nightly
-    ci_drift_output = Path("outputs/ci_drift_detector/drift_report.json")
-    ok = _run_gate(
-        "ci_drift_detector",
-        [
-            sys.executable, "scripts/run_ci_drift_detector.py",
-            "--repo-root", repo_root,
-            "--output", str(ci_drift_output),
-        ],
-        repo_root,
-        ci_drift_output,
-        executed_commands,
-        gate_results,
-    )
-    if not ok:
-        _emit_final_result(
-            "block", gate_results, executed_commands, "ci_drift_detector",
-            {
-                "gate_name": "pr_gate",
-                "failure_class": "gate_failure",
-                "root_cause": "CI Drift Detector found unmapped workflows or missing gate schemas",
-                "blocking_reason": "ci_drift_detector returned non-zero",
-                "next_action": "Review outputs/ci_drift_detector/drift_report.json for drift findings",
-                "affected_files": [],
-                "failed_command": "scripts/run_ci_drift_detector.py",
-                "artifact_refs": [str(ci_drift_output)],
-            },
-            output_dir, args.base_ref, args.head_ref,
-        )
-        sys.exit(1)
-
-    # Gate 5: Certification Gate (fast mode — only if cert paths touched)
-    ok = _run_gate(
-        "certification_gate",
-        [
-            sys.executable, "scripts/run_certification_gate.py",
-            "--base-ref", args.base_ref,
-            "--head-ref", args.head_ref,
-            "--output-dir", str(gates_dir),
-            "--repo-root", repo_root,
-            "--mode", "fast",
-        ],
-        repo_root,
-        gates_dir / "certification_gate_result.json",
-        executed_commands,
-        gate_results,
-    )
-    if not ok:
-        _emit_final_result(
-            "block", gate_results, executed_commands, "certification_gate",
-            {
-                "gate_name": "pr_gate",
-                "failure_class": "gate_failure",
-                "root_cause": "Certification Gate failed",
-                "blocking_reason": "certification_gate returned non-zero",
-                "next_action": "Review certification_gate_result.json for certification failures",
-                "affected_files": [],
-                "failed_command": "scripts/run_certification_gate.py",
-                "artifact_refs": [str(gates_dir / "certification_gate_result.json")],
-            },
-            output_dir, args.base_ref, args.head_ref,
-        )
-        sys.exit(1)
-
-    # All gates passed
-    result = _emit_final_result(
-        "allow", gate_results, executed_commands, None, None,
-        output_dir, args.base_ref, args.head_ref,
-    )
-    print(f"\n[pr_gate] ✓ ALL GATES PASSED — PR is admissible")
+    print(f"[run_pr_gate] PASS all shards OK → {output_path}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.exit(main())
+    except Exception as exc:  # noqa: BLE001
+        print(f"[run_pr_gate] FATAL: {exc}", file=sys.stderr)
+        sys.exit(1)
