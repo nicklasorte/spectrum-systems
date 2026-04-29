@@ -162,35 +162,42 @@ def _build_gate_result(
     return artifact
 
 
-# Preflight checks: (label, command, source_tag)
-_PREFLIGHT_CHECKS: list[tuple[str, list[str], str]] = [
-    (
-        "authority_shape_preflight",
-        [sys.executable, "scripts/run_authority_shape_preflight.py", "--suggest-only"],
-        "pre_pr_gate",
-    ),
-    (
-        "system_registry_guard",
-        [sys.executable, "scripts/run_system_registry_guard.py"],
-        "pre_pr_gate",
-    ),
-    (
-        "contract_preflight",
-        [sys.executable, "scripts/run_contract_preflight.py"],
-        "pre_pr_gate",
-    ),
-    (
-        "build_preflight_pqx_wrapper",
-        [sys.executable, "scripts/build_preflight_pqx_wrapper.py"],
-        "pre_pr_gate",
-    ),
-]
-
 _PYTEST_CHECK: tuple[str, list[str], str] = (
     "pytest_changed_scope",
     [sys.executable, "-m", "pytest", "-q", "--tb=short"],
     "pre_pr_gate",
 )
+
+
+def _build_preflight_checks(
+    base_ref: str, head_ref: str
+) -> list[tuple[str, list[str], str]]:
+    return [
+        (
+            "authority_shape_preflight",
+            [sys.executable, "scripts/run_authority_shape_preflight.py", "--suggest-only",
+             "--base-ref", base_ref, "--head-ref", head_ref],
+            "pre_pr_gate",
+        ),
+        (
+            "system_registry_guard",
+            [sys.executable, "scripts/run_system_registry_guard.py",
+             "--base-ref", base_ref, "--head-ref", head_ref],
+            "pre_pr_gate",
+        ),
+        (
+            "contract_preflight",
+            [sys.executable, "scripts/run_contract_preflight.py",
+             "--base-ref", base_ref, "--head-ref", head_ref],
+            "pre_pr_gate",
+        ),
+        (
+            "build_preflight_pqx_wrapper",
+            [sys.executable, "scripts/build_preflight_pqx_wrapper.py",
+             "--base-ref", base_ref, "--head-ref", head_ref],
+            "pre_pr_gate",
+        ),
+    ]
 
 
 def run_gate(
@@ -199,6 +206,8 @@ def run_gate(
     trace_id: str,
     skip_pytest: bool = False,
     pytest_args: list[str] | None = None,
+    base_ref: str = "origin/main",
+    head_ref: str = "HEAD",
 ) -> dict[str, Any]:
     """Execute the full pre-PR reliability gate. Returns the prl_gate_result artifact."""
     all_signals: list[str] = []
@@ -208,7 +217,7 @@ def run_gate(
     eval_candidate_refs: list[str] = []
     blocking_reasons: list[str] = []
 
-    checks = list(_PREFLIGHT_CHECKS)
+    checks = _build_preflight_checks(base_ref, head_ref)
     if not skip_pytest:
         label, cmd, source = _PYTEST_CHECK
         if pytest_args:
@@ -280,7 +289,7 @@ def run_gate(
             all_signals.append(classification.gate_signal)
             failure_classes.append(classification.failure_class)
             failure_packet_refs.append(f"pre_pr_failure_packet:{packet['id']}")
-            repair_candidate_refs.append(f"repair_candidate:{repair['id']}")
+            repair_candidate_refs.append(f"prl_repair_candidate:{repair['id']}")
             eval_candidate_refs.append(f"eval_case_candidate:{candidate['id']}")
 
             if classification.gate_signal == "failed_gate":
@@ -322,6 +331,16 @@ def main() -> int:
         help="Skip pytest execution (run preflight checks only)",
     )
     parser.add_argument(
+        "--base-ref",
+        default="origin/main",
+        help="Git base ref for changed-file resolution (default: origin/main)",
+    )
+    parser.add_argument(
+        "--head-ref",
+        default="HEAD",
+        help="Git head ref for changed-file resolution (default: HEAD)",
+    )
+    parser.add_argument(
         "pytest_args",
         nargs=argparse.REMAINDER,
         help="Additional arguments passed to pytest (use -- before pytest flags)",
@@ -342,6 +361,8 @@ def main() -> int:
             trace_id=trace_id,
             skip_pytest=args.skip_pytest,
             pytest_args=pytest_args or None,
+            base_ref=args.base_ref,
+            head_ref=args.head_ref,
         )
     except Exception as exc:
         error_record = {

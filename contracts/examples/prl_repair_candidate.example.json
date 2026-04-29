@@ -1,0 +1,20 @@
+{
+  "artifact_type": "prl_repair_candidate",
+  "schema_version": "1.0.0",
+  "id": "prl-rep-a1b2c3d4e5f6a7b8",
+  "timestamp": "2026-01-01T00:00:00Z",
+  "run_id": "prl-gate-20260101T000000Z-example01",
+  "trace_id": "trace-prl-0000000000000001",
+  "trace_refs": {
+    "primary": "trace-prl-0000000000000001",
+    "related": ["trace-prl-0000000000000000"]
+  },
+  "failure_packet_ref": "pre_pr_failure_packet:prl-pkt-0000000000000001",
+  "failure_class": "contract_schema_violation",
+  "target_files": ["spectrum_systems/modules/example.py"],
+  "repair_prompt": "Fix the schema validation failure. Ensure all artifact fields match the canonical JSON schema in contracts/schemas/. Check additionalProperties=false — remove any undeclared fields. Ensure all required fields are present with correct types.",
+  "minimal_fix_scope": "Align artifact fields with schema definition in contracts/schemas/",
+  "safety_classification": "safe",
+  "auto_apply": false,
+  "requires_human_review": false
+}

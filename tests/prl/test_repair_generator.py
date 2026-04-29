@@ -58,7 +58,7 @@ class TestGenerateRepairCandidate:
             run_id=RUN_ID,
             trace_id=TRACE_ID,
         )
-        assert repair["artifact_type"] == "repair_candidate"
+        assert repair["artifact_type"] == "prl_repair_candidate"
         assert repair["schema_version"] == "1.0.0"
         assert repair["id"].startswith("prl-rep-")
         assert repair["run_id"] == RUN_ID

@@ -12711,7 +12711,7 @@
       "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
-      "artifact_type": "repair_candidate",
+      "artifact_type": "prl_repair_candidate",
       "artifact_class": "reliability",
       "schema_version": "1.0.0",
       "status": "proposed",
@@ -12720,7 +12720,7 @@
       ],
       "introduced_in": "1.3.152",
       "last_updated_in": "1.3.152",
-      "example_path": "contracts/schemas/prl/repair_candidate.schema.json",
+      "example_path": "contracts/examples/prl_repair_candidate.example.json",
       "notes": "PRL-02 bounded repair suggestion. auto_apply is always false. Advisory only. Owned by PRL; consumed advisory-only by FRE and operators."
     },
     {

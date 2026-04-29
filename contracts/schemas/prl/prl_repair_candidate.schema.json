@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/prl/repair_candidate.schema.json",
-  "title": "Repair Candidate",
+  "$id": "https://spectrum-systems.org/contracts/prl/prl_repair_candidate.schema.json",
+  "title": "PRL Repair Candidate",
   "description": "PRL-02: bounded repair suggestion. auto_apply is always false. Owned by PRL; consumed advisory-only by FRE/operators.",
   "type": "object",
   "additionalProperties": false,
@@ -24,7 +24,7 @@
   ],
   "properties": {
     "artifact_type": {
-      "const": "repair_candidate"
+      "const": "prl_repair_candidate"
     },
     "schema_version": {
       "const": "1.0.0"

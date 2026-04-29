@@ -174,7 +174,7 @@ def generate_repair_candidate(
         related_trace_refs=[failure_packet["trace_id"]],
     )
     artifact: dict[str, Any] = {
-        "artifact_type": "repair_candidate",
+        "artifact_type": "prl_repair_candidate",
         "schema_version": "1.0.0",
         "id": envelope["id"],
         "timestamp": envelope["timestamp"],
@@ -190,7 +190,7 @@ def generate_repair_candidate(
         "auto_apply": False,
         "requires_human_review": template["safety_classification"] == "requires_review",
     }
-    schema = _load_schema("repair_candidate")
+    schema = _load_schema("prl_repair_candidate")
     try:
         jsonschema.validate(artifact, schema)
     except jsonschema.ValidationError as exc:
