@@ -229,10 +229,20 @@ jobs:
               try:
                   committed = normalize(json.loads(result.stdout))
                   current   = normalize(json.loads(path.read_text()))
-              except Exception:
+              except Exception as exc:
+                  print(f"WARN: could not parse {rel}: {exc}")
                   continue
               if committed != current:
                   mismatches.append(rel)
+                  # Emit structural diff for diagnosis
+                  import difflib
+                  committed_lines = json.dumps(committed, indent=2, sort_keys=True).splitlines(keepends=True)
+                  current_lines   = json.dumps(current,   indent=2, sort_keys=True).splitlines(keepends=True)
+                  diff = list(difflib.unified_diff(committed_lines, current_lines,
+                                                    fromfile=f"HEAD:{rel}", tofile=f"regen:{rel}",
+                                                    n=4))
+                  print(f"--- structural diff for {rel} (first 80 lines) ---")
+                  print("".join(diff[:80]))
 
           if mismatches:
               print("ERROR: derived registry artifacts have structural differences from HEAD.")

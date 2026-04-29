@@ -100,7 +100,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
     (
         "pytest_selection_missing",
         re.compile(
-            r"FAILED\s+tests/|no tests ran|collected 0 items"
+            r"no tests ran|collected 0 items"
             r"|ERROR collecting|pytest.*error.*no.*test|selection.*guard.*missing"
             r"|no module named.*test",
             re.IGNORECASE,

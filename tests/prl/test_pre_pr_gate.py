@@ -81,12 +81,12 @@ class TestGateRunFunction:
         assert result["gate_recommendation"] == "gate_hold"
         assert result["gate_passed"] is False
 
-    def test_pytest_warn_produces_gate_warn(self):
+    def test_pytest_selection_missing_produces_gate_warn(self):
         run_gate = self._import_run_gate()
         with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
             def side_effect(label, cmd, **kwargs):
                 if "pytest" in " ".join(cmd):
-                    return (1, "FAILED tests/prl/test_foo.py::test_bar - AssertionError")
+                    return (1, "collected 0 items / no tests ran")
                 return (0, "")
             mock_check.side_effect = side_effect
             result = run_gate(
@@ -95,6 +95,23 @@ class TestGateRunFunction:
                 skip_pytest=False,
             )
         assert result["gate_recommendation"] == "gate_warn"
+        assert result["gate_passed"] is False
+
+    def test_real_assertion_failure_produces_gate_hold(self):
+        # A real test failure must NOT be downgraded to gate_warn.
+        run_gate = self._import_run_gate()
+        with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+            def side_effect(label, cmd, **kwargs):
+                if "pytest" in " ".join(cmd):
+                    return (1, "FAILED tests/prl/test_foo.py::test_bar - AssertionError")
+                return (0, "")
+            mock_check.side_effect = side_effect
+            result = run_gate(
+                run_id="run-test-assert-fail",
+                trace_id="trace-test-assert-fail",
+                skip_pytest=False,
+            )
+        assert result["gate_recommendation"] != "gate_warn"
         assert result["gate_passed"] is False
 
     def test_gate_result_has_all_required_fields(self):

@@ -67,11 +67,11 @@ class TestParseLogLine:
         assert result is not None
         assert result.failure_class == "pytest_selection_missing"
 
-    def test_pytest_selection_missing_failed(self):
+    def test_pytest_selection_missing_does_not_match_execution_failure(self):
+        # A real assertion failure must NOT be misclassified as a selection failure.
         line = "FAILED tests/prl/test_foo.py::test_bar - AssertionError"
         result = parse_log_line(line)
-        assert result is not None
-        assert result.failure_class == "pytest_selection_missing"
+        assert result is None or result.failure_class != "pytest_selection_missing"
 
     def test_timeout(self):
         line = "TimeoutError: execution timeout exceeded after 120s"
