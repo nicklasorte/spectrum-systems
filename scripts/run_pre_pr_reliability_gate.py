@@ -354,10 +354,10 @@ def main() -> int:
         print(json.dumps(error_record, sort_keys=True), file=sys.stderr, flush=True)
         return 1
 
-    decision = gate_result["gate_recommendation"]
-    if decision == "passed_gate":
+    recommendation = gate_result["gate_recommendation"]
+    if recommendation == "passed_gate":
         return 0
-    if decision == "gate_warn":
+    if recommendation == "gate_warn":
         return 2
     return 1
 
