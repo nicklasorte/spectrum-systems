@@ -1549,30 +1549,56 @@ export async function GET() {
     coreLoopStatus = 'warn';
   }
 
-  // total / compliant / blocked work items: today this artifact reflects a
-  // single AI programming governed path. Counts are observed-not-inferred.
-  const totalWorkItems = aiProgrammingGovernedPath ? 1 : 'unknown';
-  const compliantWorkItems = aiProgrammingGovernedPath
-    ? coreLoopComplete === true
-      ? 1
-      : 0
-    : 'unknown';
-  const blockedWorkItems = aiProgrammingGovernedPath
-    ? coreLoopStatus === 'block'
-      ? 1
-      : 0
-    : 'unknown';
+  // Work-item counts: derive from the per-work-item summary that
+  // computeCoreLoopSummary() already produces from
+  // ai_programming_work_items[]. Hard-coding to 1 would under-report scope
+  // as soon as the artifact carries multiple work items (the seed already
+  // ships 4). Falls back to the aggregate-only computation when no
+  // per-work-item array is present.
+  const perItemSummary = aiProgrammingCoreLoopSummary;
+  const hasWorkItems = (perItemSummary.work_items?.length ?? 0) > 0;
+  const totalWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
+    ? 'unknown'
+    : hasWorkItems
+      ? perItemSummary.work_items.length
+      : 1;
+  const compliantWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
+    ? 'unknown'
+    : hasWorkItems
+      ? perItemSummary.core_loop_complete_count
+      : coreLoopComplete === true
+        ? 1
+        : 0;
+  const blockedWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
+    ? 'unknown'
+    : hasWorkItems
+      ? perItemSummary.blocked_work_items.length
+      : coreLoopStatus === 'block'
+        ? 1
+        : 0;
 
-  const missingByLeg: Record<CoreLoopLeg, number | 'unknown'> = aiProgrammingGovernedPath
-    ? {
-        AEX: legStates.AEX === 'missing' ? 1 : 0,
-        PQX: legStates.PQX === 'missing' ? 1 : 0,
-        EVL: legStates.EVL === 'missing' ? 1 : 0,
-        TPA: legStates.TPA === 'missing' ? 1 : 0,
-        CDE: legStates.CDE === 'missing' ? 1 : 0,
-        SEL: legStates.SEL === 'missing' ? 1 : 0,
-      }
-    : { AEX: 'unknown', PQX: 'unknown', EVL: 'unknown', TPA: 'unknown', CDE: 'unknown', SEL: 'unknown' };
+  // missing_by_leg: when per-work-item observations exist, use the count of
+  // items with each leg missing (richer signal for blocked-scope consumers);
+  // otherwise fall back to the aggregate single-row indicator.
+  const missingByLeg: Record<CoreLoopLeg, number | 'unknown'> = !aiProgrammingGovernedPath
+    ? { AEX: 'unknown', PQX: 'unknown', EVL: 'unknown', TPA: 'unknown', CDE: 'unknown', SEL: 'unknown' }
+    : hasWorkItems
+      ? {
+          AEX: perItemSummary.missing_by_leg.AEX,
+          PQX: perItemSummary.missing_by_leg.PQX,
+          EVL: perItemSummary.missing_by_leg.EVL,
+          TPA: perItemSummary.missing_by_leg.TPA,
+          CDE: perItemSummary.missing_by_leg.CDE,
+          SEL: perItemSummary.missing_by_leg.SEL,
+        }
+      : {
+          AEX: legStates.AEX === 'missing' ? 1 : 0,
+          PQX: legStates.PQX === 'missing' ? 1 : 0,
+          EVL: legStates.EVL === 'missing' ? 1 : 0,
+          TPA: legStates.TPA === 'missing' ? 1 : 0,
+          CDE: legStates.CDE === 'missing' ? 1 : 0,
+          SEL: legStates.SEL === 'missing' ? 1 : 0,
+        };
 
   const coreLoopComplianceSummaryBlock = aiProgrammingGovernedPath
     ? {

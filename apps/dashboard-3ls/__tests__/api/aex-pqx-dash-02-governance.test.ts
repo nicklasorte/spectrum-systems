@@ -258,6 +258,28 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
     expect(intelligenceSrc).toContain('disagrees with observed leg states');
   });
 
+  it('fail-closed: work-item counts derived from per-work-item summary, not hard-coded', () => {
+    // After the merge with origin/main, ai_programming_work_items[] can
+    // contain multiple entries. Hard-coding total_work_items to 1 would
+    // under-report blocked scope. Counts must derive from
+    // computeCoreLoopSummary's per-item summary when work_items exist.
+    expect(intelligenceSrc).toContain('hasWorkItems');
+    expect(intelligenceSrc).toContain('perItemSummary.work_items.length');
+    expect(intelligenceSrc).toContain('perItemSummary.core_loop_complete_count');
+    expect(intelligenceSrc).toContain('perItemSummary.blocked_work_items.length');
+    // The previous hard-coded `? 1 : 'unknown'` total must not remain.
+    expect(intelligenceSrc).not.toContain("totalWorkItems = aiProgrammingGovernedPath ? 1 : 'unknown'");
+  });
+
+  it('missing_by_leg uses per-work-item counts when work_items exist', () => {
+    // missing_by_leg should report the count of items per leg that are
+    // missing (richer signal for blocked-scope consumers) rather than the
+    // aggregate single-row 0/1 indicator.
+    expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.AEX');
+    expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.PQX');
+    expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.SEL');
+  });
+
   it('summary block exposes the required surface fields', () => {
     const block = intelligenceSrc.slice(
       intelligenceSrc.indexOf('const coreLoopComplianceSummaryBlock'),
