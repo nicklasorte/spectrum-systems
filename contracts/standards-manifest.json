@@ -4228,7 +4228,7 @@
     },
     {
       "artifact_type": "eval_case_candidate",
-      "artifact_class": "reliability",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
@@ -10148,7 +10148,7 @@
     },
     {
       "artifact_type": "pr_failure_capture_record",
-      "artifact_class": "reliability",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
@@ -10161,7 +10161,7 @@
     },
     {
       "artifact_type": "pre_pr_failure_packet",
-      "artifact_class": "reliability",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
@@ -10174,7 +10174,7 @@
     },
     {
       "artifact_type": "prl_eval_case",
-      "artifact_class": "reliability",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
@@ -10187,7 +10187,7 @@
     },
     {
       "artifact_type": "prl_eval_generation_record",
-      "artifact_class": "reliability",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
@@ -10200,7 +10200,7 @@
     },
     {
       "artifact_type": "prl_gate_result",
-      "artifact_class": "reliability",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
@@ -12712,7 +12712,7 @@
     },
     {
       "artifact_type": "prl_repair_candidate",
-      "artifact_class": "reliability",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
