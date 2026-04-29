@@ -22,37 +22,43 @@
       "present": 0,
       "partial": 2,
       "missing": 2,
-      "unknown": 0
+      "unknown": 0,
+      "not_required": 0
     },
     "PQX": {
       "present": 1,
       "partial": 1,
       "missing": 2,
-      "unknown": 0
+      "unknown": 0,
+      "not_required": 0
     },
     "EVL": {
       "present": 0,
       "partial": 3,
       "missing": 0,
-      "unknown": 1
+      "unknown": 1,
+      "not_required": 0
     },
     "TPA": {
       "present": 0,
       "partial": 0,
       "missing": 0,
-      "unknown": 4
+      "unknown": 4,
+      "not_required": 0
     },
     "CDE": {
       "present": 0,
       "partial": 0,
       "missing": 0,
-      "unknown": 4
+      "unknown": 4,
+      "not_required": 0
     },
     "SEL": {
       "present": 0,
       "partial": 0,
       "missing": 0,
-      "unknown": 4
+      "unknown": 4,
+      "not_required": 0
     }
   },
   "score": 0.0,
