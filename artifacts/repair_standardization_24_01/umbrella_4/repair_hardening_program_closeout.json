@@ -2,7 +2,7 @@
   "artifact_type": "repair_hardening_program_closeout",
   "slice_id": "RS-24",
   "owner": "PRG",
-  "generated_at": "2026-04-28T01:47:44Z",
+  "generated_at": "2026-04-29T20:28:23Z",
   "authoritative": false,
   "bottleneck_reduction_signal": "improving_guarded",
   "next_automation_focus": "expand parameterized templates with stricter confidence calibration"

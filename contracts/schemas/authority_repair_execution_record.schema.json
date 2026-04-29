@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/authority_repair_execution_record.schema.json",
+  "title": "authority_repair_execution_record",
+  "description": "PQX execution record for an applied authority repair candidate. Records pre/post state, files mutated, and post-repair preflight result. Emitted only after CDE authorization.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "trace_id",
+    "candidate_id",
+    "patches_applied",
+    "pre_violation_count",
+    "post_violation_count",
+    "post_preflight_status",
+    "execution_status",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": { "const": "authority_repair_execution_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "patches_applied": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "original_symbol", "replacement_symbol"],
+        "properties": {
+          "file": { "type": "string" },
+          "line": { "type": ["integer", "null"] },
+          "original_symbol": { "type": "string" },
+          "replacement_symbol": { "type": "string" }
+        }
+      }
+    },
+    "pre_violation_count": { "type": "integer", "minimum": 0 },
+    "post_violation_count": { "type": "integer", "minimum": 0 },
+    "post_preflight_status": {
+      "type": "string",
+      "enum": ["pass", "fail", "not_run"]
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": ["applied", "skipped", "blocked", "failed"]
+    },
+    "blocked_reason": { "type": ["string", "null"] },
+    "emitted_at": { "type": "string", "format": "date-time" }
+  }
+}
