@@ -167,12 +167,18 @@
         "hop_harness_frontier",
         "hop_harness_failure_hypothesis",
         "hop_harness_eval_case",
-        "hop_harness_faq_output"
+        "hop_harness_faq_output",
+        "hop_harness_ai_failure_pattern",
+        "hop_harness_system_improvement_proposal"
       ],
       "downstream": [
         "EVL",
         "FRE",
-        "CDE"
+        "CDE",
+        "GOV",
+        "RDX",
+        "HNX",
+        "SEL"
       ],
       "primary_code_paths": [
         "spectrum_systems/modules/hop/experience_store.py",
@@ -186,10 +192,11 @@
         "spectrum_systems/modules/hop/optimization_loop.py",
         "spectrum_systems/modules/hop/sandbox.py",
         "spectrum_systems/modules/hop/control_integration.py",
+        "spectrum_systems/modules/hop/ai_failure_mapper.py",
         "readiness_signal builder and rollback_signal emitter modules under",
         "spectrum_systems/cli/hop_cli.py"
       ],
-      "purpose": "harness optimization substrate \u2014 stores candidate harness code, scores, traces, and failure hypotheses; orchestrates candidate evaluation against a versioned eval set; exposes a queryable, replay-compatible history. A bounded proposer module emits candidate harness code from deterministic mutation templates; it is admission-gated, sandboxed, and advisory-only \u2014 it never persists artifacts, never invokes the evaluator, and never advances candidates.",
+      "purpose": "harness optimization substrate \u2014 stores candidate harness code, scores, traces, and failure hypotheses; orchestrates candidate evaluation against a versioned eval set; exposes a queryable, replay-compatible history. A bounded proposer module emits candidate harness code from deterministic mutation templates; it is admission-gated, sandboxed, and advisory-only \u2014 it never persists artifacts, never invokes the evaluator, and never advances candidates. An AI failure mapper module converts recurring AI/coding-agent failure patterns into bounded, advisory system-improvement proposals targeting specific 3-letter systems; all proposals are advisory-only and require CDE/GOV approval before any mutation can occur (see `docs/reviews/hop_batch4_review.md` and `docs/architecture/system_registry.md` authority boundaries).",
       "status": "active",
       "system_id": "HOP",
       "upstream": [
@@ -740,7 +747,9 @@
       "system_id": "TRN"
     }
   ],
-  "parse_notes": [],
+  "parse_notes": [
+    "unresolved_reference:HOP->RDX"
+  ],
   "phase": "TLS-00",
   "schema_version": "tls-00.v1"
 }

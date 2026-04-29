@@ -246,22 +246,22 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
         "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 5,
+      "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
         "missing_control",
+        "missing_enforcement_signal",
         "missing_eval",
         "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "HOP",
-      "trust_state": "blocked_signal"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "active_system",

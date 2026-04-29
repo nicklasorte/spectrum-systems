@@ -397,20 +397,33 @@ they feed OBS / LIN / REP / SLO.
   history. A bounded proposer module emits candidate harness code from
   deterministic mutation templates; it is admission-gated, sandboxed, and
   advisory-only — it never persists artifacts, never invokes the evaluator,
-  and never advances candidates.
+  and never advances candidates. An AI failure mapper module converts
+  recurring AI/coding-agent failure patterns into bounded, advisory
+  system-improvement proposals targeting specific 3-letter systems; all
+  proposals are advisory-only and require CDE/GOV approval before any
+  mutation can occur (see `docs/reviews/hop_batch4_review.md` and
+  `docs/architecture/system_registry.md` authority boundaries).
 - **Failure Prevented:** ungoverned harness experimentation, eval gaming,
-  loss of failure provenance, and free-form harness output dependencies.
+  loss of failure provenance, free-form harness output dependencies, and
+  recurring AI/agent failure patterns without a governed improvement path.
 - **Signal Improved:** harness candidate quality visibility, frontier
-  transparency, and eval-set integrity.
+  transparency, eval-set integrity, and target-system improvement signal
+  derived from observed AI failure patterns.
 - **Canonical Artifacts Owned:** `hop_harness_candidate`, `hop_harness_run`,
   `hop_harness_score`, `hop_harness_trace`, `hop_harness_frontier`,
   `hop_harness_failure_hypothesis`, `hop_harness_eval_case`,
-  `hop_harness_faq_output`.
+  `hop_harness_faq_output`, `hop_harness_ai_failure_pattern`,
+  `hop_harness_system_improvement_proposal`.
 - **Upstream Dependencies:** EVL (eval-set policy alignment), CTX (transcript
   context governance for input shape).
-- **Downstream Dependencies:** EVL (eval surface contributions), FRE
-  (failure-derived candidates feed FRE diagnosis only via governed adoption),
-  CDE (control authority external to HOP — HOP never decides promotion).
+- **Downstream Dependencies:** EVL (eval surface contributions and scope_adherence
+  eval cases from improvement proposals), FRE (failure-derived candidates feed
+  FRE diagnosis only via governed adoption), CDE (control authority external to
+  HOP — HOP never decides promotion; improvement proposals require CDE/GOV
+  review), RDX (receives split-requirement signals from over-scoped execution
+  proposals — advisory only), HNX (receives checkpoint-requirement signals from
+  missing-checkpoint proposals — advisory only), SEL (receives compliance signals
+  from improvement proposals — SEL retains all signal-gate ownership).
 - **Primary Code Paths:**
   - `spectrum_systems/modules/hop/experience_store.py`
   - `spectrum_systems/modules/hop/evaluator.py`
@@ -423,6 +436,7 @@ they feed OBS / LIN / REP / SLO.
   - `spectrum_systems/modules/hop/optimization_loop.py`
   - `spectrum_systems/modules/hop/sandbox.py`
   - `spectrum_systems/modules/hop/control_integration.py`
+  - `spectrum_systems/modules/hop/ai_failure_mapper.py`
   - readiness_signal builder and rollback_signal emitter modules under
     `spectrum_systems/modules/hop/` (filenames retained for git history;
     advisory-only — see `docs/reviews/hop005_authority_eval_hardening_review.md`)
