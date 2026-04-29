@@ -63,7 +63,7 @@ def build_rfx_operator_handbook(
         if not isinstance(entry, dict):
             reason.append("rfx_handbook_malformed_entry")
             continue
-        code = (entry.get("code") or "").strip()
+        code = str(entry.get("code") or "").strip()
         if not code:
             reason.append("rfx_handbook_missing_code")
             continue

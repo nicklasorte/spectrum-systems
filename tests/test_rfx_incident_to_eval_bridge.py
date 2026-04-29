@@ -118,3 +118,13 @@ def test_mixed_incidents_malformed_skipped():
     )
     assert "rfx_bridge_malformed_incident" in result["reason_codes_emitted"]
     assert len(result["eval_candidates"]) == 1
+
+
+def test_numeric_eval_skip_rationale_does_not_raise():
+    # P1 fix: non-string truthy eval_skip_rationale must not raise AttributeError.
+    result = build_rfx_incident_to_eval_bridge(
+        incidents=[_incident(eval_skip=True, eval_skip_rationale=42)]
+    )
+    assert result["artifact_type"] == "rfx_incident_to_eval_bridge"
+    assert "rfx_bridge_missing_rationale" not in result["reason_codes_emitted"]
+    assert result["signals"]["skip_with_rationale_count"] == 1

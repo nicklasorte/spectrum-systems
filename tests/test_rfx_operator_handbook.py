@@ -92,3 +92,12 @@ def test_mixed_entries_malformed_skipped():
     result = build_rfx_operator_handbook(reason_code_entries=[_entry(), "bad-row"])
     assert "rfx_handbook_malformed_entry" in result["reason_codes_emitted"]
     assert len(result["entries"]) == 1
+
+
+def test_numeric_code_does_not_raise():
+    # P1 fix: numeric code field from registry ingest must not raise AttributeError.
+    result = build_rfx_operator_handbook(
+        reason_code_entries=[_entry(code=123)]
+    )
+    assert result["artifact_type"] == "rfx_operator_handbook"
+    assert result["entries"][0]["code"] == "123"

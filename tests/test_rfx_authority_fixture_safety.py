@@ -98,3 +98,10 @@ def test_mixed_fixtures_malformed_skipped():
     result = check_rfx_authority_fixture_safety(fixtures=[_fx(), "bad-row"])
     assert "rfx_fixture_malformed_row" in result["reason_codes_emitted"]
     assert result["signals"]["total_fixtures"] == 2
+
+
+def test_numeric_text_does_not_raise():
+    # P1 fix: numeric text from deserialized JSON must not crash pat.search().
+    result = check_rfx_authority_fixture_safety(fixtures=[_fx(text=12345)])
+    assert result["artifact_type"] == "rfx_authority_fixture_safety_result"
+    assert result["signals"]["violation_count"] == 0

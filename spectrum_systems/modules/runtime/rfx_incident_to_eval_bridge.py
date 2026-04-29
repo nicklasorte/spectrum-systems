@@ -88,7 +88,7 @@ def build_rfx_incident_to_eval_bridge(
             reason.append("rfx_bridge_missing_trace_ref")
 
         eval_skip = inc.get("eval_skip", False)
-        eval_skip_rationale = (inc.get("eval_skip_rationale") or "").strip()
+        eval_skip_rationale = str(inc.get("eval_skip_rationale") or "").strip()
 
         if eval_skip:
             if not eval_skip_rationale:

@@ -83,7 +83,7 @@ def check_rfx_authority_fixture_safety(
         fx_id = fx.get("id") or ""
         if not fx_id:
             reason.append("rfx_fixture_missing_id")
-        text = fx.get("text", "")
+        text = str(fx.get("text") or "")
         matched: list[str] = []
         for pat in _FORBIDDEN_PATTERNS:
             m = pat.search(text)
