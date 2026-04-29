@@ -112,6 +112,15 @@ def build_rollup(fail_closed: bool = False) -> int:
             print("FAIL: --fail-closed and parse errors occurred", file=sys.stderr)
             return 1
 
+    if not items:
+        print(
+            f"WARN: no ai_programming_work_item_record items found after filtering in {SOURCE_DIR}",
+            file=sys.stderr,
+        )
+        if fail_closed:
+            print("FAIL: --fail-closed and no work-item records found after filtering", file=sys.stderr)
+            return 1
+
     total = len(items)
     codex_count = sum(1 for i in items if i.get("tool_source") == "codex")
     claude_count = sum(1 for i in items if i.get("tool_source") == "claude")

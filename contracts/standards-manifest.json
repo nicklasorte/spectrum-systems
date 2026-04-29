@@ -17033,7 +17033,7 @@
       ],
       "introduced_in": "AEX-PQX-01",
       "last_updated_in": "AEX-PQX-01",
-      "example_path": "contracts/examples/ai_programming_work_item_record.example.json",
+      "example_path": "contracts/examples/ai_programming_governance_rollup_record.example.json",
       "notes": "AEX-PQX-01: aggregate rollup of AI programming governance evidence. Produced by build_ai_programming_governance_rollup.py. Dashboard reads this artifact; does not compute compliance client-side."
     },
     {
