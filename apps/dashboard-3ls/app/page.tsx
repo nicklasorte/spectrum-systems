@@ -266,7 +266,55 @@ type OperatorDebuggabilityDrillBlock = IntelligenceBlockEnvelope & {
   drill_items?: Array<Record<string, unknown>>;
 };
 
+// AEX-PQX-DASH-01 — AI programming governed-path types.
+type AiProgrammingWorkItemView = {
+  work_item_id?: string;
+  agent_type?: 'codex' | 'claude' | 'unknown_ai_agent';
+  source_ref?: string;
+  pr_ref?: string;
+  branch_ref?: string;
+  changed_files_count?: number | 'unknown';
+  repo_mutating?: boolean | 'unknown';
+  aex_admission_observation?: 'present' | 'missing' | 'partial' | 'unknown';
+  pqx_execution_observation?: 'present' | 'missing' | 'partial' | 'unknown';
+  eval_observation?: 'present' | 'missing' | 'partial' | 'unknown';
+  control_signal_observation?: 'present' | 'missing' | 'partial' | 'unknown';
+  enforcement_or_readiness_signal_observation?:
+    | 'present'
+    | 'missing'
+    | 'partial'
+    | 'unknown';
+  lineage_observation?: 'present' | 'missing' | 'partial' | 'unknown';
+  bypass_risk?:
+    | 'none'
+    | 'aex_missing'
+    | 'pqx_missing'
+    | 'eval_missing'
+    | 'lineage_missing'
+    | 'unknown';
+  next_recommended_input?: string;
+  source_artifacts_used?: string[];
+};
+
+type AiProgrammingGovernedPathBlock = IntelligenceBlockEnvelope & {
+  status?: 'pass' | 'warn' | 'block' | 'unknown';
+  reason_codes?: string[];
+  failure_prevented?: string | null;
+  signal_improved?: string | null;
+  total_ai_programming_work_items?: number | 'unknown';
+  codex_work_count?: number | 'unknown';
+  claude_work_count?: number | 'unknown';
+  governed_work_count?: number | 'unknown';
+  bypass_risk_count?: number | 'unknown';
+  unknown_path_count?: number | 'unknown';
+  aex_present_count?: number | 'unknown';
+  pqx_present_count?: number | 'unknown';
+  ai_programming_work_items?: AiProgrammingWorkItemView[];
+  top_attention_items?: AiProgrammingWorkItemView[];
+};
+
 type IntelligencePayload = {
+  ai_programming_governed_path?: AiProgrammingGovernedPathBlock;
   feedback_loop?: FeedbackLoopBlock;
   feedback_loop_status?: string;
   unresolved_feedback_count?: number | 'unknown';
@@ -328,6 +376,166 @@ function Panel({ title, children, testId }: { title: string; children: React.Rea
     >
       <h2 className="font-semibold text-sm uppercase tracking-wide text-slate-900 dark:text-slate-100">{title}</h2>
       {children}
+    </section>
+  );
+}
+
+// AEX-PQX-DASH-01 — AI programming governed-path panel.
+// Displays whether Codex and Claude programming work passes through AEX
+// admission and PQX execution. Fail-closed: missing artifact renders
+// UNKNOWN; missing AEX or PQX evidence on repo-mutating Codex/Claude work
+// renders BLOCK. Authority-neutral language only.
+function statusToLabel(status: string | undefined): string {
+  switch (status) {
+    case 'pass':
+      return 'PASS';
+    case 'warn':
+      return 'WARN';
+    case 'block':
+      return 'BLOCK';
+    default:
+      return 'UNKNOWN';
+  }
+}
+
+function statusToClass(status: string | undefined): string {
+  switch (status) {
+    case 'pass':
+      return 'text-green-700 dark:text-green-300';
+    case 'warn':
+      return 'text-amber-700 dark:text-amber-300';
+    case 'block':
+      return 'text-red-700 dark:text-red-300';
+    default:
+      return 'text-slate-700 dark:text-slate-300';
+  }
+}
+
+function presenceLabel(value: string | undefined): string {
+  if (value === 'present') return 'present';
+  if (value === 'missing') return 'missing';
+  if (value === 'partial') return 'partial';
+  return 'unknown';
+}
+
+function AiProgrammingGovernedPathPanel({
+  block,
+}: {
+  block: AiProgrammingGovernedPathBlock | undefined;
+}) {
+  const status = block?.status ?? 'unknown';
+  const total = block?.total_ai_programming_work_items;
+  const codexCount = block?.codex_work_count;
+  const claudeCount = block?.claude_work_count;
+  const aexCount = block?.aex_present_count;
+  const pqxCount = block?.pqx_present_count;
+  const bypass = block?.bypass_risk_count;
+  const unknownPath = block?.unknown_path_count;
+  const items = block?.top_attention_items ?? [];
+  return (
+    <section
+      data-testid="ai-programming-governed-path-panel"
+      className="bg-white dark:bg-slate-900 text-slate-950 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded p-4 space-y-3"
+    >
+      <header className="flex items-baseline justify-between gap-2">
+        <h2 className="font-semibold text-sm uppercase tracking-wide">
+          AI Programming Governed Path (AEX → PQX → EVL → CDE → SEL)
+        </h2>
+        <span
+          data-testid="ai-programming-governed-path-status"
+          className={`text-sm font-bold ${statusToClass(status)}`}
+        >
+          AI Programming Governance: {statusToLabel(status)}
+        </span>
+      </header>
+      <p className="text-xs text-gray-600 dark:text-slate-300">
+        MET observes path evidence only. AEX owns admission. PQX owns execution.
+        EVL owns eval. CDE owns control. SEL owns enforcement. Dashboard does not
+        execute anything.
+      </p>
+      <ul className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs">
+        <li>
+          Codex work count: <strong data-testid="ai-codex-count">{String(codexCount ?? 'unknown')}</strong>
+        </li>
+        <li>
+          Claude work count: <strong data-testid="ai-claude-count">{String(claudeCount ?? 'unknown')}</strong>
+        </li>
+        <li>
+          Total AI programming items: <strong>{String(total ?? 'unknown')}</strong>
+        </li>
+        <li>
+          With AEX admission evidence: <strong data-testid="ai-aex-present-count">{String(aexCount ?? 'unknown')}</strong>
+        </li>
+        <li>
+          With PQX execution evidence: <strong data-testid="ai-pqx-present-count">{String(pqxCount ?? 'unknown')}</strong>
+        </li>
+        <li>
+          Bypass risk count: <strong data-testid="ai-bypass-risk-count">{String(bypass ?? 'unknown')}</strong>
+        </li>
+        <li>
+          Unknown path count: <strong data-testid="ai-unknown-path-count">{String(unknownPath ?? 'unknown')}</strong>
+        </li>
+      </ul>
+      {(block?.warnings ?? []).length > 0 && (
+        <ul className="text-xs text-amber-700 dark:text-amber-300 list-disc ml-5" data-testid="ai-programming-warnings">
+          {(block?.warnings ?? []).slice(0, 3).map((w) => (
+            <li key={w}>{w}</li>
+          ))}
+        </ul>
+      )}
+      <div data-testid="ai-programming-top-attention" className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wide">
+          Top items needing attention
+        </h3>
+        {items.length === 0 ? (
+          <p className="text-xs text-gray-600 dark:text-slate-300">
+            No AI programming work items needing attention reported. (Status above
+            still applies; if status is UNKNOWN the artifact is missing.)
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {items.slice(0, 3).map((item) => (
+              <li
+                key={item.work_item_id ?? Math.random().toString(36)}
+                data-testid="ai-programming-top-attention-item"
+                className="border border-slate-200 dark:border-slate-700 rounded p-2 text-xs"
+              >
+                <div className="flex flex-wrap gap-2 items-baseline">
+                  <strong>{item.work_item_id ?? 'unknown'}</strong>
+                  <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600">
+                    {item.agent_type ?? 'unknown_ai_agent'}
+                  </span>
+                  {item.repo_mutating === true && (
+                    <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                      repo-mutating
+                    </span>
+                  )}
+                </div>
+                <p data-testid="ai-programming-item-aex">
+                  AEX: <strong>{presenceLabel(item.aex_admission_observation)}</strong>
+                </p>
+                <p data-testid="ai-programming-item-pqx">
+                  PQX: <strong>{presenceLabel(item.pqx_execution_observation)}</strong>
+                </p>
+                <p data-testid="ai-programming-item-evl">
+                  EVL: <strong>{presenceLabel(item.eval_observation)}</strong>
+                </p>
+                <p>
+                  bypass risk: <strong>{item.bypass_risk ?? 'unknown'}</strong>
+                </p>
+                {item.next_recommended_input && (
+                  <p className="mt-1 text-gray-700 dark:text-slate-300">
+                    <strong>Next recommended input:</strong> {item.next_recommended_input}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <p className="text-xs text-gray-500 dark:text-slate-400">
+        sources: {(block?.source_artifacts_used ?? []).slice(0, 3).join(', ') || 'unknown'}
+      </p>
     </section>
   );
 }
@@ -524,6 +732,8 @@ export default function DashboardPage() {
 
       {activeTab === 'overview' && (
         <div className="space-y-4" data-testid="overview-tab">
+          <AiProgrammingGovernedPathPanel block={intelligence?.ai_programming_governed_path} />
+
           <Panel title="A. Trust Pulse">
             {(() => {
               const human = humanTrustState(trustPulse.trust_state);
