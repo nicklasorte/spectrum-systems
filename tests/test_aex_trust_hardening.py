@@ -218,6 +218,41 @@ def test_sel_admission_signal_emits_consumable_observation() -> None:
     assert_admission_input_only_claim(obs)
 
 
+def test_admission_policy_observation_schema_requires_sel_consumer() -> None:
+    """The schema must fail-closed when SEL is missing from
+    consumer_systems, even if the helper assertion is not invoked.
+    Consumers that rely on validate_artifact() alone must not accept
+    observations that drop the AEX→SEL handoff invariant.
+    """
+    from copy import deepcopy
+    from jsonschema.exceptions import ValidationError
+    from spectrum_systems.contracts import load_example, validate_artifact
+
+    valid = load_example("admission_policy_observation")
+    validate_artifact(valid, "admission_policy_observation")  # baseline
+
+    # Drop SEL from consumer_systems → must fail closed
+    bad = deepcopy(valid)
+    bad["downstream_refs"]["consumer_systems"] = [
+        c for c in bad["downstream_refs"]["consumer_systems"] if c != "SEL"
+    ]
+    assert "SEL" not in bad["downstream_refs"]["consumer_systems"]
+    with pytest.raises(ValidationError):
+        validate_artifact(bad, "admission_policy_observation")
+
+    # Empty consumer_systems → must fail closed
+    bad2 = deepcopy(valid)
+    bad2["downstream_refs"]["consumer_systems"] = []
+    with pytest.raises(ValidationError):
+        validate_artifact(bad2, "admission_policy_observation")
+
+    # SEL present but as duplicate (uniqueItems) → must fail closed
+    bad3 = deepcopy(valid)
+    bad3["downstream_refs"]["consumer_systems"] = ["SEL", "SEL", "ENF"]
+    with pytest.raises(ValidationError):
+        validate_artifact(bad3, "admission_policy_observation")
+
+
 def test_sel_admission_signal_rejects_authority_claims() -> None:
     """Stripping any non-authority assertion must fail closed."""
     bundle = _admit()

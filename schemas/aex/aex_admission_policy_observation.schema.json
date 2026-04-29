@@ -99,6 +99,7 @@
         "consumer_systems": {
           "type": "array",
           "minItems": 1,
+          "uniqueItems": true,
           "items": {
             "type": "string",
             "enum": [
@@ -111,7 +112,9 @@
               "GOV",
               "OBS"
             ]
-          }
+          },
+          "contains": {"const": "SEL"},
+          "minContains": 1
         },
         "handoff_refs": {
           "type": "array",
