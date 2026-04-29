@@ -54,7 +54,8 @@ Source: `artifacts/dashboard_metrics/fold_candidate_proof_check_record.json`.
   dashboard).
 
 ## Constraints
-- No fold is executed in this PR.
-- MET never owns the fold action — execution belongs to PQX through a governed PR.
+- No fold is performed in this PR.
+- MET is non-owning. Any fold action belongs to canonical owners through a
+  governed PR.
 - No fold removes useful provenance. Source artifacts remain reachable until
   every flag is verified.
