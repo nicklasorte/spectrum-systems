@@ -2,7 +2,7 @@
   "artifact_type": "repair_retry_budget_result",
   "slice_id": "RL-09",
   "owner": "SEL",
-  "generated_at": "2026-04-29T19:22:38Z",
+  "generated_at": "2026-04-29T19:28:57Z",
   "budget": {
     "max_attempts": 3,
     "thrash_loop_detected": false

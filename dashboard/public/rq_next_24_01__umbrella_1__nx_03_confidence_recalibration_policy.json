@@ -1,7 +1,7 @@
 {
   "artifact_type": "confidence_recalibration_policy",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-29T19:23:02Z",
+  "generated_at": "2026-04-29T19:29:20Z",
   "observed_accuracy": 0.2,
   "average_stated_confidence": 0.73,
   "calibration_error": 0.53,
