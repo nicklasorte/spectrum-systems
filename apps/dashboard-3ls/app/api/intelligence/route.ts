@@ -62,7 +62,70 @@ const ARTIFACT_PATHS = {
     'artifacts/dashboard_metrics/operator_debuggability_drill_record.json',
   generatedArtifactPolicyHandoff:
     'artifacts/dashboard_metrics/generated_artifact_policy_handoff_record.json',
+  // AEX-PQX-DASH-02 — governance violation panel + core-loop compliance.
+  governanceViolation: 'artifacts/dashboard_metrics/governance_violation_record.json',
+  aiProgrammingGovernedPath:
+    'artifacts/dashboard_metrics/ai_programming_governed_path_record.json',
 };
+
+// AEX-PQX-DASH-02 — fixed core-loop legs the dashboard reports compliance over.
+const CORE_LOOP_LEGS = ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'] as const;
+type CoreLoopLeg = (typeof CORE_LOOP_LEGS)[number];
+type LegState = 'present' | 'partial' | 'missing' | 'unknown';
+
+interface GovernanceViolationEntry {
+  violation_id?: string;
+  work_item_id?: string;
+  agent_type?: 'codex' | 'claude' | 'unknown_ai_agent' | string;
+  violation_type?: string;
+  missing_leg?: string;
+  repo_mutating?: boolean | 'unknown';
+  source_artifacts_used?: string[];
+  why_it_matters?: string;
+  next_recommended_input?: string;
+}
+
+interface GovernanceViolationRecord {
+  artifact_type?: string;
+  schema_version?: string;
+  record_id?: string;
+  created_at?: string;
+  owner_system?: string;
+  data_source?: string;
+  status?: 'pass' | 'warn' | 'block' | 'unknown' | string;
+  violation_count?: number;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+  reason_codes?: string[];
+  failure_prevented?: string;
+  signal_improved?: string;
+  violations?: GovernanceViolationEntry[];
+}
+
+interface AIProgrammingGovernedPathRecord {
+  artifact_type?: string;
+  schema_version?: string;
+  record_id?: string;
+  created_at?: string;
+  owner_system?: string;
+  data_source?: string;
+  status?: 'pass' | 'warn' | 'block' | 'unknown' | string;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+  reason_codes?: string[];
+  failure_prevented?: string;
+  signal_improved?: string;
+  core_loop_compliance?: Partial<Record<CoreLoopLeg, LegState>>;
+  core_loop_complete?: boolean;
+  first_missing_leg?: string | null;
+  weakest_leg?: string | null;
+  compliance_score?: number;
+  total_legs?: number;
+  repo_mutating?: boolean | 'unknown';
+  missing_legs?: string[];
+  partial_legs?: string[];
+  next_recommended_input?: string | null;
+}
 
 interface BottleneckRecord {
   data_source?: string;
@@ -428,6 +491,14 @@ export async function GET() {
     policy_alignment_items?: Array<Record<string, unknown>>;
   }>(ARTIFACT_PATHS.generatedArtifactPolicyHandoff);
 
+  // AEX-PQX-DASH-02 — governance violation panel + AI programming governed path.
+  const governanceViolation = loadArtifact<GovernanceViolationRecord>(
+    ARTIFACT_PATHS.governanceViolation,
+  );
+  const aiProgrammingGovernedPath = loadArtifact<AIProgrammingGovernedPathRecord>(
+    ARTIFACT_PATHS.aiProgrammingGovernedPath,
+  );
+
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
     { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
@@ -476,6 +547,8 @@ export async function GET() {
     { path: ARTIFACT_PATHS.foldCandidateProofCheck, loaded: foldCandidateProofCheck !== null },
     { path: ARTIFACT_PATHS.operatorDebuggabilityDrill, loaded: operatorDebuggabilityDrill !== null },
     { path: ARTIFACT_PATHS.generatedArtifactPolicyHandoff, loaded: generatedArtifactPolicyHandoff !== null },
+    { path: ARTIFACT_PATHS.governanceViolation, loaded: governanceViolation !== null },
+    { path: ARTIFACT_PATHS.aiProgrammingGovernedPath, loaded: aiProgrammingGovernedPath !== null },
   ];
 
   const envelope = buildSourceEnvelope({
@@ -513,6 +586,8 @@ export async function GET() {
       ...(foldCandidateProofCheck?.warnings ?? []),
       ...(operatorDebuggabilityDrill?.warnings ?? []),
       ...(generatedArtifactPolicyHandoff?.warnings ?? []),
+      ...(governanceViolation?.warnings ?? []),
+      ...(aiProgrammingGovernedPath?.warnings ?? []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -1271,6 +1346,222 @@ export async function GET() {
     (failureFeedback ? feedbackItems.length : 'unknown');
   const feedbackLoopStatus = feedbackLoopSnapshot?.loop_status ?? 'unknown';
 
+  // AEX-PQX-DASH-02 — governance violations block. Fail-closed: missing
+  // artifact degrades to unknown rather than 0; warning explicitly names the
+  // missing file. MET observes only — no authority claim.
+  const filteredViolations = (governanceViolation?.violations ?? []).filter(
+    (v) =>
+      typeof v.violation_id === 'string' &&
+      typeof v.work_item_id === 'string' &&
+      typeof v.missing_leg === 'string' &&
+      typeof v.violation_type === 'string',
+  );
+  const declaredViolationCount = governanceViolation?.violation_count;
+  const observedViolationCount = filteredViolations.length;
+  const violationCountValue: number | 'unknown' = governanceViolation
+    ? typeof declaredViolationCount === 'number'
+      ? declaredViolationCount
+      : observedViolationCount
+    : 'unknown';
+  const governanceViolationStatus: 'pass' | 'warn' | 'block' | 'unknown' = governanceViolation
+    ? governanceViolation.status === 'block' ||
+      governanceViolation.status === 'warn' ||
+      governanceViolation.status === 'pass' ||
+      governanceViolation.status === 'unknown'
+      ? governanceViolation.status
+      : typeof violationCountValue === 'number' && violationCountValue > 0
+        ? 'block'
+        : 'pass'
+    : 'unknown';
+  const governanceViolationsBlock = governanceViolation
+    ? {
+        status: governanceViolationStatus,
+        violation_count: violationCountValue,
+        violations: filteredViolations,
+        reason_codes: governanceViolation.reason_codes ?? [],
+        failure_prevented: governanceViolation.failure_prevented ?? null,
+        signal_improved: governanceViolation.signal_improved ?? null,
+        data_source: governanceViolation.data_source ?? 'unknown',
+        source_artifacts_used: governanceViolation.source_artifacts_used ?? [],
+        warnings: governanceViolation.warnings ?? [],
+      }
+    : {
+        status: 'unknown' as const,
+        violation_count: 'unknown' as const,
+        violations: [] as GovernanceViolationEntry[],
+        reason_codes: ['governance_violation_record_missing'],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.governanceViolation} unavailable; violation_count reported as unknown rather than 0.`,
+        ],
+      };
+
+  // AEX-PQX-DASH-02 — core-loop compliance summary. Aggregates per-leg
+  // present/partial/missing/unknown for the AI programming governed path.
+  // BLOCK if AEX or PQX missing on a repo-mutating work item; BLOCK if any
+  // required leg missing on repo-mutating work; WARN on partial; UNKNOWN if
+  // insufficient evidence.
+  const compliance = aiProgrammingGovernedPath?.core_loop_compliance ?? {};
+  const legStates: Record<CoreLoopLeg, LegState> = {
+    AEX: (compliance.AEX as LegState) ?? 'unknown',
+    PQX: (compliance.PQX as LegState) ?? 'unknown',
+    EVL: (compliance.EVL as LegState) ?? 'unknown',
+    TPA: (compliance.TPA as LegState) ?? 'unknown',
+    CDE: (compliance.CDE as LegState) ?? 'unknown',
+    SEL: (compliance.SEL as LegState) ?? 'unknown',
+  };
+  const legArray: Array<{ leg: CoreLoopLeg; state: LegState }> = CORE_LOOP_LEGS.map(
+    (leg) => ({ leg, state: legStates[leg] }),
+  );
+  const presentLegs = legArray.filter((l) => l.state === 'present').map((l) => l.leg);
+  const partialLegs = legArray.filter((l) => l.state === 'partial').map((l) => l.leg);
+  const missingLegs = legArray.filter((l) => l.state === 'missing').map((l) => l.leg);
+  const unknownLegs = legArray.filter((l) => l.state === 'unknown').map((l) => l.leg);
+
+  const computedComplianceScore = presentLegs.length;
+  const declaredComplianceScore = aiProgrammingGovernedPath?.compliance_score;
+  const complianceScore: number | 'unknown' = aiProgrammingGovernedPath
+    ? typeof declaredComplianceScore === 'number'
+      ? declaredComplianceScore
+      : computedComplianceScore
+    : 'unknown';
+
+  const repoMutating: boolean | 'unknown' =
+    aiProgrammingGovernedPath?.repo_mutating ?? 'unknown';
+
+  const computedFirstMissingLeg = legArray.find((l) => l.state === 'missing')?.leg ?? null;
+  const declaredFirstMissingLeg = aiProgrammingGovernedPath?.first_missing_leg;
+  const firstMissingLeg: string | null = aiProgrammingGovernedPath
+    ? typeof declaredFirstMissingLeg === 'string'
+      ? declaredFirstMissingLeg
+      : computedFirstMissingLeg
+    : null;
+
+  const computedWeakestLeg =
+    legArray.find((l) => l.state === 'missing')?.leg ??
+    legArray.find((l) => l.state === 'partial')?.leg ??
+    legArray.find((l) => l.state === 'unknown')?.leg ??
+    null;
+  const declaredWeakestLeg = aiProgrammingGovernedPath?.weakest_leg;
+  const weakestLeg: string | null = aiProgrammingGovernedPath
+    ? typeof declaredWeakestLeg === 'string'
+      ? declaredWeakestLeg
+      : computedWeakestLeg
+    : null;
+
+  const requiredLegMissing = missingLegs.length > 0;
+  const aexOrPqxMissing = legStates.AEX === 'missing' || legStates.PQX === 'missing';
+  const allPresent = computedComplianceScore === CORE_LOOP_LEGS.length;
+  const anyPartial = partialLegs.length > 0;
+  const anyUnknown = unknownLegs.length > 0;
+  const declaredCoreLoopComplete = aiProgrammingGovernedPath?.core_loop_complete;
+  const coreLoopComplete: boolean | 'unknown' = aiProgrammingGovernedPath
+    ? typeof declaredCoreLoopComplete === 'boolean'
+      ? declaredCoreLoopComplete
+      : allPresent
+    : 'unknown';
+
+  let coreLoopStatus: 'pass' | 'warn' | 'block' | 'unknown';
+  if (!aiProgrammingGovernedPath) {
+    coreLoopStatus = 'unknown';
+  } else if (aexOrPqxMissing) {
+    coreLoopStatus = 'block';
+  } else if (requiredLegMissing && repoMutating === true) {
+    coreLoopStatus = 'block';
+  } else if (allPresent) {
+    coreLoopStatus = 'pass';
+  } else if (anyPartial) {
+    coreLoopStatus = 'warn';
+  } else if (anyUnknown) {
+    coreLoopStatus = 'unknown';
+  } else {
+    coreLoopStatus = 'warn';
+  }
+
+  // total / compliant / blocked work items: today this artifact reflects a
+  // single AI programming governed path. Counts are observed-not-inferred.
+  const totalWorkItems = aiProgrammingGovernedPath ? 1 : 'unknown';
+  const compliantWorkItems = aiProgrammingGovernedPath
+    ? coreLoopComplete === true
+      ? 1
+      : 0
+    : 'unknown';
+  const blockedWorkItems = aiProgrammingGovernedPath
+    ? coreLoopStatus === 'block'
+      ? 1
+      : 0
+    : 'unknown';
+
+  const missingByLeg: Record<CoreLoopLeg, number | 'unknown'> = aiProgrammingGovernedPath
+    ? {
+        AEX: legStates.AEX === 'missing' ? 1 : 0,
+        PQX: legStates.PQX === 'missing' ? 1 : 0,
+        EVL: legStates.EVL === 'missing' ? 1 : 0,
+        TPA: legStates.TPA === 'missing' ? 1 : 0,
+        CDE: legStates.CDE === 'missing' ? 1 : 0,
+        SEL: legStates.SEL === 'missing' ? 1 : 0,
+      }
+    : { AEX: 'unknown', PQX: 'unknown', EVL: 'unknown', TPA: 'unknown', CDE: 'unknown', SEL: 'unknown' };
+
+  const coreLoopComplianceSummaryBlock = aiProgrammingGovernedPath
+    ? {
+        status: coreLoopStatus,
+        core_loop_compliance: legStates,
+        core_loop_complete: coreLoopComplete,
+        compliance_score: complianceScore,
+        total_legs: aiProgrammingGovernedPath.total_legs ?? CORE_LOOP_LEGS.length,
+        first_missing_leg: firstMissingLeg,
+        weakest_leg: weakestLeg,
+        repo_mutating: repoMutating,
+        missing_legs: aiProgrammingGovernedPath.missing_legs ?? missingLegs,
+        partial_legs: aiProgrammingGovernedPath.partial_legs ?? partialLegs,
+        unknown_legs: unknownLegs,
+        violation_count: violationCountValue,
+        total_work_items: totalWorkItems,
+        compliant_work_items: compliantWorkItems,
+        blocked_work_items: blockedWorkItems,
+        weakest_leg_summary: weakestLeg,
+        missing_by_leg: missingByLeg,
+        next_recommended_input: aiProgrammingGovernedPath.next_recommended_input ?? null,
+        reason_codes: aiProgrammingGovernedPath.reason_codes ?? [],
+        failure_prevented: aiProgrammingGovernedPath.failure_prevented ?? null,
+        signal_improved: aiProgrammingGovernedPath.signal_improved ?? null,
+        data_source: aiProgrammingGovernedPath.data_source ?? 'unknown',
+        source_artifacts_used: aiProgrammingGovernedPath.source_artifacts_used ?? [],
+        warnings: aiProgrammingGovernedPath.warnings ?? [],
+      }
+    : {
+        status: 'unknown' as const,
+        core_loop_compliance: legStates,
+        core_loop_complete: 'unknown' as const,
+        compliance_score: 'unknown' as const,
+        total_legs: CORE_LOOP_LEGS.length,
+        first_missing_leg: null,
+        weakest_leg: null,
+        repo_mutating: 'unknown' as const,
+        missing_legs: [] as string[],
+        partial_legs: [] as string[],
+        unknown_legs: [...CORE_LOOP_LEGS] as string[],
+        violation_count: violationCountValue,
+        total_work_items: 'unknown' as const,
+        compliant_work_items: 'unknown' as const,
+        blocked_work_items: 'unknown' as const,
+        weakest_leg_summary: null,
+        missing_by_leg: missingByLeg,
+        next_recommended_input: null,
+        reason_codes: ['ai_programming_governed_path_record_missing'],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.aiProgrammingGovernedPath} unavailable; core-loop compliance reported as unknown rather than PASS.`,
+        ],
+      };
+
   return NextResponse.json({
     ...envelope,
     seed_artifacts_present: minimalLoop !== null,
@@ -1320,6 +1611,8 @@ export async function GET() {
     fold_candidate_proof_check: foldCandidateProofCheckBlock,
     operator_debuggability_drill: operatorDebuggabilityDrillBlock,
     generated_artifact_policy_handoff: generatedArtifactPolicyHandoffBlock,
+    governance_violations: governanceViolationsBlock,
+    core_loop_compliance_summary: coreLoopComplianceSummaryBlock,
     source_artifacts_used: Array.from(
       new Set([
         ...(envelope.source_artifacts_used ?? []),
@@ -1353,6 +1646,8 @@ export async function GET() {
         ...(foldCandidateProofCheck?.source_artifacts_used ?? []),
         ...(operatorDebuggabilityDrill?.source_artifacts_used ?? []),
         ...(generatedArtifactPolicyHandoff?.source_artifacts_used ?? []),
+        ...(governanceViolation?.source_artifacts_used ?? []),
+        ...(aiProgrammingGovernedPath?.source_artifacts_used ?? []),
       ])
     ),
     intelligence_summary: {

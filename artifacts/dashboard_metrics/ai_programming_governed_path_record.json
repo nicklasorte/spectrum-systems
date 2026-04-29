@@ -1,0 +1,44 @@
+{
+  "artifact_type": "ai_programming_governed_path_record",
+  "schema_version": "1.0.0",
+  "record_id": "APG-DASH-AEX-PQX-DASH-02-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "status": "block",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/lineage_record.json"
+  ],
+  "warnings": [
+    "MET emits observation only. CDE is the sole control authority; SEL is the sole enforcement authority.",
+    "Compliance per leg reflects whether an artifact-backed record was found, not whether the upstream owner has approved or enforced.",
+    "When evidence for a leg is absent, the leg is reported as 'missing' rather than 'unknown' if the underlying loop is repo-mutating; pure read-only flows that do not require the leg may report 'unknown'."
+  ],
+  "reason_codes": [
+    "core_loop_evidence_check",
+    "ai_programming_repo_mutation_observed",
+    "no_authority_claim_by_MET"
+  ],
+  "failure_prevented": "AI programming work being treated as governed even when one or more core-loop legs (AEX, PQX, EVL, TPA, CDE, SEL) lack artifact-backed evidence.",
+  "signal_improved": "Per-leg compliance signal (present | partial | missing | unknown) and a single compliance_score so the dashboard can render BLOCK when a repo-mutating leg is missing.",
+  "core_loop_compliance": {
+    "AEX": "missing",
+    "PQX": "missing",
+    "EVL": "partial",
+    "TPA": "missing",
+    "CDE": "partial",
+    "SEL": "partial"
+  },
+  "core_loop_complete": false,
+  "first_missing_leg": "AEX",
+  "weakest_leg": "AEX",
+  "compliance_score": 0,
+  "total_legs": 6,
+  "repo_mutating": true,
+  "missing_legs": ["AEX", "PQX", "TPA"],
+  "partial_legs": ["EVL", "CDE", "SEL"],
+  "next_recommended_input": "Emit AEX intake and PQX execution records for AEX-PQX-DASH-02 and forward to EVL and CDE for evaluation and adjudication; do not promote until core_loop_complete is true."
+}

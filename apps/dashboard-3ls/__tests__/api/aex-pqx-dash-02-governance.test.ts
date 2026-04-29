@@ -1,0 +1,254 @@
+import fs from 'fs';
+import path from 'path';
+
+const repoRoot = path.resolve(__dirname, '../../../../');
+const appRoot = path.resolve(__dirname, '../../');
+
+const intelligenceSrc = fs.readFileSync(
+  path.resolve(appRoot, 'app/api/intelligence/route.ts'),
+  'utf-8',
+);
+const pageSrc = fs.readFileSync(path.resolve(appRoot, 'app/page.tsx'), 'utf-8');
+
+const governanceViolation = JSON.parse(
+  fs.readFileSync(
+    path.resolve(repoRoot, 'artifacts/dashboard_metrics/governance_violation_record.json'),
+    'utf-8',
+  ),
+);
+const aiProgrammingGovernedPath = JSON.parse(
+  fs.readFileSync(
+    path.resolve(
+      repoRoot,
+      'artifacts/dashboard_metrics/ai_programming_governed_path_record.json',
+    ),
+    'utf-8',
+  ),
+);
+
+describe('AEX-PQX-DASH-02 — governance_violation_record.json', () => {
+  it('declares the required envelope fields', () => {
+    for (const field of [
+      'artifact_type',
+      'schema_version',
+      'record_id',
+      'created_at',
+      'owner_system',
+      'data_source',
+      'status',
+      'violation_count',
+      'source_artifacts_used',
+      'warnings',
+      'reason_codes',
+      'failure_prevented',
+      'signal_improved',
+      'violations',
+    ]) {
+      expect(governanceViolation).toHaveProperty(field);
+    }
+    expect(governanceViolation.owner_system).toBe('MET');
+    expect(governanceViolation.data_source).toBe('artifact_store');
+  });
+
+  it('every violation declares the required fields', () => {
+    expect(Array.isArray(governanceViolation.violations)).toBe(true);
+    expect(governanceViolation.violations.length).toBeGreaterThan(0);
+    for (const v of governanceViolation.violations) {
+      for (const field of [
+        'violation_id',
+        'work_item_id',
+        'agent_type',
+        'violation_type',
+        'missing_leg',
+        'repo_mutating',
+        'source_artifacts_used',
+        'why_it_matters',
+        'next_recommended_input',
+      ]) {
+        expect(v).toHaveProperty(field);
+      }
+      expect(['codex', 'claude', 'unknown_ai_agent']).toContain(v.agent_type);
+      expect([
+        'aex_missing',
+        'pqx_missing',
+        'evl_missing',
+        'tpa_missing',
+        'cde_missing',
+        'sel_missing',
+        'lineage_missing',
+      ]).toContain(v.violation_type);
+    }
+  });
+
+  it('violation_count is accurate (no hidden violations)', () => {
+    expect(governanceViolation.violation_count).toBe(
+      governanceViolation.violations.length,
+    );
+  });
+
+  it('violation entries make no authority claims', () => {
+    // MET observes only. Each violation must avoid claiming approve/enforce/
+    // certify/decide on its own. The artifact-level warning may explicitly
+    // disclaim these verbs (e.g. "does not enforce") — that disclaimer is
+    // intentional and named authority owners (CDE, SEL) may appear in
+    // descriptive text. The check therefore scans the violations array, not
+    // the disclaimer warnings.
+    const blob = JSON.stringify(governanceViolation.violations).toLowerCase();
+    for (const verb of [
+      'approve',
+      'approves',
+      'approved',
+      'approving',
+      'enforce ',
+      'enforces',
+      'enforced',
+      'enforcing',
+      'certify',
+      'certifies',
+      'certified',
+      'certifying',
+    ]) {
+      expect(blob).not.toContain(verb);
+    }
+  });
+});
+
+describe('AEX-PQX-DASH-02 — ai_programming_governed_path_record.json', () => {
+  it('declares core_loop_compliance with all six legs', () => {
+    expect(aiProgrammingGovernedPath).toHaveProperty('core_loop_compliance');
+    for (const leg of ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL']) {
+      expect(aiProgrammingGovernedPath.core_loop_compliance).toHaveProperty(leg);
+      expect(['present', 'partial', 'missing', 'unknown']).toContain(
+        aiProgrammingGovernedPath.core_loop_compliance[leg],
+      );
+    }
+  });
+
+  it('declares aggregate compliance fields', () => {
+    for (const field of [
+      'core_loop_complete',
+      'first_missing_leg',
+      'weakest_leg',
+      'compliance_score',
+    ]) {
+      expect(aiProgrammingGovernedPath).toHaveProperty(field);
+    }
+  });
+
+  it('compliance_score equals number of present legs', () => {
+    const present = Object.values(
+      aiProgrammingGovernedPath.core_loop_compliance,
+    ).filter((s) => s === 'present').length;
+    expect(aiProgrammingGovernedPath.compliance_score).toBe(present);
+  });
+
+  it('core_loop_complete is true only when score is 6/6', () => {
+    if (aiProgrammingGovernedPath.compliance_score === 6) {
+      expect(aiProgrammingGovernedPath.core_loop_complete).toBe(true);
+    } else {
+      expect(aiProgrammingGovernedPath.core_loop_complete).toBe(false);
+    }
+  });
+
+  it('AEX or PQX missing forces status block', () => {
+    const aex = aiProgrammingGovernedPath.core_loop_compliance.AEX;
+    const pqx = aiProgrammingGovernedPath.core_loop_compliance.PQX;
+    if (aex === 'missing' || pqx === 'missing') {
+      expect(aiProgrammingGovernedPath.status).toBe('block');
+    }
+  });
+});
+
+describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
+  it('loads the new artifacts and registers slots', () => {
+    expect(intelligenceSrc).toContain(
+      "governanceViolation: 'artifacts/dashboard_metrics/governance_violation_record.json'",
+    );
+    expect(intelligenceSrc).toContain(
+      "aiProgrammingGovernedPath:\n    'artifacts/dashboard_metrics/ai_programming_governed_path_record.json'",
+    );
+    expect(intelligenceSrc).toContain('loaded: governanceViolation !== null');
+    expect(intelligenceSrc).toContain('loaded: aiProgrammingGovernedPath !== null');
+  });
+
+  it('exposes governance_violations and core_loop_compliance_summary', () => {
+    expect(intelligenceSrc).toContain('governance_violations: governanceViolationsBlock');
+    expect(intelligenceSrc).toContain(
+      'core_loop_compliance_summary: coreLoopComplianceSummaryBlock',
+    );
+  });
+
+  it('degrades missing artifact to unknown rather than 0', () => {
+    expect(intelligenceSrc).toContain("violation_count: 'unknown' as const");
+    expect(intelligenceSrc).toContain("compliance_score: 'unknown' as const");
+    expect(intelligenceSrc).toContain('${ARTIFACT_PATHS.governanceViolation} unavailable');
+    expect(intelligenceSrc).toContain(
+      '${ARTIFACT_PATHS.aiProgrammingGovernedPath} unavailable',
+    );
+    // Defensive: never default the missing branch to a literal 0 count.
+    expect(intelligenceSrc).not.toContain('violation_count: 0,');
+    expect(intelligenceSrc).not.toContain('compliance_score: 0,');
+  });
+
+  it('forces BLOCK when AEX or PQX missing', () => {
+    expect(intelligenceSrc).toContain('aexOrPqxMissing');
+    expect(intelligenceSrc).toContain(
+      "legStates.AEX === 'missing' || legStates.PQX === 'missing'",
+    );
+    expect(intelligenceSrc).toContain(
+      "if (aexOrPqxMissing) {\n    coreLoopStatus = 'block';",
+    );
+  });
+
+  it('summary block exposes the required surface fields', () => {
+    const block = intelligenceSrc.slice(
+      intelligenceSrc.indexOf('const coreLoopComplianceSummaryBlock'),
+    );
+    for (const field of [
+      'status:',
+      'violation_count:',
+      'total_work_items:',
+      'compliant_work_items:',
+      'blocked_work_items:',
+      'weakest_leg:',
+      'missing_by_leg:',
+      'source_artifacts_used:',
+      'warnings:',
+    ]) {
+      expect(block).toContain(field);
+    }
+  });
+});
+
+describe('AEX-PQX-DASH-02 — dashboard panels', () => {
+  it('renders the top governance-violations panel', () => {
+    expect(pageSrc).toContain("data-testid=\"governance-violations-panel\"");
+    expect(pageSrc).toContain("data-testid=\"governance-violations-status\"");
+    expect(pageSrc).toContain("data-testid=\"governance-violations-count\"");
+    expect(pageSrc).toContain("data-testid=\"governance-violation-item\"");
+  });
+
+  it('forces BLOCK on the panel when violation_count > 0', () => {
+    expect(pageSrc).toContain(
+      "typeof violationCount === 'number' && violationCount > 0\n                ? 'block'",
+    );
+  });
+
+  it('renders the AI programming governance full-loop panel', () => {
+    expect(pageSrc).toContain('data-testid="ai-programming-governance-panel"');
+    expect(pageSrc).toContain('data-testid={`core-loop-leg-${leg}`}');
+    expect(pageSrc).toContain('CORE_LOOP_LEGS_DISPLAY');
+    // Every required leg label is present in the static legs list.
+    expect(pageSrc).toMatch(
+      /CORE_LOOP_LEGS_DISPLAY[^=]*=\s*\[[^\]]*'AEX'[^\]]*'PQX'[^\]]*'EVL'[^\]]*'TPA'[^\]]*'CDE'[^\]]*'SEL'[^\]]*\]/s,
+    );
+  });
+
+  it('always-visible top panel: rendered before the legacy A. Trust Pulse panel', () => {
+    const govIdx = pageSrc.indexOf('governance-violations-panel');
+    const trustPulseIdx = pageSrc.indexOf('A. Trust Pulse');
+    expect(govIdx).toBeGreaterThan(-1);
+    expect(trustPulseIdx).toBeGreaterThan(-1);
+    expect(govIdx).toBeLessThan(trustPulseIdx);
+  });
+});
