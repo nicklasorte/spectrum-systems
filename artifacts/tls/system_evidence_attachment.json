@@ -388,7 +388,6 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
-          "artifacts/policy-engine-summary.md",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_mvp_graph.json",
@@ -503,7 +502,7 @@
           "tests/test_context_selector.py"
         ]
       },
-      "evidence_count": 102,
+      "evidence_count": 101,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CTX"
@@ -1032,7 +1031,6 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
-          "artifacts/policy-engine-summary.md",
           "artifacts/rfx_super_01_delivery_report.json",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
@@ -1141,7 +1139,7 @@
           "tests/test_wpg_precedent.py"
         ]
       },
-      "evidence_count": 97,
+      "evidence_count": 96,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JDX"
@@ -1150,7 +1148,6 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
-          "artifacts/policy-engine-summary.md",
           "artifacts/rfx_super_01_delivery_report.json",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
@@ -1223,7 +1220,7 @@
           "tests/tls_dependency_graph/conftest.py"
         ]
       },
-      "evidence_count": 61,
+      "evidence_count": 60,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JSX"
@@ -2854,7 +2851,6 @@
           "artifacts/governed_kernel_24_01/registry_cross_check.json",
           "artifacts/governed_kernel_24_01/run_contract.json",
           "artifacts/ops_master_01/pre_pqx_contract_readiness_artifact.json",
-          "artifacts/policy-engine-summary.md",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/control_prep_readiness_record.CONTROL-05.json",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.CONTROL_PREP_LAYER.json",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.DRIFT_LAYER.json",
@@ -2862,7 +2858,8 @@
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.SLICE_IMPROVEMENT_LAYER.json",
           "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-01-artifact-trace.json",
           "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-02-artifact-trace.json",
-          "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json"
+          "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+          "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/adaptive_safety_record.ADAPT-02.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
