@@ -32,10 +32,15 @@ def _changed_files(base_ref: str, head_ref: str) -> list[str]:
             capture_output=True, text=True, cwd=REPO_ROOT, check=False,
         )
         if result.returncode != 0:
-            return []
+            raise RuntimeError(
+                f"git diff failed (exit {result.returncode}): "
+                f"{result.stderr.strip() or result.stdout.strip()}"
+            )
         return [f.strip() for f in result.stdout.splitlines() if f.strip()]
-    except Exception:
-        return []
+    except RuntimeError:
+        raise
+    except Exception as exc:
+        raise RuntimeError(f"git diff error: {exc}") from exc
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -48,7 +53,12 @@ def main(argv: list[str] | None = None) -> int:
 
     trace_id = args.trace_id or str(uuid.uuid4())
 
-    changed = _changed_files(args.base_ref, args.head_ref)
+    try:
+        changed = _changed_files(args.base_ref, args.head_ref)
+    except RuntimeError as exc:
+        print(json.dumps({"error": str(exc), "status": "error", "trace_id": trace_id}))
+        return 2
+
     if not changed:
         print(json.dumps({"status": "pass", "message": "no changed files in scope", "trace_id": trace_id}))
         return 0

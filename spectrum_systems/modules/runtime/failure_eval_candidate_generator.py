@@ -187,9 +187,6 @@ def generate_eval_candidate_registry(
         "emitted_at": _now(),
     }
 
-    if skipped:
-        registry["_skipped"] = skipped
-
     return registry
 
 
