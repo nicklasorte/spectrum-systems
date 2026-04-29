@@ -107,6 +107,13 @@
         "tests/test_contract_preflight.py",
         "tests/test_run_github_pr_autofix_contract_preflight.py"
       ]
+    },
+    {
+      "required_target": "tests/test_contracts.py",
+      "equivalent_targets": [
+        "tests/test_contracts.py",
+        "tests/hop/test_schemas.py"
+      ]
     }
   ],
   "allowed_exceptions": []
