@@ -447,7 +447,7 @@ def _build_proposal(
         "expected_prevention": spec.expected_prevention,
         "required_eval": required_eval,
         "required_tests": required_tests,
-        "authority_boundary": dict(_AUTHORITY_BOUNDARY),
+        "authority_boundary": {k: list(v) if isinstance(v, list) else v for k, v in _AUTHORITY_BOUNDARY.items()},
         "advisory_only": True,
         "status": "proposed",
         "generated_at": _utcnow(),
@@ -536,3 +536,11 @@ def validate_proposal_authority_boundary(proposal: dict[str, Any]) -> None:
             raise AIFailureMapperError(
                 f"hop_ai_failure_mapper:proposal_forbidden_authority_key:{forbidden_key}"
             )
+    if set(boundary.get("review_owners") or []) != {"CDE", "GOV"}:
+        raise AIFailureMapperError("hop_ai_failure_mapper:proposal_invalid_review_owners")
+    if boundary.get("execution_owner") != "PQX":
+        raise AIFailureMapperError("hop_ai_failure_mapper:proposal_invalid_execution_owner")
+    if boundary.get("validation_owner") != "EVL":
+        raise AIFailureMapperError("hop_ai_failure_mapper:proposal_invalid_validation_owner")
+    if boundary.get("enforcement_signal_owner") != "SEL":
+        raise AIFailureMapperError("hop_ai_failure_mapper:proposal_invalid_enforcement_signal_owner")
