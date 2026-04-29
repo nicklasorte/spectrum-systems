@@ -406,3 +406,71 @@ def test_observability_artifacts_can_be_written_under_artifacts_aex(tmp_path: Pa
     evidence = json.loads(paths["evidence"].read_text(encoding="utf-8"))
     validate_artifact(trace, "admission_trace_record")
     validate_artifact(evidence, "admission_evidence_record")
+
+
+def test_observability_emitter_does_not_overwrite_distinct_admissions(tmp_path: Path) -> None:
+    """Writing two distinct admissions to the same out_dir must not collide.
+
+    Each request has its own deterministic trace_record_id / evidence_id, so
+    the emitter must keep both records. If filenames were fixed (the prior
+    behavior), the second write would overwrite the first and silently drop
+    per-request lineage.
+    """
+    out_dir = tmp_path / "aex"
+    common_kwargs = dict(
+        admission_outcome="admitted",
+        downstream_refs=["PQX", "SEL", "OBS", "REP", "LIN"],
+        input_hash="sha256:" + "0" * 64,
+        output_hash="sha256:" + "1" * 64,
+        replay_command_ref="scripts/replay_aex_admission.py --fixture x",
+        out_dir=out_dir,
+    )
+    paths_a = write_admission_observability_artifacts(
+        request_id="req-a",
+        trace_id="trace-a",
+        admission_artifact_ref="build_admission_record:adm-a",
+        normalized_execution_request_ref="normalized_execution_request:req-a",
+        source_request_ref="codex_build_request:req-a",
+        **common_kwargs,
+    )
+    paths_b = write_admission_observability_artifacts(
+        request_id="req-b",
+        trace_id="trace-b",
+        admission_artifact_ref="build_admission_record:adm-b",
+        normalized_execution_request_ref="normalized_execution_request:req-b",
+        source_request_ref="codex_build_request:req-b",
+        **common_kwargs,
+    )
+    assert paths_a["trace"] != paths_b["trace"]
+    assert paths_a["evidence"] != paths_b["evidence"]
+    for p in (paths_a["trace"], paths_a["evidence"], paths_b["trace"], paths_b["evidence"]):
+        assert p.is_file()
+    rec_a = json.loads(paths_a["trace"].read_text(encoding="utf-8"))
+    rec_b = json.loads(paths_b["trace"].read_text(encoding="utf-8"))
+    assert rec_a["request_id"] == "req-a"
+    assert rec_b["request_id"] == "req-b"
+
+
+def test_observability_emitter_replay_for_same_admission_overwrites_idempotently(tmp_path: Path) -> None:
+    """The same (request_id, trace_id) yields the same trace_record_id /
+    evidence_id, so re-emitting is idempotent: the same path is rewritten
+    with identical content. This is intended replay behavior.
+    """
+    out_dir = tmp_path / "aex"
+    kwargs = dict(
+        admission_outcome="admitted",
+        request_id="req-x",
+        trace_id="trace-x",
+        admission_artifact_ref="build_admission_record:adm-x",
+        normalized_execution_request_ref="normalized_execution_request:req-x",
+        source_request_ref="codex_build_request:req-x",
+        downstream_refs=["PQX", "SEL", "OBS", "REP", "LIN"],
+        input_hash="sha256:" + "0" * 64,
+        output_hash="sha256:" + "1" * 64,
+        replay_command_ref="scripts/replay_aex_admission.py --fixture x",
+        out_dir=out_dir,
+    )
+    first = write_admission_observability_artifacts(**kwargs)
+    second = write_admission_observability_artifacts(**kwargs)
+    assert first["trace"] == second["trace"]
+    assert first["evidence"] == second["evidence"]

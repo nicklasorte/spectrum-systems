@@ -153,30 +153,43 @@ def detect_authority_shapes(path: Path, registry: dict[str, Any]) -> list[dict[s
 
         assertions = obj.get("non_authority_assertions")
         if isinstance(assertions, list):
+            # Substantive governed artifacts declare ``producer_authority``
+            # and have a canonical ``artifact_type``. The preparatory_only
+            # rule was designed for un-owned placeholder artifacts that
+            # drift toward authority shape; it must not fire on substantive
+            # artifacts that legitimately enumerate what they do NOT own.
+            # The forbidden-fields / forbidden-values check below still
+            # fires for both kinds — it catches authority semantics
+            # regardless of whether the carrier is preparatory.
+            is_substantive_governed_artifact = (
+                isinstance(obj.get("producer_authority"), str)
+                and str(obj.get("producer_authority")).strip() != ""
+            )
             assertion_set = {str(item).strip().lower() for item in assertions}
-            if required_assertions and not required_assertions.issubset(assertion_set):
-                violations.append(
-                    {
-                        "rule": "preparatory_assertions_missing",
-                        "path": rel_path,
-                        "object_index": index,
-                        "expected": sorted(required_assertions),
-                        "actual": sorted(assertion_set),
-                        "message": "preparatory artifact missing required non_authority_assertions",
-                    }
-                )
-            undeclared_fields = sorted(key for key in keys if key not in allowed_preparatory_fields)
-            if undeclared_fields:
-                violations.append(
-                    {
-                        "rule": "preparatory_fields_not_allowlisted",
-                        "path": rel_path,
-                        "object_index": index,
-                        "allowed_fields": sorted(allowed_preparatory_fields),
-                        "undeclared_fields": undeclared_fields,
-                        "message": "preparatory-only artifact contains fields outside preparatory_only.allowed_fields",
-                    }
-                )
+            if not is_substantive_governed_artifact:
+                if required_assertions and not required_assertions.issubset(assertion_set):
+                    violations.append(
+                        {
+                            "rule": "preparatory_assertions_missing",
+                            "path": rel_path,
+                            "object_index": index,
+                            "expected": sorted(required_assertions),
+                            "actual": sorted(assertion_set),
+                            "message": "preparatory artifact missing required non_authority_assertions",
+                        }
+                    )
+                undeclared_fields = sorted(key for key in keys if key not in allowed_preparatory_fields)
+                if undeclared_fields:
+                    violations.append(
+                        {
+                            "rule": "preparatory_fields_not_allowlisted",
+                            "path": rel_path,
+                            "object_index": index,
+                            "allowed_fields": sorted(allowed_preparatory_fields),
+                            "undeclared_fields": undeclared_fields,
+                            "message": "preparatory-only artifact contains fields outside preparatory_only.allowed_fields",
+                        }
+                    )
 
             forbidden_found = sorted(
                 key for key in keys if key in set(FORBIDDEN_FIELDS)

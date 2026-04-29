@@ -209,8 +209,26 @@ def write_admission_observability_artifacts(
         created_at=started,
     )
     out_dir.mkdir(parents=True, exist_ok=True)
-    trace_path = out_dir / "aex_admission_trace_record.json"
-    evidence_path = out_dir / "aex_admission_evidence_record.json"
+    # Per-record unique filenames keyed on the trace_record_id / evidence_id
+    # so concurrent admissions in the same out_dir do not overwrite earlier
+    # records. The IDs are deterministic over (request_id, trace_id) so a
+    # replay of the same admission rewrites the same file by design.
+    trace_path = out_dir / f"aex_admission_trace_record_{trace['trace_record_id']}.json"
+    evidence_path = out_dir / f"aex_admission_evidence_record_{evidence['evidence_id']}.json"
+    if trace_path.exists():
+        existing = json.loads(trace_path.read_text(encoding="utf-8"))
+        if existing.get("trace_record_id") != trace["trace_record_id"]:
+            raise ValueError(
+                f"trace_record_id collision at {trace_path}: refusing to overwrite "
+                "a different admission record. Use a per-call out_dir to isolate."
+            )
+    if evidence_path.exists():
+        existing = json.loads(evidence_path.read_text(encoding="utf-8"))
+        if existing.get("evidence_id") != evidence["evidence_id"]:
+            raise ValueError(
+                f"evidence_id collision at {evidence_path}: refusing to overwrite "
+                "a different admission record. Use a per-call out_dir to isolate."
+            )
     trace_path.write_text(json.dumps(trace, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return {"trace": trace_path, "evidence": evidence_path}

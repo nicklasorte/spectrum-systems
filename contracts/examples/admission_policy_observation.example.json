@@ -41,5 +41,12 @@
   },
   "policy_refs": [
     "policy_registry_record:aex_admission_policy_v1"
+  ],
+  "non_authority_assertions": [
+    "aex_emits_enforcement_input_only",
+    "aex_emits_promotion_input_only",
+    "aex_emits_certification_input_only",
+    "aex_emits_control_input_only",
+    "aex_emits_readiness_observation_only"
   ]
 }

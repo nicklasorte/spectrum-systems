@@ -22,7 +22,8 @@
     "downstream_refs",
     "evidence_refs",
     "replay_refs",
-    "policy_refs"
+    "policy_refs",
+    "non_authority_assertions"
   ],
   "properties": {
     "artifact_type": {
