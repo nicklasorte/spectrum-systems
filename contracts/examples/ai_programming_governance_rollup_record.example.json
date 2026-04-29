@@ -18,12 +18,12 @@
   "bypass_risk_count": 0,
   "unknown_path_count": 0,
   "per_leg_counts": {
-    "AEX": {"present": 1, "partial": 0, "missing": 0, "unknown": 0},
-    "PQX": {"present": 1, "partial": 0, "missing": 0, "unknown": 0},
-    "EVL": {"present": 1, "partial": 0, "missing": 0, "unknown": 0},
-    "TPA": {"present": 1, "partial": 0, "missing": 0, "unknown": 0},
-    "CDE": {"present": 1, "partial": 0, "missing": 0, "unknown": 0},
-    "SEL": {"present": 1, "partial": 0, "missing": 0, "unknown": 0}
+    "AEX": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "PQX": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "EVL": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "TPA": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "CDE": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "SEL": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0}
   },
   "score": 1.0,
   "total_required_legs": 6,

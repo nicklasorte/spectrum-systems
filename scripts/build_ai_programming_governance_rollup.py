@@ -39,7 +39,11 @@ VALID_COMPLIANCE = {"PASS", "WARN", "BLOCK"}
 def _leg_status(legs: dict, leg: str) -> str:
     leg_data = legs.get(leg, {})
     s = leg_data.get("status", "unknown")
-    return s if s in VALID_STATUSES else "unknown"
+    if s not in VALID_STATUSES:
+        return "unknown"
+    if s == "present" and not leg_data.get("artifact_refs"):
+        return "missing"
+    return s
 
 
 def _is_present(status: str) -> bool:

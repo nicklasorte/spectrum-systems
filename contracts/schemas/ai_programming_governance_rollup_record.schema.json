@@ -112,12 +112,13 @@
     "leg_counts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["present", "partial", "missing", "unknown"],
+      "required": ["present", "partial", "missing", "unknown", "not_required"],
       "properties": {
         "present": {"type": "integer", "minimum": 0},
         "partial": {"type": "integer", "minimum": 0},
         "missing": {"type": "integer", "minimum": 0},
-        "unknown": {"type": "integer", "minimum": 0}
+        "unknown": {"type": "integer", "minimum": 0},
+        "not_required": {"type": "integer", "minimum": 0}
       }
     }
   }
