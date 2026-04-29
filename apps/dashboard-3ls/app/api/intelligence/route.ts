@@ -1395,7 +1395,8 @@ export async function GET() {
   // AEX-PQX-DASH-02 — governance violations block. Fail-closed: missing
   // artifact degrades to unknown rather than 0; warning explicitly names the
   // missing file. MET observes only — no authority claim.
-  const rawViolations = Array.isArray(governanceViolation?.violations)
+  const violationsFieldPresent = Array.isArray(governanceViolation?.violations);
+  const rawViolations = violationsFieldPresent
     ? governanceViolation!.violations!
     : [];
   const filteredViolations = rawViolations.filter(
@@ -1407,6 +1408,7 @@ export async function GET() {
   );
   const malformedViolationCount = rawViolations.length - filteredViolations.length;
   const declaredViolationCount = governanceViolation?.violation_count;
+  const declaredViolationCountIsNumber = typeof declaredViolationCount === 'number';
   // Fail-closed against data-shape drift: count BOTH well-formed and malformed
   // rows. A malformed violation entry is still concrete evidence of a
   // violation; dropping it from the count would let a stale
@@ -1416,11 +1418,16 @@ export async function GET() {
   // declared 0 with non-empty violations[]) must NOT cause the panel to fall
   // through to PASS. Use max(declared, observed_raw) so any concrete violation
   // entry surfaces as BLOCK regardless of the declared scalar OR row shape.
-  const violationCountValue: number | 'unknown' = governanceViolation
-    ? typeof declaredViolationCount === 'number'
-      ? Math.max(declaredViolationCount, rawViolationsTotal)
-      : rawViolationsTotal
-    : 'unknown';
+  // If BOTH violation_count and violations are absent (partial write / schema
+  // drift), surface 'unknown' rather than 0 so the panel cannot be silently
+  // promoted to PASS by missing governance evidence.
+  const violationCountValue: number | 'unknown' = !governanceViolation
+    ? 'unknown'
+    : declaredViolationCountIsNumber
+      ? Math.max(declaredViolationCount as number, rawViolationsTotal)
+      : violationsFieldPresent
+        ? rawViolationsTotal
+        : 'unknown';
   // Fail-closed: violation_count > 0 forces BLOCK regardless of the declared
   // status. A stale `status: 'pass'` with non-empty violations cannot
   // downgrade the panel.
@@ -1583,12 +1590,14 @@ export async function GET() {
 
   // Work-item counts: derive from `governedPathSummary` (main's
   // computeGovernedPathSummary) which already counts items from
-  // ai_programming_work_items[]. Three cases, all fail-closed:
+  // ai_programming_work_items[]. Four cases, all fail-closed:
   //   1. Artifact missing — `'unknown'`.
-  //   2. Artifact present, work_items[] empty — `0` (NOT 1: a phantom
-  //      work item would mislead governance summaries; "no observed
-  //      items" is a real, distinct state).
-  //   3. Artifact present with N items — N (and N-derived counts).
+  //   2. Artifact present, work_items[] FIELD ABSENT — `'unknown'` (missing
+  //      evidence is not the same as observed-zero; surface the data-quality
+  //      signal so downstream consumers don't read it as a clean zero).
+  //   3. Artifact present, work_items[] empty array — `0` (no observed
+  //      items, a real, distinct state).
+  //   4. Artifact present with N items — N.
   const rawWorkItems = Array.isArray(aiProgrammingGovernedPath?.ai_programming_work_items)
     ? aiProgrammingGovernedPath!.ai_programming_work_items!
     : null;
@@ -1596,21 +1605,25 @@ export async function GET() {
     ? 'unknown'
     : rawWorkItems !== null
       ? rawWorkItems.length
-      : governedPathSummary.total_ai_programming_work_items ?? 'unknown';
+      : 'unknown';
   const compliantWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
     ? 'unknown'
-    : rawWorkItems !== null && rawWorkItems.length === 0
-      ? 0
-      : typeof governedPathSummary.governed_work_count === 'number'
-        ? governedPathSummary.governed_work_count
-        : 'unknown';
+    : rawWorkItems === null
+      ? 'unknown'
+      : rawWorkItems.length === 0
+        ? 0
+        : typeof governedPathSummary.governed_work_count === 'number'
+          ? governedPathSummary.governed_work_count
+          : 'unknown';
   const blockedWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
     ? 'unknown'
-    : rawWorkItems !== null && rawWorkItems.length === 0
-      ? 0
-      : typeof governedPathSummary.bypass_risk_count === 'number'
-        ? governedPathSummary.bypass_risk_count
-        : 'unknown';
+    : rawWorkItems === null
+      ? 'unknown'
+      : rawWorkItems.length === 0
+        ? 0
+        : typeof governedPathSummary.bypass_risk_count === 'number'
+          ? governedPathSummary.bypass_risk_count
+          : 'unknown';
 
   // missing_by_leg: aggregate single-row indicator over the artifact's
   // declared `core_loop_compliance` map (1 when leg is missing in

@@ -210,7 +210,7 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
     // subset) so malformed-row drift cannot fall through to PASS — that
     // behavior is pinned by the dedicated raw-vs-filtered test below.
     expect(intelligenceSrc).toMatch(
-      /Math\.max\(declaredViolationCount,\s*(rawViolationsTotal|observedViolationCount)\)/,
+      /Math\.max\(\s*declaredViolationCount(?:\s+as number)?,\s*(rawViolationsTotal|observedViolationCount)\s*\)/,
     );
   });
 
@@ -277,10 +277,11 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
   it('fail-closed: empty ai_programming_work_items[] reports 0, not 1', () => {
     // Codex P2 — when the artifact is present but the per-item array is
     // empty, counts must be 0 (no observed items). Falling through to a
-    // hard-coded 1 would create a phantom work item.
-    expect(intelligenceSrc).toContain('rawWorkItems !== null && rawWorkItems.length === 0');
+    // hard-coded 1 would create a phantom work item. The follow-up Codex
+    // P2 (line 1599) further requires "field absent" to surface 'unknown',
+    // not 0 — pinned in a dedicated test below.
     expect(intelligenceSrc).toMatch(
-      /rawWorkItems !== null && rawWorkItems\.length === 0\s*\?\s*0/,
+      /rawWorkItems\.length === 0\s*\?\s*0/,
     );
   });
 
@@ -291,8 +292,8 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
     // through to PASS.
     expect(intelligenceSrc).toContain('rawViolations');
     expect(intelligenceSrc).toContain('rawViolationsTotal');
-    expect(intelligenceSrc).toContain(
-      'Math.max(declaredViolationCount, rawViolationsTotal)',
+    expect(intelligenceSrc).toMatch(
+      /Math\.max\(\s*declaredViolationCount(?:\s+as number)?,\s*rawViolationsTotal\s*\)/,
     );
     // Surface a warning when malformed rows are dropped from rendering, so
     // the data-shape drift never disappears silently.
@@ -316,6 +317,40 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
     // (`repoMutating === false`).
     expect(intelligenceSrc).toContain('requiredLegMissing && repoMutating !== false');
     expect(intelligenceSrc).not.toContain('requiredLegMissing && repoMutating === true');
+  });
+
+  it('fail-closed: missing both violation_count and violations[] surfaces unknown', () => {
+    // Partial-write / schema-drift: artifact present but neither
+    // `violation_count` nor `violations` field exists. Must NOT degrade to
+    // 0 (which could promote to PASS with status: 'pass'). Surface
+    // 'unknown' instead so the data-quality signal is preserved.
+    expect(intelligenceSrc).toContain('violationsFieldPresent');
+    expect(intelligenceSrc).toContain('declaredViolationCountIsNumber');
+    // The fallback path (neither count nor array): falls through to 'unknown'.
+    expect(intelligenceSrc).toMatch(
+      /violationsFieldPresent\s*\?\s*rawViolationsTotal\s*:\s*'unknown'/,
+    );
+  });
+
+  it('fail-closed: missing ai_programming_work_items field reports unknown, not 0', () => {
+    // Distinguish "field absent" (missing evidence → 'unknown') from
+    // "array present but empty" (observed-zero → 0). Must not fall back
+    // to governedPathSummary which treats missing arrays as empty.
+    const block = intelligenceSrc.slice(
+      intelligenceSrc.indexOf('const totalWorkItems'),
+      intelligenceSrc.indexOf('const blockedWorkItems') + 600,
+    );
+    // totalWorkItems: rawWorkItems !== null ? length : 'unknown' (NOT
+    // governedPathSummary.total_ai_programming_work_items).
+    expect(block).toMatch(
+      /rawWorkItems !== null\s*\?\s*rawWorkItems\.length\s*:\s*'unknown'/,
+    );
+    // compliant/blocked: rawWorkItems === null → 'unknown'.
+    expect(block).toContain("rawWorkItems === null");
+    // Defensive: the previous fallback to governedPathSummary.total_... is gone.
+    expect(intelligenceSrc).not.toContain(
+      "governedPathSummary.total_ai_programming_work_items ?? 'unknown'",
+    );
   });
 
   it('summary block exposes the required surface fields', () => {
