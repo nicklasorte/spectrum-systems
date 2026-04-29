@@ -364,7 +364,7 @@ they feed OBS / LIN / REP / SLO.
 - **Authority:** NONE
 - **Forbidden:** decision ownership, approval ownership, enforcement ownership, certification ownership, promotion ownership, execution ownership, admission ownership.
 - **Invariant:** if MET produces an authority outcome, block. MET artifacts surface observations, recommendations, signals, and readiness evidence only.
-- **Canonical Artifacts Owned (non-authority):** `dashboard_metrics/*` measurement, observation, and signal records (e.g. `candidate_closure_ledger_record`, `outcome_attribution_record`, `recommendation_accuracy_record`, `signal_integrity_check_record`).
+- **Canonical Artifacts Owned:** non-authority `dashboard_metrics/*` measurement, observation, and signal records (e.g. `candidate_closure_ledger_record`, `outcome_attribution_record`, `recommendation_accuracy_record`, `signal_integrity_check_record`).
 - **Upstream Dependencies:** EVL, LIN, REP, OBS, SLO, TPA, CDE, SEL artifacts.
 - **Downstream Consumers:** AEX, PQX, EVL, TPA, CDE, SEL, GOV, dashboard-3ls.
 - **Primary Code Paths:**
