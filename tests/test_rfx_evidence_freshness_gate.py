@@ -78,3 +78,22 @@ def test_freshness_rate_all_fresh():
 def test_artifact_type():
     result = check_rfx_evidence_freshness(evidence_records=[_rec()], reference_time_seconds=_REF_TIME)
     assert result["artifact_type"] == "rfx_evidence_freshness_gate_result"
+
+
+def test_non_dict_record_does_not_raise():
+    # P1 fix: a non-dict row must emit rfx_freshness_malformed_record, not AttributeError.
+    result = check_rfx_evidence_freshness(
+        evidence_records=["not-a-dict"],
+        reference_time_seconds=_REF_TIME,
+    )
+    assert "rfx_freshness_malformed_record" in result["reason_codes_emitted"]
+    assert result["status"] == "stale"
+
+
+def test_mixed_records_malformed_skipped():
+    result = check_rfx_evidence_freshness(
+        evidence_records=[_rec(), "bad"],
+        reference_time_seconds=_REF_TIME,
+    )
+    assert "rfx_freshness_malformed_record" in result["reason_codes_emitted"]
+    assert result["signals"]["fresh_count"] == 1

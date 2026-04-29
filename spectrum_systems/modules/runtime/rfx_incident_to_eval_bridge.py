@@ -71,11 +71,11 @@ def build_rfx_incident_to_eval_bridge(
 
     skip_with_rationale = 0
     for inc in incidents:
-        incident_id = (inc.get("incident_id") or inc.get("id") or "").strip()
+        incident_id = str(inc.get("incident_id") or inc.get("id") or "").strip()
         if not incident_id:
             reason.append("rfx_bridge_missing_incident_id")
 
-        classification = (inc.get("classification") or inc.get("category") or "").strip()
+        classification = str(inc.get("classification") or inc.get("category") or "").strip()
         if not classification:
             reason.append("rfx_bridge_missing_classification")
 

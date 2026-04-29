@@ -75,7 +75,7 @@ def validate_rfx_operator_surface(
         if not rec.get("status"):
             reason.append("rfx_operator_surface_missing_status")
             rec_ok = False
-        if "reason_codes_emitted" not in rec:
+        if not isinstance(rec.get("reason_codes_emitted"), list):
             reason.append("rfx_operator_surface_missing_reason")
             rec_ok = False
         if not rec.get("proof_ref"):

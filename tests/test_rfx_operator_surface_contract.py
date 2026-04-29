@@ -74,3 +74,19 @@ def test_signals_valid_count():
 def test_artifact_type():
     result = validate_rfx_operator_surface(records=[_compact()])
     assert result["artifact_type"] == "rfx_operator_surface_contract_result"
+
+
+def test_reason_codes_none_flagged():
+    # P2 fix: reason_codes_emitted=None must fail — key presence alone is not enough.
+    # Build the record directly to bypass the _compact helper's None→[] coercion.
+    result = validate_rfx_operator_surface(
+        records=[{"status": "ready", "reason_codes_emitted": None, "proof_ref": "p-1"}]
+    )
+    assert "rfx_operator_surface_missing_reason" in result["reason_codes_emitted"]
+
+
+def test_reason_codes_string_flagged():
+    result = validate_rfx_operator_surface(
+        records=[{"status": "ready", "reason_codes_emitted": "not-a-list", "proof_ref": "p-1"}]
+    )
+    assert "rfx_operator_surface_missing_reason" in result["reason_codes_emitted"]

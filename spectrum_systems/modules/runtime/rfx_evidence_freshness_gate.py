@@ -20,6 +20,7 @@ Reason codes:
   rfx_freshness_stale              — evidence record is older than the max age
   rfx_freshness_empty_inputs       — no evidence records supplied
   rfx_freshness_invalid_max_age    — max_age_seconds is missing or non-positive
+  rfx_freshness_malformed_record   — evidence record is not a dict
 """
 
 from __future__ import annotations
@@ -53,6 +54,9 @@ def check_rfx_evidence_freshness(
 
     fresh_count = 0
     for rec in evidence_records:
+        if not isinstance(rec, dict):
+            reason.append("rfx_freshness_malformed_record")
+            continue
         rec_id = rec.get("id") or rec.get("evidence_id") or rec.get("artifact_type") or "unknown"
         ts = rec.get("timestamp_seconds")
         if ts is None:
