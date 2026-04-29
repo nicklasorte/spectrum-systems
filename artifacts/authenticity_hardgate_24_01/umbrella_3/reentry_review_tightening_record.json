@@ -2,7 +2,7 @@
   "artifact_type": "reentry_review_tightening_record",
   "slice_id": "AH-17",
   "owner": "RQX",
-  "generated_at": "2026-04-28T13:24:53Z",
+  "generated_at": "2026-04-29T13:37:49Z",
   "review_loop_verification_only": true,
   "tightened_when_authenticity_or_replay_evidence_weak": true
 }
