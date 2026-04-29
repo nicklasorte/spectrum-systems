@@ -186,6 +186,8 @@ def generate_eval_candidate_registry(
         "run_id": run_id,
         "entries": entries,
         "total_entries": len(entries),
+        "skipped_entries": skipped,
+        "skipped_count": len(skipped),
         "emitted_at": _now(),
     }
 
