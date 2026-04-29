@@ -847,6 +847,41 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("required_check_alignment_audit_result")
         validate_artifact(instance, "required_check_alignment_audit_result")
 
+    def test_hop_harness_ai_failure_pattern_validates(self) -> None:
+        from spectrum_systems.modules.hop.ai_failure_mapper import build_ai_failure_pattern
+        from spectrum_systems.modules.hop.schemas import validate_hop_artifact
+        pattern = build_ai_failure_pattern(
+            failure_pattern_id="fp_smoke_stream_idle_timeout",
+            failure_type="stream_idle_timeout",
+            agent_or_provider="claude-sonnet-4-6",
+            prompt_pattern="broad_open_ended_task",
+            affected_stage="execution",
+            recurrence_count=1,
+            severity="high",
+            observed_symptoms=["agent stalled"],
+            recommended_preventions=["set explicit budget"],
+            source_refs=["tests/test_contracts.py"],
+        )
+        validate_hop_artifact(pattern, "hop_harness_ai_failure_pattern")
+
+    def test_hop_harness_system_improvement_proposal_validates(self) -> None:
+        from spectrum_systems.modules.hop.ai_failure_mapper import build_ai_failure_pattern, map_failure_to_proposals
+        from spectrum_systems.modules.hop.schemas import validate_hop_artifact
+        pattern = build_ai_failure_pattern(
+            failure_pattern_id="fp_smoke_missing_checkpoint",
+            failure_type="missing_checkpoint",
+            agent_or_provider="claude-sonnet-4-6",
+            prompt_pattern="broad_open_ended_task",
+            affected_stage="execution",
+            recurrence_count=1,
+            severity="medium",
+            observed_symptoms=["no checkpoint artifact"],
+            recommended_preventions=["require checkpoint"],
+            source_refs=["tests/test_contracts.py"],
+        )
+        for proposal in map_failure_to_proposals(pattern):
+            validate_hop_artifact(proposal, "hop_harness_system_improvement_proposal")
+
 
 if __name__ == "__main__":
     unittest.main()

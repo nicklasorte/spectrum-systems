@@ -34,6 +34,7 @@ Authority boundaries (unchanged):
 
 from spectrum_systems.modules.hop import (  # noqa: F401
     admission,
+    ai_failure_mapper,
     artifacts,
     baseline_harness,
     bootstrap,
