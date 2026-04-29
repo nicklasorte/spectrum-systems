@@ -195,6 +195,41 @@ describe('aiProgrammingGovernance — summary aggregation', () => {
     expect(summary.top_attention_items.find((i) => i.work_item_id === 'PASS-1')).toBeUndefined();
   });
 
+  it('coerces malformed array fields to safe empty arrays (fail-closed)', () => {
+    const malformed = {
+      data_source: 42 as unknown as string,
+      source_artifacts_used: 'not-an-array' as unknown as string[],
+      warnings: { oops: true } as unknown as string[],
+      reason_codes: null as unknown as string[],
+      ai_programming_work_items: 'also-not-an-array' as unknown as never[],
+    } as unknown as AiProgrammingGovernedPathRecord;
+    const summary = computeGovernedPathSummary(malformed);
+    expect(summary.data_source).toBe('unknown');
+    expect(Array.isArray(summary.source_artifacts_used)).toBe(true);
+    expect(summary.source_artifacts_used).toEqual([]);
+    expect(Array.isArray(summary.warnings)).toBe(true);
+    expect(summary.warnings).toEqual([]);
+    expect(Array.isArray(summary.reason_codes)).toBe(true);
+    expect(summary.reason_codes).toEqual([]);
+    expect(summary.ai_programming_work_items).toEqual([]);
+    // Empty work-item set degrades to status=unknown rather than throwing.
+    expect(summary.status).toBe('unknown');
+  });
+
+  it('drops non-string entries from coerced array fields', () => {
+    const dirty = {
+      data_source: 'artifact_store',
+      source_artifacts_used: ['ok.json', 42, null, 'also-ok.json'] as unknown as string[],
+      warnings: ['warn1', undefined, 'warn2'] as unknown as string[],
+      reason_codes: [1, 'rc-ok'] as unknown as string[],
+      ai_programming_work_items: [],
+    } as unknown as AiProgrammingGovernedPathRecord;
+    const summary = computeGovernedPathSummary(dirty);
+    expect(summary.source_artifacts_used).toEqual(['ok.json', 'also-ok.json']);
+    expect(summary.warnings).toEqual(['warn1', 'warn2']);
+    expect(summary.reason_codes).toEqual(['rc-ok']);
+  });
+
   it('all items pass renders status=pass and reports concrete counts', () => {
     const record: AiProgrammingGovernedPathRecord = {
       data_source: 'artifact_store',

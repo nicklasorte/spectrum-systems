@@ -224,6 +224,11 @@ function aggregateStatus(statuses: GovernedPathStatus[]): GovernedPathStatus {
   return 'unknown';
 }
 
+function coerceStringArray(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((v): v is string => typeof v === 'string');
+}
+
 const ARTIFACT_PATH = 'artifacts/dashboard_metrics/ai_programming_governed_path_record.json';
 
 export function computeGovernedPathSummary(
@@ -251,7 +256,10 @@ export function computeGovernedPathSummary(
     };
   }
 
-  const items = (record.ai_programming_work_items ?? [])
+  const rawItems = Array.isArray(record.ai_programming_work_items)
+    ? record.ai_programming_work_items
+    : [];
+  const items = rawItems
     .map(normalizeWorkItem)
     .filter((i): i is AiProgrammingWorkItem => i !== null);
 
@@ -292,10 +300,10 @@ export function computeGovernedPathSummary(
 
   return {
     status,
-    data_source: record.data_source ?? 'unknown',
-    source_artifacts_used: record.source_artifacts_used ?? [],
-    warnings: record.warnings ?? [],
-    reason_codes: record.reason_codes ?? [],
+    data_source: typeof record.data_source === 'string' ? record.data_source : 'unknown',
+    source_artifacts_used: coerceStringArray(record.source_artifacts_used),
+    warnings: coerceStringArray(record.warnings),
+    reason_codes: coerceStringArray(record.reason_codes),
     failure_prevented: record.failure_prevented ?? null,
     signal_improved: record.signal_improved ?? null,
     total_ai_programming_work_items: items.length,
