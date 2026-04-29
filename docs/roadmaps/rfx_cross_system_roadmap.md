@@ -239,3 +239,28 @@ RFX-H01 through RFX-H19 are implemented as non-owning support helpers with deter
 | RFX-H17 | implemented | `rfx_contract_snapshot.py` |
 | RFX-H18 | implemented | `rfx_unknown_state_campaign.py` |
 | RFX-H19 | implemented | `rfx_authority_vocabulary_sweep.py` |
+
+## RFX-OPS-01 Operational Maturity Layer (N09–N21)
+
+Delivered 2026-04-29 via branch `claude/rfx-ops-maturity-QGgNh`.
+
+All items are non-owning phase-label support helpers. No item claims
+decision, approval, certification, enforcement, promotion, or adjudication
+authority. Canonical ownership remains with systems declared in
+`docs/architecture/system_registry.md`.
+
+| ID | Status | Module | Failure Prevented | Signal Improved |
+| --- | --- | --- | --- | --- |
+| RFX-N09 | implemented | `rfx_golden_failure_corpus_v2.py` | Regression to known historical failures when corpus drift goes undetected | Regression coverage density; historical failure traceability (10 categories) |
+| RFX-N10 | implemented | `rfx_authority_fixture_safety.py` | Static forbidden authority phrases persisting in fixture source | Fixture hygiene; authority-shape false-negative rate |
+| RFX-N11 | implemented | `rfx_operator_surface_contract.py` | Operators receiving raw artifact walls instead of compact summaries | Operator surface clarity; artifact-wall detection rate |
+| RFX-N12 | implemented | `rfx_simplification_review.py` | Unjustified helpers surviving without failure-prevention claim | Helper justification coverage; consolidation candidate count |
+| RFX-N13 | implemented | `rfx_failure_replay_packet.py` | Failures that cannot be reproduced due to missing reproduction inputs | Replay reproducibility rate; packet completeness |
+| RFX-N14 | implemented | `rfx_incident_to_eval_bridge.py` | Incidents closing without regression eval coverage | Incident-to-eval conversion rate; eval candidate coverage |
+| RFX-N15 | implemented | `rfx_evidence_freshness_gate.py` | Stale proof inputs silently passing verification | Evidence freshness compliance rate |
+| RFX-N16 | implemented | `rfx_cl_proof_alignment.py` | RFX proof diverging from CL proof shape causing silent misalignment | RFX↔CL proof alignment rate; field-presence coverage |
+| RFX-N17 | implemented | `rfx_pr_failure_ingestion.py` | PR log data entering RFX without structured failure extraction | PR-failure-to-RFX conversion rate |
+| RFX-N18 | implemented | `rfx_repair_prompt_generator.py` | Repair prompts lacking root cause, owner context, validation commands, or guards | Repair-prompt completeness rate; guard-constraint coverage |
+| RFX-N19 | implemented | `rfx_merge_readiness_gate.py` | Merges proceeding with missing proof artifacts, guards, or test evidence | Merge-readiness confidence; proof/guard/test coverage rate |
+| RFX-N20 | implemented | `rfx_operator_handbook.py` | Operators encountering reason codes with no plain-language action | Operator handbook coverage; plain-language action completeness |
+| RFX-N21 | implemented | `rfx_bloat_burndown.py` | Duplicate or unjustified helpers surviving without governance oversight | Consolidation candidate identification rate |

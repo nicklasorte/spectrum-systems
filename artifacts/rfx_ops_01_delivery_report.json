@@ -1,0 +1,167 @@
+{
+  "artifact_type": "rfx_ops_01_delivery_report",
+  "schema_version": "1.0.0",
+  "work_item": "RFX-OPS-01",
+  "title": "RFX Operational Maturity Layer — N09–N21",
+  "date": "2026-04-29",
+  "branch": "claude/rfx-ops-maturity-QGgNh",
+  "rfx_role": "non-owning phase label; observer, verifier, packager, summarizer, and repair-input generator only",
+  "authority_confirmed": "RFX does not decide, approve, certify, enforce, promote, authorize, adjudicate, or own. All such authority remains with canonical owners declared in docs/architecture/system_registry.md.",
+  "items": [
+    {
+      "id": "RFX-N09",
+      "module": "spectrum_systems/modules/runtime/rfx_golden_failure_corpus_v2.py",
+      "test": "tests/test_rfx_golden_failure_corpus_v2.py",
+      "failure_prevented": "Regression to known historical RFX/CI failures when corpus drift goes undetected.",
+      "signal_improved": "Regression coverage density; historical failure traceability across 10 known failure categories.",
+      "red_team": "RT-N09 — mutate expected historical outcome produces rfx_v2_outcome_mismatch and status=drifted.",
+      "test_count": 12,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N10",
+      "module": "spectrum_systems/modules/runtime/rfx_authority_fixture_safety.py",
+      "test": "tests/test_rfx_authority_fixture_safety.py",
+      "failure_prevented": "Static forbidden authority phrases persisting in fixture source, bypassing authority-shape checks.",
+      "signal_improved": "Fixture hygiene; authority-shape false-negative rate reduction.",
+      "red_team": "RT-N10 — static forbidden phrase in fixture produces rfx_fixture_static_forbidden_phrase; clean text passes.",
+      "test_count": 9,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N11",
+      "module": "spectrum_systems/modules/runtime/rfx_operator_surface_contract.py",
+      "test": "tests/test_rfx_operator_surface_contract.py",
+      "failure_prevented": "Operators receiving raw artifact walls instead of compact, actionable state summaries.",
+      "signal_improved": "Operator surface clarity; artifact-wall detection rate.",
+      "red_team": "RT-N11 — raw artifact wall field (cases/violations/entries) produces rfx_operator_surface_raw_artifact_leak.",
+      "test_count": 9,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N12",
+      "module": "spectrum_systems/modules/runtime/rfx_simplification_review.py",
+      "test": "tests/test_rfx_simplification_review.py",
+      "failure_prevented": "Unjustified helpers surviving without failure-prevention or signal-improvement claim.",
+      "signal_improved": "Helper justification coverage; consolidation candidate count.",
+      "red_team": "RT-N12 — helper with no justification produces rfx_simplification_no_justification and recommendation=fold_or_deprecate.",
+      "test_count": 8,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N13",
+      "module": "spectrum_systems/modules/runtime/rfx_failure_replay_packet.py",
+      "test": "tests/test_rfx_failure_replay_packet.py",
+      "failure_prevented": "Failures that cannot be reproduced because minimal reproduction inputs were never captured.",
+      "signal_improved": "Replay reproducibility rate; failure replay packet completeness.",
+      "red_team": "RT-N13 — packet without reproduction_inputs produces rfx_replay_missing_inputs and status=incomplete.",
+      "test_count": 10,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N14",
+      "module": "spectrum_systems/modules/runtime/rfx_incident_to_eval_bridge.py",
+      "test": "tests/test_rfx_incident_to_eval_bridge.py",
+      "failure_prevented": "Incidents closing without any regression eval coverage, allowing same failure to recur.",
+      "signal_improved": "Incident-to-eval conversion rate; eval candidate coverage of known incidents.",
+      "red_team": "RT-N14 — incident with no candidate and no rationale produces rfx_bridge_no_eval_candidate.",
+      "test_count": 10,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N15",
+      "module": "spectrum_systems/modules/runtime/rfx_evidence_freshness_gate.py",
+      "test": "tests/test_rfx_evidence_freshness_gate.py",
+      "failure_prevented": "Stale proof inputs silently passing verification.",
+      "signal_improved": "Evidence freshness compliance rate; stale-input detection coverage.",
+      "red_team": "RT-N15 — evidence record older than max_age_seconds produces rfx_freshness_stale and status=stale.",
+      "test_count": 8,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N16",
+      "module": "spectrum_systems/modules/runtime/rfx_cl_proof_alignment.py",
+      "test": "tests/test_rfx_cl_proof_alignment.py",
+      "failure_prevented": "RFX proof artifacts diverging from CL proof shape, causing silent misalignment in downstream consumers.",
+      "signal_improved": "RFX↔CL proof shape alignment rate; field-presence coverage.",
+      "red_team": "RT-N16 — missing required CL field produces rfx_cl_proof_missing_rfx_field and status=misaligned.",
+      "test_count": 8,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N17",
+      "module": "spectrum_systems/modules/runtime/rfx_pr_failure_ingestion.py",
+      "test": "tests/test_rfx_pr_failure_ingestion.py",
+      "failure_prevented": "PR log data entering RFX without structured failure extraction, hiding failure patterns.",
+      "signal_improved": "PR-failure-to-RFX conversion rate; structured failure record coverage.",
+      "red_team": "RT-N17 — raw string log entry produces rfx_pr_ingestion_unstructured and normalized_count=0.",
+      "test_count": 10,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N18",
+      "module": "spectrum_systems/modules/runtime/rfx_repair_prompt_generator.py",
+      "test": "tests/test_rfx_repair_prompt_generator.py",
+      "failure_prevented": "Repair prompts lacking root cause, owner context, validation commands, or guard constraints.",
+      "signal_improved": "Repair-prompt completeness rate; guard-constraint coverage.",
+      "red_team": "RT-N18 — missing root cause/owner/validation/guards each produce distinct reason codes; always_constraints always present.",
+      "test_count": 12,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N19",
+      "module": "spectrum_systems/modules/runtime/rfx_merge_readiness_gate.py",
+      "test": "tests/test_rfx_merge_readiness_gate.py",
+      "failure_prevented": "Merges proceeding with missing proof artifacts, absent guard conditions, or incomplete test evidence.",
+      "signal_improved": "Merge-readiness confidence; proof/guard/test coverage rate.",
+      "red_team": "RT-N19 — missing rfx_proof_ref/guard/pytest_passed each produce distinct block reason codes.",
+      "test_count": 10,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N20",
+      "module": "spectrum_systems/modules/runtime/rfx_operator_handbook.py",
+      "test": "tests/test_rfx_operator_handbook.py",
+      "failure_prevented": "Operators encountering a reason code with no plain-language action, blocking diagnosis and repair.",
+      "signal_improved": "Operator handbook coverage; plain-language action completeness.",
+      "red_team": "RT-N20 — reason code entry without plain_action produces rfx_handbook_missing_action and status=incomplete.",
+      "test_count": 8,
+      "status": "delivered"
+    },
+    {
+      "id": "RFX-N21",
+      "module": "spectrum_systems/modules/runtime/rfx_bloat_burndown.py",
+      "test": "tests/test_rfx_bloat_burndown.py",
+      "failure_prevented": "Duplicate or unjustified helper modules surviving without governance oversight.",
+      "signal_improved": "Consolidation candidate identification rate; helper justification coverage trend.",
+      "red_team": "RT-N21 — unjustified helper produces rfx_bloat_unjustified_helper and action=review_for_removal.",
+      "test_count": 8,
+      "status": "delivered"
+    }
+  ],
+  "validation_results": {
+    "new_rfx_tests_passed": 120,
+    "all_rfx_tests_passed": 542,
+    "test_run_rfx_super_check_passed": 2,
+    "authority_drift_guard": "pass",
+    "authority_shape_preflight": "pass",
+    "system_registry_guard": "pass",
+    "authority_leak_guard": "pass",
+    "roadmap_authority_check": "pass",
+    "strategy_compliance_check": "pass",
+    "rfx_super_check_overall": "fail (authority_shape_early_gate pre-existing failure; 114 rename-required entries existed before this PR)"
+  },
+  "pre_existing_findings": [
+    {
+      "check": "authority_shape_early_gate",
+      "status": "pre-existing failure on main branch before this PR (114 rename-required entries)",
+      "introduced_by_this_pr": false
+    }
+  ],
+  "remaining_risks": [
+    "authority_shape_early_gate has 114 pre-existing rename-required entries not introduced by this PR.",
+    "rfx_operator_handbook and rfx_bloat_burndown produce governance recommendations but do not enforce removal decisions — those require governed PR review.",
+    "rfx_evidence_freshness_gate relies on callers supplying accurate reference_time_seconds; clock skew could produce false fresh results."
+  ],
+  "status": "delivered"
+}
