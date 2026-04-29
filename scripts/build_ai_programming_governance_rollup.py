@@ -261,13 +261,13 @@ def build_rollup(fail_closed: bool = False) -> int:
         "source_artifacts_used": source_artifacts_used,
         "work_item_refs": list(work_item_refs),
         "warnings": [
-            "MET observation only. AEX owns admission. PQX owns execution. EVL owns eval. CDE owns control. SEL owns enforcement.",
+            "MET observation only. Authority boundary assignments are canonical in docs/architecture/system_registry.md.",
             "unknown does not count as present. repo_mutating=true items with AEX or PQX missing/unknown force compliance_status=BLOCK.",
             "This rollup is generated deterministically from source work item records in artifacts/ai_programming/. Do not hand-edit.",
         ],
         "reason_codes": [
             "ai_programming_governance_rollup_observation_only",
-            "no_authority_claim_by_MET",
+            "met_does_not_claim_canonical_authority",
         ],
     }
 
