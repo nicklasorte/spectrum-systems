@@ -2,7 +2,7 @@
   "artifact_type": "repair_aware_promotion_readiness_decision",
   "slice_id": "RS-22",
   "owner": "CDE",
-  "generated_at": "2026-04-29T20:23:31Z",
+  "generated_at": "2026-04-29T20:28:23Z",
   "authority": "promotion_readiness_authoritative",
   "decision": "not_broad_ready"
 }

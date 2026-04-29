@@ -1,7 +1,7 @@
 {
   "artifact_type": "repair_latency_umbrella_checkpoint",
   "batch_id": "REPAIR-LATENCY-24-01",
-  "generated_at": "2026-04-29T20:23:31Z",
+  "generated_at": "2026-04-29T20:28:22Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-3",
   "umbrella_name": "REPAIR_MEMORY_AND_PRIORITIZATION",
