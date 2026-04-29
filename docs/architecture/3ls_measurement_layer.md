@@ -4,8 +4,8 @@ A measurement and observability layer over the canonical 3-letter systems
 (3LS). It produces versioned, schema-bound artifacts that observe and report
 on system behavior across nine measurement dimensions.
 
-This layer is observation only. It does not grant authority, replace control
-decisions, or perform enforcement. Canonical responsibility for every
+This layer is observation only. It does not grant authority, replace
+canonical control inputs, or block work. Canonical responsibility for every
 3-letter system remains in `docs/architecture/system_registry.md`.
 
 ## What this layer is
@@ -24,16 +24,16 @@ A non-owning observation surface that:
 ## What this layer is NOT
 
 - This layer does not produce `allow / warn / freeze / block` control
-  verdicts.
+  outcomes.
 - This layer does not orchestrate.
 - This layer does not execute.
-- This layer does not enforce.
+- This layer does not perform fail-closed actions.
 - This layer does not route.
 
-Canonical ownership for control, orchestration, execution, enforcement, and
-routing is declared in `docs/architecture/system_registry.md` and is
-unchanged by this layer. See that registry for the authoritative ownership
-mapping.
+Canonical ownership for control, orchestration, execution, fail-closed
+actions, and routing is declared in
+`docs/architecture/system_registry.md` and is unchanged by this layer.
+See that registry for the authoritative ownership mapping.
 
 Every measurement artifact carries `authority_scope = "observation_only"`.
 Schema validation rejects any other value.
@@ -65,9 +65,9 @@ rather than producing partial records that could be misread as evidence:
 - `3ls_system_measurement_record`: `coverage_status = covered` requires
   non-empty `evidence_refs`; `uncovered` requires non-empty `gaps`.
 - `3ls_loop_run_record`: `loop_status = complete` requires every downstream
-  ref (`execution_ref`, `eval_ref`, `policy_ref`, `decision_ref`,
-  `enforcement_ref`); any non-complete loop_status requires a
-  `first_failure_system`.
+  ref (`execution_ref`, `eval_ref`, `policy_ref`, `decision_input_ref`,
+  `enforcement_signal_ref`); any non-complete loop_status requires a
+  `first_failure_system` AND at least one downstream ref absent or null.
 - `3ls_handoff_record`: `handoff_status = complete` requires
   `downstream_artifact_ref`; `blocked` and `failed` require non-empty
   `reason_codes`.
@@ -94,28 +94,30 @@ These artifacts feed downstream observation/lineage/reporting/SLO surfaces:
 - **SLO** consumes them as budget/health signal.
 
 They do not flow into CDE as control inputs and do not flow into SEL as
-enforcement inputs. Any control or enforcement consumption must go through
-the canonical authority artifacts (e.g. `control_decision`,
-`enforcement_action`) — not through these measurement records.
+fail-closed action inputs. Any consumption by control or fail-closed
+authorities must go through the canonical authority artifacts owned by
+those systems — not through these measurement records.
 
 ## Authority-safe wording rules
 
 - These records reference canonical authority artifacts via `*_ref` fields.
-  They never reproduce a verdict, decision, or enforcement action inline.
+  They never reproduce a control input or fail-closed signal inline.
 - The `authority_scope` field is pinned to `observation_only` by schema
   `const`. Mutating it fails validation.
 - The provenance `source_system` is typically a non-owning support system
-  such as `OBS`, `LIN`, `REP`, or `SLO`. Records produced by control,
-  decision, or enforcement authorities should remain in their canonical
-  artifact families — not duplicated here.
+  such as `OBS`, `LIN`, `REP`, or `SLO`. Records produced by canonical
+  authority owners should remain in their canonical artifact families —
+  not duplicated here.
 
 ## Failure modes now detectable
 
-The measurement layer surfaces (without authorizing or enforcing) the
+The measurement layer surfaces (without authorizing or blocking) the
 following recurring failure modes:
 
 - silent loop dropouts (loop_status partial without first_failure_system —
   invalid by schema)
+- non-complete loops with all downstream refs populated (rejected by
+  schema; contradicts the fail-closed contract)
 - incomplete handoffs declared as complete (rejected by schema)
 - changed governed surfaces with no test mapping (the
   `pytest_selection_missing` class)
@@ -130,8 +132,8 @@ following recurring failure modes:
 - All 3-letter system responsibility remains in
   `docs/architecture/system_registry.md`.
 - Every measurement artifact is `observation_only`.
-- No measurement artifact may serve as substitute evidence for a control
-  decision or enforcement action.
+- No measurement artifact may serve as substitute evidence for a canonical
+  control input or fail-closed action.
 - No measurement artifact extends or shadows ownership.
 - Measurement records are versioned, schema-bound artifacts; non-determinism
   in inputs must be marked via the provenance `simulated` boolean.

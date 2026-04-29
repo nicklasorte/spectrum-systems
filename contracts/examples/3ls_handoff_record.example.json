@@ -20,5 +20,5 @@
   "missing_refs": [],
   "reason_codes": [],
   "authority_scope": "observation_only",
-  "notes": "Observed AEX -> PQX handoff. Authority and enforcement remain with the canonical owners."
+  "notes": "Observed AEX -> PQX handoff. Canonical owners are unchanged."
 }

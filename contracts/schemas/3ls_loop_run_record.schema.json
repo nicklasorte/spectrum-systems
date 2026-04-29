@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/3ls_loop_run_record.schema.json",
   "title": "3LS Loop Run Record",
-  "description": "Measurement of canonical loop completion: AEX -> PQX -> EVL -> TPA -> CDE -> SEL. This record observes loop integrity. It does not grant authority, replace control decisions, or perform enforcement. Fail-closed: missing downstream refs require loop_status to be incomplete (partial | blocked | failed) and a first_failure_system to be declared.",
+  "description": "Measurement of canonical loop completion: AEX -> PQX -> EVL -> TPA -> CDE -> SEL. Observation only; this record does not grant authority, replace canonical control inputs, or trigger fail-closed actions. Fail-closed: missing downstream refs require loop_status to be incomplete (partial | blocked | failed) and a first_failure_system to be declared. Non-complete loops must also have at least one downstream ref absent or null.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -43,9 +43,9 @@
     "admission_ref": {"type": "string", "minLength": 1, "description": "AEX admission artifact reference."},
     "execution_ref": {"type": ["string", "null"], "description": "PQX execution artifact reference."},
     "eval_ref": {"type": ["string", "null"], "description": "EVL eval artifact reference."},
-    "policy_ref": {"type": ["string", "null"], "description": "TPA trust/policy adjudication reference."},
-    "decision_ref": {"type": ["string", "null"], "description": "CDE control decision reference."},
-    "enforcement_ref": {"type": ["string", "null"], "description": "SEL enforcement reference."},
+    "policy_ref": {"type": ["string", "null"], "description": "TPA trust/policy artifact reference."},
+    "decision_input_ref": {"type": ["string", "null"], "description": "CDE control input artifact reference."},
+    "enforcement_signal_ref": {"type": ["string", "null"], "description": "SEL signal artifact reference."},
     "loop_status": {
       "type": "string",
       "enum": ["complete", "partial", "blocked", "failed"]
@@ -84,15 +84,15 @@
           "execution_ref",
           "eval_ref",
           "policy_ref",
-          "decision_ref",
-          "enforcement_ref"
+          "decision_input_ref",
+          "enforcement_signal_ref"
         ],
         "properties": {
           "execution_ref": {"type": "string", "minLength": 1},
           "eval_ref": {"type": "string", "minLength": 1},
           "policy_ref": {"type": "string", "minLength": 1},
-          "decision_ref": {"type": "string", "minLength": 1},
-          "enforcement_ref": {"type": "string", "minLength": 1},
+          "decision_input_ref": {"type": "string", "minLength": 1},
+          "enforcement_signal_ref": {"type": "string", "minLength": 1},
           "first_failure_system": {"type": "null"}
         }
       }
@@ -113,6 +113,29 @@
             "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"]
           }
         }
+      }
+    },
+    {
+      "description": "Non-complete loop must have at least one downstream ref missing or null. Without this, partial/blocked/failed could declare every downstream ref populated, contradicting the fail-closed contract.",
+      "if": {
+        "not": {
+          "properties": {"loop_status": {"const": "complete"}},
+          "required": ["loop_status"]
+        }
+      },
+      "then": {
+        "anyOf": [
+          {"not": {"required": ["execution_ref"]}},
+          {"properties": {"execution_ref": {"type": "null"}}},
+          {"not": {"required": ["eval_ref"]}},
+          {"properties": {"eval_ref": {"type": "null"}}},
+          {"not": {"required": ["policy_ref"]}},
+          {"properties": {"policy_ref": {"type": "null"}}},
+          {"not": {"required": ["decision_input_ref"]}},
+          {"properties": {"decision_input_ref": {"type": "null"}}},
+          {"not": {"required": ["enforcement_signal_ref"]}},
+          {"properties": {"enforcement_signal_ref": {"type": "null"}}}
+        ]
       }
     }
   ]

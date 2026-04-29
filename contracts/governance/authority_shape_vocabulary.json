@@ -19,7 +19,8 @@
       "node_modules/",
       "data/",
       "design-reviews/",
-      "design-packages/"
+      "design-packages/",
+      "contracts/standards-manifest.json"
     ],
     "canonical_registry_paths": [
       "docs/architecture/system_registry.md"

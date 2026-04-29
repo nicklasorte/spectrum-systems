@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/3ls_operator_debuggability_record.schema.json",
   "title": "3LS Operator Debuggability Record",
-  "description": "Measurement of whether a failure can be understood by an operator without reading raw logs. Observation only; does not authorize remediation or modify enforcement. Fail-closed: single_artifact_debuggable=true requires at least one required_artifact_refs entry.",
+  "description": "Measurement of whether a failure can be understood by an operator without reading raw logs. Observation only; does not authorize remediation or modify SEL behavior. Fail-closed: single_artifact_debuggable=true requires at least one required_artifact_refs entry.",
   "type": "object",
   "additionalProperties": false,
   "required": [

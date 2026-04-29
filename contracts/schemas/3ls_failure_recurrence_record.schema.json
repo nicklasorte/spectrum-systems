@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/3ls_failure_recurrence_record.schema.json",
   "title": "3LS Failure Recurrence Record",
-  "description": "Measurement of repeated CI/system failures. Observation only; does not classify, decide, or enforce. Fail-closed: recurrence_count must be at least 1 and failure_class must align with the repo failure taxonomy.",
+  "description": "Measurement of repeated CI/system failures. Observation only; does not classify or gate. Fail-closed: recurrence_count must be at least 1 and failure_class must align with the repo failure taxonomy.",
   "type": "object",
   "additionalProperties": false,
   "required": [

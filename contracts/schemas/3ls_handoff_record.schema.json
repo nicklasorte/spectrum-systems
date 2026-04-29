@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/3ls_handoff_record.schema.json",
   "title": "3LS Handoff Record",
-  "description": "Measurement of system-to-system handoff integrity. Observation only; does not grant authority or perform enforcement. Fail-closed: complete handoffs require a downstream_artifact_ref; blocked or failed handoffs require reason_codes.",
+  "description": "Measurement of system-to-system handoff integrity. Observation only; does not grant authority or block work. Fail-closed: complete handoffs require a downstream_artifact_ref; blocked or failed handoffs require reason_codes.",
   "type": "object",
   "additionalProperties": false,
   "required": [

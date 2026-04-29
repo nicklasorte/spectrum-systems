@@ -7,7 +7,7 @@ artifact-first measurement and observability layer over the 3-letter systems
 and the canonical execution loop.
 
 This is a measurement layer only. It does NOT change authority, control, or
-enforcement behavior. Every artifact is fail-closed and carries
+fail-closed behavior. Every artifact is fail-closed and carries
 `authority_scope = "observation_only"` as a schema-pinned constant.
 
 ## Branch
@@ -83,9 +83,11 @@ The fail-closed schema rules turn the following recurring failure shapes
 into immediate validation errors instead of silent partial records:
 
 - A loop is reported `complete` but is missing one of execution / eval /
-  policy / decision / enforcement refs.
+  policy / decision_input / enforcement_signal refs.
 - A loop is reported non-complete (partial / blocked / failed) without
   declaring `first_failure_system`.
+- A loop is reported non-complete (partial / blocked / failed) but every
+  downstream ref is populated — schema rejects this contradiction.
 - A handoff is reported `complete` but `downstream_artifact_ref` is null.
 - A handoff is `blocked` or `failed` but `reason_codes` is empty.
 - A change touches governed surfaces but produces zero
@@ -106,9 +108,10 @@ into immediate validation errors instead of silent partial records:
 - Every measurement schema pins `authority_scope` to the const string
   `observation_only`. Validation rejects all other values.
 - The architecture doc explicitly states: this layer does not grant
-  authority, replace control decisions, or perform enforcement.
+  authority, replace canonical control inputs, or trigger fail-closed
+  actions.
 - Records reference canonical authority artifacts via `*_ref` fields rather
-  than reproducing decision/enforcement payloads inline.
+  than reproducing canonical control or fail-closed payloads inline.
 - Authority leak guard (`scripts/run_authority_leak_guard.py`) was run
   against every new file with explicit `--changed-files`; result: pass,
   zero violations.
@@ -162,5 +165,5 @@ Propose **SMA-01 v3 — Measurement Producer Wiring**:
 5. Wire OBS / LIN / REP / SLO consumers to read these artifacts as inputs
    only — never as substitute control evidence.
 
-That follow-up keeps the canonical loop, control, and enforcement
+That follow-up keeps the canonical loop, control, and fail-closed
 authorities untouched while finishing the observation surface.

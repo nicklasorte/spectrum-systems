@@ -22,5 +22,5 @@
     "artifacts/tls/system_trust_gap_report.json"
   ],
   "authority_scope": "observation_only",
-  "notes": "Observed improvement in PQX missing_tests gap. Reporting only; trust adjudication remains with TPA."
+  "notes": "Observed improvement in PQX missing_tests gap. Reporting only; trust assessment remains with TPA."
 }

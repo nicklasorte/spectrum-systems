@@ -159,7 +159,7 @@ def test_system_measurement_covered_requires_evidence() -> None:
 
 def test_loop_run_complete_requires_all_downstream_refs() -> None:
     instance = load_example("3ls_loop_run_record")
-    instance["enforcement_ref"] = None
+    instance["enforcement_signal_ref"] = None
     with pytest.raises(ValidationError):
         validate_artifact(instance, "3ls_loop_run_record")
 
@@ -170,8 +170,8 @@ def test_loop_run_partial_requires_first_failure_system() -> None:
     instance["execution_ref"] = None
     instance["eval_ref"] = None
     instance["policy_ref"] = None
-    instance["decision_ref"] = None
-    instance["enforcement_ref"] = None
+    instance["decision_input_ref"] = None
+    instance["enforcement_signal_ref"] = None
     instance["first_failure_system"] = None
     with pytest.raises(ValidationError):
         validate_artifact(instance, "3ls_loop_run_record")
@@ -183,8 +183,8 @@ def test_loop_run_partial_with_first_failure_system_passes() -> None:
     instance["execution_ref"] = None
     instance["eval_ref"] = None
     instance["policy_ref"] = None
-    instance["decision_ref"] = None
-    instance["enforcement_ref"] = None
+    instance["decision_input_ref"] = None
+    instance["enforcement_signal_ref"] = None
     instance["first_failure_system"] = "PQX"
     validate_artifact(instance, "3ls_loop_run_record")
 
@@ -193,6 +193,17 @@ def test_loop_run_failed_requires_first_failure_system() -> None:
     instance = load_example("3ls_loop_run_record")
     instance["loop_status"] = "failed"
     instance["first_failure_system"] = None
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "3ls_loop_run_record")
+
+
+def test_loop_run_non_complete_must_have_one_missing_ref() -> None:
+    """Codex P2: a non-complete loop with all downstream refs populated
+    contradicts the fail-closed contract and must be rejected."""
+    instance = load_example("3ls_loop_run_record")
+    instance["loop_status"] = "partial"
+    instance["first_failure_system"] = "PQX"
+    # All downstream refs populated as in the complete example.
     with pytest.raises(ValidationError):
         validate_artifact(instance, "3ls_loop_run_record")
 

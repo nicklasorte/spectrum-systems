@@ -8,10 +8,10 @@
     "inputs": [
       "artifacts/runtime/aex/admission_bundle.json",
       "artifacts/runtime/pqx/pqx_execution_closure_record.json",
-      "artifacts/runtime/evl/evaluation_control_decision.json",
+      "artifacts/runtime/evl/evl_artifact.json",
       "artifacts/runtime/tpa/trust_posture_snapshot.json",
-      "artifacts/runtime/cde/control_decision.json",
-      "artifacts/runtime/sel/enforcement_action.json"
+      "artifacts/runtime/cde/cde_input.json",
+      "artifacts/runtime/sel/sel_signal.json"
     ],
     "simulated": false
   },
@@ -19,10 +19,10 @@
   "loop_id": "loop-2026-04-29-001",
   "admission_ref": "artifacts/runtime/aex/admission_bundle.json",
   "execution_ref": "artifacts/runtime/pqx/pqx_execution_closure_record.json",
-  "eval_ref": "artifacts/runtime/evl/evaluation_control_decision.json",
+  "eval_ref": "artifacts/runtime/evl/evl_artifact.json",
   "policy_ref": "artifacts/runtime/tpa/trust_posture_snapshot.json",
-  "decision_ref": "artifacts/runtime/cde/control_decision.json",
-  "enforcement_ref": "artifacts/runtime/sel/enforcement_action.json",
+  "decision_input_ref": "artifacts/runtime/cde/cde_input.json",
+  "enforcement_signal_ref": "artifacts/runtime/sel/sel_signal.json",
   "loop_status": "complete",
   "first_failure_system": null,
   "completion_time_ms": 12450,
@@ -33,5 +33,5 @@
     "artifacts/runtime/replay/replay-2026-04-29-001.json"
   ],
   "authority_scope": "observation_only",
-  "notes": "Complete canonical loop observation. Authority remains with the owning systems."
+  "notes": "Complete canonical loop observation. Authority remains with the owning systems unchanged."
 }
