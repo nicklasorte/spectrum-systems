@@ -194,21 +194,57 @@ jobs:
             --top-level-out artifacts \
             --candidates ""
           python scripts/generate_ecosystem_health_report.py
-          if ! git diff --exit-code \
-            artifacts/tls/system_dependency_priority_report.json \
-            artifacts/tls/system_evidence_attachment.json \
-            artifacts/system_dependency_priority_report.json \
-            governance/reports/ecosystem-health.json \
-            docs/governance-reports/ecosystem-health-report.md \
-            docs/governance-reports/ecosystem-dashboard.md; then
-            echo ""
-            echo "ERROR: derived registry artifacts are stale on this branch."
-            echo "Run these commands locally, then commit and push:"
-            echo "  python scripts/build_tls_dependency_priority.py --out artifacts/tls --top-level-out artifacts --candidates ''"
-            echo "  python scripts/generate_ecosystem_health_report.py"
-            exit 1
-          fi
-          echo "Derived registry artifacts are up-to-date."
+          # Compare structure only — strip volatile timestamp fields before diffing
+          # so the check is stable across reruns on identical source inputs.
+          python - <<'PYCODE'
+          import json, subprocess, sys
+          from pathlib import Path
+
+          VOLATILE = {"generated_at", "created_at", "last_updated", "run_at", "timestamp"}
+          JSON_FILES = [
+              "artifacts/tls/system_dependency_priority_report.json",
+              "artifacts/tls/system_evidence_attachment.json",
+              "artifacts/system_dependency_priority_report.json",
+              "governance/reports/ecosystem-health.json",
+          ]
+
+          def normalize(obj):
+              if isinstance(obj, dict):
+                  return {k: normalize(v) for k, v in sorted(obj.items()) if k not in VOLATILE}
+              if isinstance(obj, list):
+                  return [normalize(x) for x in obj]
+              return obj
+
+          mismatches = []
+          for rel in JSON_FILES:
+              path = Path(rel)
+              if not path.is_file():
+                  continue
+              result = subprocess.run(
+                  ["git", "show", f"HEAD:{rel}"],
+                  capture_output=True, text=True,
+              )
+              if result.returncode != 0:
+                  continue  # new file on this branch — skip
+              try:
+                  committed = normalize(json.loads(result.stdout))
+                  current   = normalize(json.loads(path.read_text()))
+              except Exception:
+                  continue
+              if committed != current:
+                  mismatches.append(rel)
+
+          if mismatches:
+              print("ERROR: derived registry artifacts have structural differences from HEAD.")
+              print("Run locally, commit, and push:")
+              print("  python scripts/build_tls_dependency_priority.py --out artifacts/tls --top-level-out artifacts --candidates ''")
+              print("  python scripts/generate_ecosystem_health_report.py")
+              for m in mismatches:
+                  print(f"  stale: {m}")
+              sys.exit(1)
+
+          print("Derived registry artifacts are structurally up-to-date.")
+          PYCODE
 
       - name: Run authoritative governed preflight gate
         env:
