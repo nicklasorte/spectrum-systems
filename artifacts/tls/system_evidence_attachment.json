@@ -34,6 +34,7 @@
         ],
         "docs": [
           "docs/architecture/3ls_measurement_layer.md",
+          "docs/architecture/ci_gate_model.md",
           "docs/architecture/foundation_pqx_eval_control.md",
           "docs/architecture/pr_autofix_review_artifact_validation.md",
           "docs/architecture/runtime_spine.md",
@@ -42,6 +43,8 @@
           "docs/architecture/system_registry.md",
           "docs/architecture/system_registry_core.md",
           "docs/architecture/system_registry_reduction_decision.md",
+          "docs/governance/pytest_pr_inventory_baseline.json",
+          "docs/governance/test_gate_mapping.json",
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/rca_guide.md",
           "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
@@ -54,10 +57,7 @@
           "docs/review-actions/PLAN-BATCH-AEX-FIX-01-2026-04-08.md",
           "docs/review-actions/PLAN-BATCH-AEX-FIX-02-2026-04-09.md",
           "docs/review-actions/PLAN-BATCH-AEX-FIX-03-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-04-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-05-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-06-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-07-2026-04-09.md"
+          "docs/review-actions/PLAN-BATCH-AEX-FIX-04-2026-04-09.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -274,6 +274,7 @@
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
           "docs/architecture/3ls_measurement_layer.md",
+          "docs/architecture/ci_gate_model.md",
           "docs/architecture/pr_autofix_review_artifact_validation.md",
           "docs/architecture/runtime_spine.md",
           "docs/architecture/system_inventory_audit.md",
@@ -295,8 +296,7 @@
           "docs/operations/tls_priority_preflight.md",
           "docs/phase-2/PHASE_2_ESCALATION_PROTOCOL.md",
           "docs/phase-2/PHASE_2_ROLLBACK_STRATEGY.md",
-          "docs/rca_guide.md",
-          "docs/review-actions/2026-04-12-cde-001-build-plan.md"
+          "docs/rca_guide.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -338,6 +338,7 @@
           "scripts/build_d3l_rank_maturity_alignment.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/run_authenticity_hardgate_24_01.py",
+          "scripts/run_certification_gate.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_pra_nsx_prg_automation.py",
@@ -379,7 +380,7 @@
           "tests/test_cycle_runner_judgment_handoff.py"
         ]
       },
-      "evidence_count": 119,
+      "evidence_count": 120,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -668,6 +669,7 @@
           "artifacts/shift_left_memory_24_01/umbrella-2_checkpoint.json"
         ],
         "docs": [
+          "docs/architecture/ci_gate_model.md",
           "docs/architecture/pr_autofix_review_artifact_validation.md",
           "docs/architecture/system_inventory_audit.md",
           "docs/architecture/system_registry.md",
@@ -691,8 +693,7 @@
           "docs/review-actions/PLAN-BATCH-FRE-03-2026-04-05.md",
           "docs/review-actions/PLAN-BATCH-FRE-04-2026-04-05.md",
           "docs/review-actions/PLAN-BATCH-GHA-07-2026-04-06.md",
-          "docs/review-actions/PLAN-BATCH-GHA-08-2026-04-07.md",
-          "docs/review-actions/PLAN-BATCH-GHA-08-FIX-01-2026-04-07.md"
+          "docs/review-actions/PLAN-BATCH-GHA-08-2026-04-07.md"
         ],
         "modules": [
           "spectrum_systems/dashboard/backend/health_calculator.py",
@@ -801,6 +802,7 @@
           "docs/adr/ADR-006-governance-manifest-policy-engine.md",
           "docs/architecture/3ls_authority_boundary_firewall.md",
           "docs/architecture/autonomous_execution_loop.md",
+          "docs/architecture/ci_gate_model.md",
           "docs/architecture/system_inventory_audit.md",
           "docs/architecture/system_registry.md",
           "docs/architecture/system_registry_reduction_decision.md",
@@ -812,6 +814,8 @@
           "docs/execution_reports/BATCH-GOV-FIX-04_delivery_report.md",
           "docs/governance/GOVERNANCE_INTEGRATION_BACKLOG.md",
           "docs/governance/authority_shape_preflight.md",
+          "docs/governance/ci_gate_ownership_manifest.json",
+          "docs/governance/ci_runtime_budget.md",
           "docs/governance/strategy_compliance_hard_gate.md",
           "docs/governance/three_letter_system_policy.json",
           "docs/hop/golden_workflow.md",
@@ -819,10 +823,7 @@
           "docs/hop/preflight.md",
           "docs/migration/3ls_migration_guide.md",
           "docs/migration_guide.md",
-          "docs/operations/3ls_simplified_architecture_runbook.md",
-          "docs/operations/tls_priority_preflight.md",
-          "docs/policy-as-code.md",
-          "docs/rca_guide.md"
+          "docs/operations/3ls_simplified_architecture_runbook.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -863,7 +864,10 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/run_ci_drift_detector.py",
           "scripts/run_contract_enforcement.py",
+          "scripts/run_governance_gate.py",
+          "scripts/run_pr_gate.py",
           "scripts/validate_system_registry.py"
         ],
         "tests": [
@@ -871,6 +875,8 @@
           "tests/fixtures/roadmaps/pqx_propagation_sequence.json",
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/fixtures/wpg/sample_workflow_loop_input.json",
+          "tests/gates/test_ci_drift_detector.py",
+          "tests/gates/test_gate_fail_closed.py",
           "tests/hop/test_promotion_readiness.py",
           "tests/integration/e2e-pipeline.test.ts",
           "tests/metrics/test_met_04_18_contract_selection.py",
@@ -889,12 +895,10 @@
           "tests/test_next24_serial_execution.py",
           "tests/test_nx_control_chain.py",
           "tests/test_nx_registry_red_team.py",
-          "tests/test_observability.py",
-          "tests/test_oc_bottleneck_classifier.py",
-          "tests/test_oc_dashboard_truth_projection.py"
+          "tests/test_observability.py"
         ]
       },
-      "evidence_count": 108,
+      "evidence_count": 111,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
@@ -931,6 +935,7 @@
         "docs": [
           "docs/architecture/system_registry.md",
           "docs/governance/authority_shape_preflight.md",
+          "docs/governance/test_gate_mapping.json",
           "docs/hop/batch2_followups.md",
           "docs/hop/golden_workflow.md",
           "docs/hop/hop006_issue_extraction_design.md",
@@ -950,10 +955,9 @@
           "docs/reviews/AEX-TRUST-01_final_report.md",
           "docs/reviews/NT_ALL_01_delivery_report.md",
           "docs/reviews/TLS-GUARD-01-DELIVERY-REPORT.md",
+          "docs/reviews/TST-01_ci_test_inventory.md",
           "docs/reviews/hop005_authority_eval_hardening_review.md",
-          "docs/reviews/hop006a_current_state_review.md",
-          "docs/reviews/hop006a_design_redteam.md",
-          "docs/reviews/hop_batch1_review.md"
+          "docs/reviews/hop006a_current_state_review.md"
         ],
         "modules": [
           "spectrum_systems/cli/hop_cli.py",
@@ -1783,6 +1787,7 @@
           "docs/architecture/3ls_authority_boundary_firewall.md",
           "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/autonomous_execution_loop.md",
+          "docs/architecture/ci_gate_model.md",
           "docs/architecture/control_surfaces_and_pre_pr_governance.md",
           "docs/architecture/foundation_pqx_eval_control.md",
           "docs/architecture/hnx_long_running_execution.md",
@@ -1799,12 +1804,11 @@
           "docs/architecture/system_registry_reduction_decision.md",
           "docs/events/event_catalog.json",
           "docs/generated-artifact-merge-policy.md",
+          "docs/governance/ci_gate_ownership_manifest.json",
+          "docs/governance/ci_runtime_budget.md",
           "docs/governance/contract-impact-gate.md",
           "docs/governance/default_pqx_execution_policy.md",
-          "docs/governance/execution-change-impact-gate.md",
-          "docs/governance/governance-enforcement-step-11-activation.md",
-          "docs/governance/manifest-completeness-gate.md",
-          "docs/governance/parallel_pqx_observability.md"
+          "docs/governance/execution-change-impact-gate.md"
         ],
         "modules": [
           "spectrum_systems/aex/classifier.py",
@@ -1851,6 +1855,7 @@
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_codex_to_pqx_wrapper.py",
+          "scripts/run_contract_gate.py",
           "scripts/run_contract_preflight.py",
           "scripts/run_control_loop_certification.py",
           "scripts/run_control_surface_gap_extraction.py",
@@ -1865,8 +1870,7 @@
           "scripts/run_pqx_bundle.py",
           "scripts/run_pqx_sequence.py",
           "scripts/run_prompt_queue_sequence.py",
-          "scripts/run_rax_redteam_arch_01.py",
-          "scripts/run_rax_redteam_harness_01.py"
+          "scripts/run_rax_redteam_arch_01.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -2580,6 +2584,7 @@
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
           "docs/architecture/3ls_measurement_layer.md",
+          "docs/architecture/ci_gate_model.md",
           "docs/architecture/pr_autofix_review_artifact_validation.md",
           "docs/architecture/runtime_spine.md",
           "docs/architecture/system_inventory_audit.md",
@@ -2589,8 +2594,10 @@
           "docs/events/event_catalog.json",
           "docs/governance-reports/contract-enforcement-report.md",
           "docs/governance/authority_shape_preflight.md",
+          "docs/governance/ci_runtime_budget.md",
           "docs/governance/prompt_contract.md",
           "docs/governance/strategy_control_doc.md",
+          "docs/governance/test_gate_mapping.json",
           "docs/hop/hop006_issue_extraction_design.md",
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/operations/operator_playbook.md",
@@ -2599,10 +2606,7 @@
           "docs/review-actions/2026-04-12-cde-001-build-plan.md",
           "docs/review-actions/2026-04-12-sel-001-build-plan.md",
           "docs/review-actions/2026-04-12-sel-002-rqx-002-build-plan.md",
-          "docs/review-actions/BATCH-GOV-B-DELIVERY-REPORT-2026-04-09.md",
-          "docs/review-actions/CPL-02_fix_plan.md",
-          "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
-          "docs/review-actions/PLAN-BATCH-AUT-REG-01-2026-04-10.md"
+          "docs/review-actions/BATCH-GOV-B-DELIVERY-REPORT-2026-04-09.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -2644,6 +2648,7 @@
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/run_authenticity_hardgate_24_01.py",
+          "scripts/run_certification_gate.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_contract_preflight.py",
           "scripts/run_control_surface_enforcement.py",
@@ -2692,7 +2697,7 @@
           "tests/test_d3l_ranking_report.py"
         ]
       },
-      "evidence_count": 126,
+      "evidence_count": 127,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "SEL"
@@ -2743,15 +2748,15 @@
           "docs/design/working-paper-engine.md",
           "docs/error_budget_policy.md",
           "docs/governance/cdx_02_3ls_roadmap.json",
+          "docs/governance/pytest_pr_inventory_baseline.json",
+          "docs/governance/test_gate_mapping.json",
           "docs/rca_guide.md",
           "docs/review-actions/2026-03-16-roadmap-architecture-actions.md",
           "docs/review-actions/2026-03-22-policy-versioning-audit-actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-BAF-2026-03-21.md",
           "docs/review-actions/PLAN-BAS-POLICY-VERSIONING-FOLLOWUP-FIX-2026-03-22.md",
-          "docs/review-actions/PLAN-BN.6-2026-03-20.md",
-          "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
-          "docs/review-actions/PLAN-FAE-001-2026-04-16.md"
+          "docs/review-actions/PLAN-BN.6-2026-03-20.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/checkpoint_certification_L.json",
