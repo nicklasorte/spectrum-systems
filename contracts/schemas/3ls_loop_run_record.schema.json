@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/3ls_loop_run_record.schema.json",
+  "title": "3LS Loop Run Record",
+  "description": "Measurement of canonical loop completion: AEX -> PQX -> EVL -> TPA -> CDE -> SEL. This record observes loop integrity. It does not grant authority, replace control decisions, or perform enforcement. Fail-closed: missing downstream refs require loop_status to be incomplete (partial | blocked | failed) and a first_failure_system to be declared.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "created_at",
+    "provenance",
+    "loop_id",
+    "admission_ref",
+    "loop_status",
+    "trace_refs",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "3ls_loop_run_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_system", "inputs"],
+      "properties": {
+        "source_system": {"type": "string", "pattern": "^[A-Z0-9]{2,8}$"},
+        "inputs": {"type": "array", "items": {"type": "string"}},
+        "simulated": {"type": "boolean"}
+      }
+    },
+    "record_id": {"type": "string"},
+    "loop_id": {"type": "string", "minLength": 1},
+    "admission_ref": {"type": "string", "minLength": 1, "description": "AEX admission artifact reference."},
+    "execution_ref": {"type": ["string", "null"], "description": "PQX execution artifact reference."},
+    "eval_ref": {"type": ["string", "null"], "description": "EVL eval artifact reference."},
+    "policy_ref": {"type": ["string", "null"], "description": "TPA trust/policy adjudication reference."},
+    "decision_ref": {"type": ["string", "null"], "description": "CDE control decision reference."},
+    "enforcement_ref": {"type": ["string", "null"], "description": "SEL enforcement reference."},
+    "loop_status": {
+      "type": "string",
+      "enum": ["complete", "partial", "blocked", "failed"]
+    },
+    "first_failure_system": {
+      "type": ["string", "null"],
+      "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL", null]
+    },
+    "completion_time_ms": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "authority_scope": {
+      "type": "string",
+      "const": "observation_only"
+    },
+    "notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "description": "Complete loop must have all downstream refs.",
+      "if": {
+        "properties": {"loop_status": {"const": "complete"}},
+        "required": ["loop_status"]
+      },
+      "then": {
+        "required": [
+          "execution_ref",
+          "eval_ref",
+          "policy_ref",
+          "decision_ref",
+          "enforcement_ref"
+        ],
+        "properties": {
+          "execution_ref": {"type": "string", "minLength": 1},
+          "eval_ref": {"type": "string", "minLength": 1},
+          "policy_ref": {"type": "string", "minLength": 1},
+          "decision_ref": {"type": "string", "minLength": 1},
+          "enforcement_ref": {"type": "string", "minLength": 1},
+          "first_failure_system": {"type": "null"}
+        }
+      }
+    },
+    {
+      "description": "Non-complete loop must declare first_failure_system.",
+      "if": {
+        "not": {
+          "properties": {"loop_status": {"const": "complete"}},
+          "required": ["loop_status"]
+        }
+      },
+      "then": {
+        "required": ["first_failure_system"],
+        "properties": {
+          "first_failure_system": {
+            "type": "string",
+            "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/3ls_system_measurement_record.schema.json",
+  "title": "3LS System Measurement Record",
+  "description": "Per-system measurement and observability artifact. This record observes and reports on system behavior. It is fail-closed: missing required evidence halts measurement. It does NOT grant authority, replace control decisions, or perform enforcement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "created_at",
+    "provenance",
+    "system",
+    "measurement_dimensions",
+    "evidence_refs",
+    "coverage_status",
+    "gaps",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "3ls_system_measurement_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_system", "inputs"],
+      "properties": {
+        "source_system": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{2,8}$"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "simulated": {"type": "boolean"}
+      }
+    },
+    "record_id": {"type": "string"},
+    "system": {
+      "type": "string",
+      "enum": [
+        "AEX", "PQX", "EVL", "TPA", "CDE", "SEL",
+        "RIL", "FRE", "RFX",
+        "OBS", "LIN", "REP", "SLO",
+        "GOV", "REL"
+      ]
+    },
+    "measurement_dimensions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "execution_evidence",
+          "loop_completion",
+          "handoff_integrity",
+          "surface_coverage",
+          "failure_recurrence",
+          "trust_gap",
+          "replayability",
+          "scope_risk",
+          "operator_debuggability"
+        ]
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "coverage_status": {
+      "type": "string",
+      "enum": ["covered", "partial", "uncovered"]
+    },
+    "gaps": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "last_failure_ref": {
+      "type": ["string", "null"]
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "authority_scope": {
+      "type": "string",
+      "const": "observation_only",
+      "description": "This artifact is observational. It does not grant authority, route decisions, or trigger enforcement."
+    },
+    "notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"coverage_status": {"const": "uncovered"}},
+        "required": ["coverage_status"]
+      },
+      "then": {
+        "properties": {
+          "gaps": {"type": "array", "minItems": 1}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"coverage_status": {"const": "covered"}},
+        "required": ["coverage_status"]
+      },
+      "then": {
+        "properties": {
+          "evidence_refs": {"type": "array", "minItems": 1}
+        }
+      }
+    }
+  ]
+}
