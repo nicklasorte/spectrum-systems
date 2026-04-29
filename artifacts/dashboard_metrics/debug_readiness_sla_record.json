@@ -1,0 +1,65 @@
+{
+  "artifact_type": "debug_readiness_sla_record",
+  "schema_version": "1.0.0",
+  "record_id": "DRSLA-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/time_to_explain_record.json",
+    "artifacts/dashboard_metrics/operator_debuggability_drill_record.json",
+    "artifacts/dashboard_metrics/debug_explanation_index_record.json"
+  ],
+  "reason_codes": [
+    "debug_readiness_sla_observation_only",
+    "no_sla_authority_in_met",
+    "states_explicit"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Debug readiness SLA is an observation. SLO/CDE retain authority over real reliability commitments.",
+    "Where evidence is missing, the readiness state remains unknown — never substituted with 'sufficient'."
+  ],
+  "failure_prevented": "Debug readiness being declared 'sufficient' without paired drill evidence, hiding slow-explanation paths.",
+  "signal_improved": "Each top failure is scored as sufficient/partial/insufficient/unknown against the canonical six-question debug path.",
+  "target_minutes": 15,
+  "readiness_states_allowed": [
+    "sufficient",
+    "partial",
+    "insufficient",
+    "unknown"
+  ],
+  "readiness_entries": [
+    {
+      "readiness_id": "DRSLA-EVL-LONG-HORIZON",
+      "related_failure": "Long-horizon replay coverage gap.",
+      "drill_id": "DRILL-EVL-COVERAGE-GAP-001",
+      "estimated_minutes": 12,
+      "readiness_state": "partial",
+      "missing_questions": [
+        "what_remains_unknown"
+      ],
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/time_to_explain_record.json"
+      ],
+      "next_recommended_input": "Add REP per-dimension status evidence to complete the unknowns answer."
+    },
+    {
+      "readiness_id": "DRSLA-GOV-FALLBACK",
+      "related_failure": "Fallback row pressure with no GOV after-state evidence.",
+      "drill_id": null,
+      "estimated_minutes": "unknown",
+      "readiness_state": "unknown",
+      "missing_questions": [
+        "what_failed",
+        "why",
+        "where_in_loop",
+        "source_evidence",
+        "next_recommended_input",
+        "what_remains_unknown"
+      ],
+      "evidence_refs": [],
+      "next_recommended_input": "Author drill item DRILL-GOV-FALLBACK-001 with the canonical six questions."
+    }
+  ]
+}

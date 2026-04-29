@@ -1,0 +1,83 @@
+{
+  "artifact_type": "next_best_slice_recommendation_record",
+  "schema_version": "1.0.0",
+  "record_id": "NBS-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+    "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
+    "artifacts/dashboard_metrics/recommendation_accuracy_record.json",
+    "artifacts/dashboard_metrics/signal_confidence_record.json"
+  ],
+  "reason_codes": [
+    "candidate_only",
+    "no_execution",
+    "no_admission_claim",
+    "aex_pqx_cde_remain_owners"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Next best slice is a recommendation signal only. AEX admits, PQX executes, CDE controls, GOV/REL retain promotion authority.",
+    "MET does not assert canonical-owner action. State remains proposed/open until canonical owners produce artifact evidence."
+  ],
+  "failure_prevented": "Operators losing the thread of 'what should we fix next' across many MET signals — and MET drifting into ownership language when collapsing them.",
+  "signal_improved": "One bounded slice candidate is named per cycle with source signals, scope boundary, do-not-touch list, and required evidence — to be adjudicated by AEX/PQX/CDE.",
+  "slice_candidates": [
+    {
+      "slice_candidate_id": "SLICE-EVL-LONG-HORIZON-REPLAY",
+      "source_signals": [
+        "EVC-EVL-LONG-HORIZON-REPLAY",
+        "HR-REP-DIM-LONG-HORIZON",
+        "FRP-REP-PER-DIM"
+      ],
+      "failure_prevented": "Long-horizon replay coverage gap remaining open across REP/EVL with no bounded slice candidate.",
+      "signal_improved": "A single bounded slice surfaces the candidate scope, owner recommendation, and required evidence.",
+      "affected_systems": ["EVL", "REP"],
+      "recommended_owner_system": "EVL",
+      "scope_boundary": "Add per-dimension long-horizon replay status field to REP-owned replay_record and reference it from EVL eval coverage. No CDE/SEL changes.",
+      "do_not_touch": [
+        "spectrum_systems/modules/runtime/cde_decision_flow.py",
+        "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
+        "contracts/governance/authority_shape_vocabulary.json"
+      ],
+      "required_evidence": [
+        "REP per-dimension status field present",
+        "EVL eval coverage referencing the field",
+        "outcome_attribution_record entry pairing before/after"
+      ],
+      "readiness_state": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ]
+    },
+    {
+      "slice_candidate_id": "SLICE-GOV-FALLBACK-ROW-RETRIEVAL",
+      "source_signals": [
+        "POL-GOV-FALLBACK-REDUCTION",
+        "FRP-LIN-PER-EDGE",
+        "FRP-AEX-PER-CASE-SNAPSHOT"
+      ],
+      "failure_prevented": "GOV-side fallback row reduction signal remaining without a paired retrieval slice.",
+      "signal_improved": "A bounded retrieval slice surfaces the canonical fallback rows, owner recommendation, and required evidence.",
+      "affected_systems": ["GOV", "LIN"],
+      "recommended_owner_system": "GOV",
+      "scope_boundary": "Retrieve GOV-owned fallback row registry artifact and pair with LIN per-edge lineage. No control or enforcement changes.",
+      "do_not_touch": [
+        "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
+        "spectrum_systems/modules/runtime/cde_decision_flow.py"
+      ],
+      "required_evidence": [
+        "GOV fallback row registry artifact",
+        "LIN per-edge lineage artifact"
+      ],
+      "readiness_state": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ]
+    }
+  ]
+}

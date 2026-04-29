@@ -1,5 +1,7 @@
+import fs from 'fs';
+import path from 'path';
 import { NextResponse } from 'next/server';
-import { loadArtifact } from '@/lib/artifactLoader';
+import { getRepoRoot, loadArtifact } from '@/lib/artifactLoader';
 import { buildSourceEnvelope } from '@/lib/sourceClassification';
 import {
   AI_PROGRAMMING_GOVERNED_PATH_ARTIFACT_PATH,
@@ -67,6 +69,50 @@ const ARTIFACT_PATHS = {
     'artifacts/dashboard_metrics/operator_debuggability_drill_record.json',
   generatedArtifactPolicyHandoff:
     'artifacts/dashboard_metrics/generated_artifact_policy_handoff_record.json',
+  // MET-FULL-ROADMAP — registry, closure pressure, outcome attribution, calibration,
+  // cross-run consistency, error-budget observation, action bundles, counterfactuals,
+  // recurrence, debug SLA, and signal integrity. All blocks are MET observations only;
+  // CDE/SEL/GOV remain canonical owners.
+  staleCandidatePressure:
+    'artifacts/dashboard_metrics/stale_candidate_pressure_record.json',
+  outcomeAttribution: 'artifacts/dashboard_metrics/outcome_attribution_record.json',
+  failureReductionSignal:
+    'artifacts/dashboard_metrics/failure_reduction_signal_record.json',
+  recommendationAccuracy:
+    'artifacts/dashboard_metrics/recommendation_accuracy_record.json',
+  calibrationDrift: 'artifacts/dashboard_metrics/calibration_drift_record.json',
+  signalConfidence: 'artifacts/dashboard_metrics/signal_confidence_record.json',
+  crossRunConsistency:
+    'artifacts/dashboard_metrics/cross_run_consistency_record.json',
+  divergenceDetection:
+    'artifacts/dashboard_metrics/divergence_detection_record.json',
+  metErrorBudgetObservation:
+    'artifacts/dashboard_metrics/met_error_budget_observation_record.json',
+  metFreezeRecommendationSignal:
+    'artifacts/dashboard_metrics/met_freeze_recommendation_signal_record.json',
+  nextBestSliceRecommendation:
+    'artifacts/dashboard_metrics/next_best_slice_recommendation_record.json',
+  pqxCandidateActionBundle:
+    'artifacts/dashboard_metrics/pqx_candidate_action_bundle_record.json',
+  counterfactualReconstruction:
+    'artifacts/dashboard_metrics/counterfactual_reconstruction_record.json',
+  earlierInterventionSignal:
+    'artifacts/dashboard_metrics/earlier_intervention_signal_record.json',
+  recurringFailureCluster:
+    'artifacts/dashboard_metrics/recurring_failure_cluster_record.json',
+  recurrenceSeveritySignal:
+    'artifacts/dashboard_metrics/recurrence_severity_signal_record.json',
+  timeToExplain: 'artifacts/dashboard_metrics/time_to_explain_record.json',
+  debugReadinessSla:
+    'artifacts/dashboard_metrics/debug_readiness_sla_record.json',
+  metricGamingDetection:
+    'artifacts/dashboard_metrics/metric_gaming_detection_record.json',
+  misleadingSignalDetection:
+    'artifacts/dashboard_metrics/misleading_signal_detection_record.json',
+  signalIntegrityCheck:
+    'artifacts/dashboard_metrics/signal_integrity_check_record.json',
+  mergeConflictPressure:
+    'artifacts/dashboard_metrics/merge_conflict_pressure_record.json',
   // AEX-PQX-DASH-02 — governance violation panel + core-loop compliance.
   governanceViolation: 'artifacts/dashboard_metrics/governance_violation_record.json',
   // AEX-PQX-DASH-01 — AI programming governed path (per-work-item).
@@ -503,6 +549,98 @@ export async function GET() {
     policy_alignment_items?: Array<Record<string, unknown>>;
   }>(ARTIFACT_PATHS.generatedArtifactPolicyHandoff);
 
+  // MET-FULL-ROADMAP — non-owning observation, attribution, calibration, cross-run,
+  // error budget, action bundle, counterfactual, recurrence, debug SLA, integrity.
+  type GenericMetEnvelope = {
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+  };
+  const staleCandidatePressure = loadArtifact<GenericMetEnvelope & {
+    pressure_summary?: Record<string, unknown>;
+    pressure_by_loop_leg?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.staleCandidatePressure);
+  const outcomeAttribution = loadArtifact<GenericMetEnvelope & {
+    outcome_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.outcomeAttribution);
+  const failureReductionSignal = loadArtifact<GenericMetEnvelope & {
+    failure_reduction_signals?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.failureReductionSignal);
+  const recommendationAccuracy = loadArtifact<GenericMetEnvelope & {
+    recommendation_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.recommendationAccuracy);
+  const calibrationDrift = loadArtifact<GenericMetEnvelope & {
+    minimum_paired_outcomes_per_bucket?: number;
+    calibration_buckets?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.calibrationDrift);
+  const signalConfidence = loadArtifact<GenericMetEnvelope & {
+    minimum_evidence_count_for_high_confidence?: number;
+    signal_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.signalConfidence);
+  const crossRunConsistency = loadArtifact<GenericMetEnvelope & {
+    non_material_fields_ignored?: string[];
+    consistency_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.crossRunConsistency);
+  const divergenceDetection = loadArtifact<GenericMetEnvelope & {
+    divergence_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.divergenceDetection);
+  const metErrorBudgetObservation = loadArtifact<GenericMetEnvelope & {
+    budget_observations?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.metErrorBudgetObservation);
+  const metFreezeRecommendationSignal = loadArtifact<GenericMetEnvelope & {
+    recommendation_signals?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.metFreezeRecommendationSignal);
+  const nextBestSliceRecommendation = loadArtifact<GenericMetEnvelope & {
+    slice_candidates?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.nextBestSliceRecommendation);
+  const pqxCandidateActionBundle = loadArtifact<GenericMetEnvelope & {
+    bundle_candidates?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.pqxCandidateActionBundle);
+  const counterfactualReconstruction = loadArtifact<GenericMetEnvelope & {
+    counterfactual_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.counterfactualReconstruction);
+  const earlierInterventionSignal = loadArtifact<GenericMetEnvelope & {
+    intervention_signals?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.earlierInterventionSignal);
+  const recurringFailureCluster = loadArtifact<GenericMetEnvelope & {
+    minimum_comparable_cases_for_recurrence?: number;
+    clusters?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.recurringFailureCluster);
+  const recurrenceSeveritySignal = loadArtifact<GenericMetEnvelope & {
+    severity_signals?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.recurrenceSeveritySignal);
+  const timeToExplain = loadArtifact<GenericMetEnvelope & {
+    target_minutes?: number;
+    questions_required?: string[];
+    time_to_explain_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.timeToExplain);
+  const debugReadinessSla = loadArtifact<GenericMetEnvelope & {
+    target_minutes?: number;
+    readiness_states_allowed?: string[];
+    readiness_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.debugReadinessSla);
+  const metricGamingDetection = loadArtifact<GenericMetEnvelope & {
+    rules_checked?: string[];
+    gaming_observations?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.metricGamingDetection);
+  const misleadingSignalDetection = loadArtifact<GenericMetEnvelope & {
+    rules_checked?: string[];
+    misleading_signal_observations?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.misleadingSignalDetection);
+  const signalIntegrityCheck = loadArtifact<GenericMetEnvelope & {
+    integrity_summary?: Record<string, unknown>;
+    integrity_checks?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.signalIntegrityCheck);
+  const mergeConflictPressure = loadArtifact<GenericMetEnvelope & {
+    base_ref?: string;
+    head_ref?: string;
+    overall_state?: string;
+    counts?: Record<string, number>;
+    items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.mergeConflictPressure);
+
   // AEX-PQX-DASH-02 — governance violation panel.
   const governanceViolation = loadArtifact<GovernanceViolationRecord>(
     ARTIFACT_PATHS.governanceViolation,
@@ -556,6 +694,28 @@ export async function GET() {
     { path: ARTIFACT_PATHS.foldCandidateProofCheck, loaded: foldCandidateProofCheck !== null },
     { path: ARTIFACT_PATHS.operatorDebuggabilityDrill, loaded: operatorDebuggabilityDrill !== null },
     { path: ARTIFACT_PATHS.generatedArtifactPolicyHandoff, loaded: generatedArtifactPolicyHandoff !== null },
+    { path: ARTIFACT_PATHS.staleCandidatePressure, loaded: staleCandidatePressure !== null },
+    { path: ARTIFACT_PATHS.outcomeAttribution, loaded: outcomeAttribution !== null },
+    { path: ARTIFACT_PATHS.failureReductionSignal, loaded: failureReductionSignal !== null },
+    { path: ARTIFACT_PATHS.recommendationAccuracy, loaded: recommendationAccuracy !== null },
+    { path: ARTIFACT_PATHS.calibrationDrift, loaded: calibrationDrift !== null },
+    { path: ARTIFACT_PATHS.signalConfidence, loaded: signalConfidence !== null },
+    { path: ARTIFACT_PATHS.crossRunConsistency, loaded: crossRunConsistency !== null },
+    { path: ARTIFACT_PATHS.divergenceDetection, loaded: divergenceDetection !== null },
+    { path: ARTIFACT_PATHS.metErrorBudgetObservation, loaded: metErrorBudgetObservation !== null },
+    { path: ARTIFACT_PATHS.metFreezeRecommendationSignal, loaded: metFreezeRecommendationSignal !== null },
+    { path: ARTIFACT_PATHS.nextBestSliceRecommendation, loaded: nextBestSliceRecommendation !== null },
+    { path: ARTIFACT_PATHS.pqxCandidateActionBundle, loaded: pqxCandidateActionBundle !== null },
+    { path: ARTIFACT_PATHS.counterfactualReconstruction, loaded: counterfactualReconstruction !== null },
+    { path: ARTIFACT_PATHS.earlierInterventionSignal, loaded: earlierInterventionSignal !== null },
+    { path: ARTIFACT_PATHS.recurringFailureCluster, loaded: recurringFailureCluster !== null },
+    { path: ARTIFACT_PATHS.recurrenceSeveritySignal, loaded: recurrenceSeveritySignal !== null },
+    { path: ARTIFACT_PATHS.timeToExplain, loaded: timeToExplain !== null },
+    { path: ARTIFACT_PATHS.debugReadinessSla, loaded: debugReadinessSla !== null },
+    { path: ARTIFACT_PATHS.metricGamingDetection, loaded: metricGamingDetection !== null },
+    { path: ARTIFACT_PATHS.misleadingSignalDetection, loaded: misleadingSignalDetection !== null },
+    { path: ARTIFACT_PATHS.signalIntegrityCheck, loaded: signalIntegrityCheck !== null },
+    { path: ARTIFACT_PATHS.mergeConflictPressure, loaded: mergeConflictPressure !== null },
     { path: ARTIFACT_PATHS.governanceViolation, loaded: governanceViolation !== null },
     { path: ARTIFACT_PATHS.aiProgrammingGovernedPath, loaded: aiProgrammingGovernedPath !== null },
   ];
@@ -595,8 +755,29 @@ export async function GET() {
       ...(foldCandidateProofCheck?.warnings ?? []),
       ...(operatorDebuggabilityDrill?.warnings ?? []),
       ...(generatedArtifactPolicyHandoff?.warnings ?? []),
+      ...(staleCandidatePressure?.warnings ?? []),
+      ...(outcomeAttribution?.warnings ?? []),
+      ...(failureReductionSignal?.warnings ?? []),
+      ...(recommendationAccuracy?.warnings ?? []),
+      ...(calibrationDrift?.warnings ?? []),
+      ...(signalConfidence?.warnings ?? []),
+      ...(crossRunConsistency?.warnings ?? []),
+      ...(divergenceDetection?.warnings ?? []),
+      ...(metErrorBudgetObservation?.warnings ?? []),
+      ...(metFreezeRecommendationSignal?.warnings ?? []),
+      ...(nextBestSliceRecommendation?.warnings ?? []),
+      ...(pqxCandidateActionBundle?.warnings ?? []),
+      ...(counterfactualReconstruction?.warnings ?? []),
+      ...(earlierInterventionSignal?.warnings ?? []),
+      ...(recurringFailureCluster?.warnings ?? []),
+      ...(recurrenceSeveritySignal?.warnings ?? []),
+      ...(timeToExplain?.warnings ?? []),
+      ...(debugReadinessSla?.warnings ?? []),
+      ...(metricGamingDetection?.warnings ?? []),
+      ...(misleadingSignalDetection?.warnings ?? []),
+      ...(signalIntegrityCheck?.warnings ?? []),
+      ...(mergeConflictPressure?.warnings ?? []),
       ...(governanceViolation?.warnings ?? []),
-      // Main's filter — guards against malformed warnings entries.
       ...(Array.isArray(aiProgrammingGovernedPath?.warnings)
         ? (aiProgrammingGovernedPath?.warnings ?? []).filter(
             (w): w is string => typeof w === 'string',
@@ -1346,6 +1527,417 @@ export async function GET() {
         warnings: [`${ARTIFACT_PATHS.generatedArtifactPolicyHandoff} unavailable; generated-artifact policy handoff reported as unknown.`],
       };
 
+  // MET-FULL-ROADMAP — generic builder. Each block degrades to 'unknown'/empty
+  // arrays when the artifact is missing and never substitutes 0 for unknown.
+  function metBlock(
+    artifact: (GenericMetEnvelope & Record<string, unknown>) | null,
+    artifactPath: string,
+    extraDefaults: Record<string, unknown>,
+  ): Record<string, unknown> {
+    if (artifact) {
+      return {
+        ...extraDefaults,
+        ...(artifact as Record<string, unknown>),
+        data_source: artifact.data_source ?? 'unknown',
+        source_artifacts_used: artifact.source_artifacts_used ?? [],
+        warnings: artifact.warnings ?? [],
+      };
+    }
+    return {
+      ...extraDefaults,
+      data_source: 'unknown',
+      source_artifacts_used: [],
+      warnings: [`${artifactPath} unavailable; block reported as unknown.`],
+      status: 'unknown',
+    };
+  }
+
+  const staleCandidatePressureBlock = metBlock(staleCandidatePressure, ARTIFACT_PATHS.staleCandidatePressure, {
+    pressure_summary: {} as Record<string, unknown>,
+    pressure_by_loop_leg: [] as Array<Record<string, unknown>>,
+  });
+  const outcomeAttributionBlock = metBlock(outcomeAttribution, ARTIFACT_PATHS.outcomeAttribution, {
+    outcome_entries: [] as Array<Record<string, unknown>>,
+  });
+  const failureReductionSignalBlock = metBlock(failureReductionSignal, ARTIFACT_PATHS.failureReductionSignal, {
+    failure_reduction_signals: [] as Array<Record<string, unknown>>,
+  });
+  const recommendationAccuracyBlock = metBlock(recommendationAccuracy, ARTIFACT_PATHS.recommendationAccuracy, {
+    recommendation_entries: [] as Array<Record<string, unknown>>,
+  });
+  const calibrationDriftBlock = metBlock(calibrationDrift, ARTIFACT_PATHS.calibrationDrift, {
+    calibration_buckets: [] as Array<Record<string, unknown>>,
+  });
+  const signalConfidenceBlock = metBlock(signalConfidence, ARTIFACT_PATHS.signalConfidence, {
+    signal_entries: [] as Array<Record<string, unknown>>,
+  });
+  const crossRunConsistencyBlock = metBlock(crossRunConsistency, ARTIFACT_PATHS.crossRunConsistency, {
+    consistency_entries: [] as Array<Record<string, unknown>>,
+  });
+  const divergenceDetectionBlock = metBlock(divergenceDetection, ARTIFACT_PATHS.divergenceDetection, {
+    divergence_entries: [] as Array<Record<string, unknown>>,
+  });
+  const metErrorBudgetObservationBlock = metBlock(metErrorBudgetObservation, ARTIFACT_PATHS.metErrorBudgetObservation, {
+    budget_observations: [] as Array<Record<string, unknown>>,
+  });
+  const metFreezeRecommendationSignalBlock = metBlock(metFreezeRecommendationSignal, ARTIFACT_PATHS.metFreezeRecommendationSignal, {
+    recommendation_signals: [] as Array<Record<string, unknown>>,
+  });
+  const nextBestSliceRecommendationBlock = metBlock(nextBestSliceRecommendation, ARTIFACT_PATHS.nextBestSliceRecommendation, {
+    slice_candidates: [] as Array<Record<string, unknown>>,
+  });
+  const pqxCandidateActionBundleBlock = metBlock(pqxCandidateActionBundle, ARTIFACT_PATHS.pqxCandidateActionBundle, {
+    bundle_candidates: [] as Array<Record<string, unknown>>,
+  });
+  const counterfactualReconstructionBlock = metBlock(counterfactualReconstruction, ARTIFACT_PATHS.counterfactualReconstruction, {
+    counterfactual_entries: [] as Array<Record<string, unknown>>,
+  });
+  const earlierInterventionSignalBlock = metBlock(earlierInterventionSignal, ARTIFACT_PATHS.earlierInterventionSignal, {
+    intervention_signals: [] as Array<Record<string, unknown>>,
+  });
+  const recurringFailureClusterBlock = metBlock(recurringFailureCluster, ARTIFACT_PATHS.recurringFailureCluster, {
+    clusters: [] as Array<Record<string, unknown>>,
+  });
+  const recurrenceSeveritySignalBlock = metBlock(recurrenceSeveritySignal, ARTIFACT_PATHS.recurrenceSeveritySignal, {
+    severity_signals: [] as Array<Record<string, unknown>>,
+  });
+  const timeToExplainBlock = metBlock(timeToExplain, ARTIFACT_PATHS.timeToExplain, {
+    time_to_explain_entries: [] as Array<Record<string, unknown>>,
+  });
+  const debugReadinessSlaBlock = metBlock(debugReadinessSla, ARTIFACT_PATHS.debugReadinessSla, {
+    readiness_entries: [] as Array<Record<string, unknown>>,
+  });
+  const metricGamingDetectionBlock = metBlock(metricGamingDetection, ARTIFACT_PATHS.metricGamingDetection, {
+    gaming_observations: [] as Array<Record<string, unknown>>,
+  });
+  const misleadingSignalDetectionBlock = metBlock(misleadingSignalDetection, ARTIFACT_PATHS.misleadingSignalDetection, {
+    misleading_signal_observations: [] as Array<Record<string, unknown>>,
+  });
+  const signalIntegrityCheckBlock = metBlock(signalIntegrityCheck, ARTIFACT_PATHS.signalIntegrityCheck, {
+    integrity_summary: {} as Record<string, unknown>,
+    integrity_checks: [] as Array<Record<string, unknown>>,
+  });
+  const mergeConflictPressureBlock = metBlock(mergeConflictPressure, ARTIFACT_PATHS.mergeConflictPressure, {
+    overall_state: 'unknown',
+    counts: {} as Record<string, number>,
+    items: [] as Array<Record<string, unknown>>,
+  });
+
+  // MET-FULL-ROADMAP — registry status block. Read directly from
+  // docs/architecture/system_registry.md so any registry edit (or missing
+  // file) flows through; on read or parse failure the block degrades to
+  // unknown rather than reporting stale hard-coded metadata.
+  const REGISTRY_REL_PATH = 'docs/architecture/system_registry.md';
+  function readRegistryFile(): string | null {
+    try {
+      return fs.readFileSync(path.join(getRepoRoot(), REGISTRY_REL_PATH), 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  function parseMetRegistryStatus(registry: string | null): Record<string, unknown> {
+    if (!registry) {
+      return {
+        registry_id: 'MET',
+        status: 'unknown',
+        authority: 'unknown',
+        forbidden: [] as string[],
+        invariant: 'unknown',
+        failure_prevented: [] as string[],
+        signal_improved: [] as string[],
+        upstream_dependencies: [] as string[],
+        downstream_consumers: [] as string[],
+        data_source: 'unknown',
+        source_artifacts_used: [] as string[],
+        warnings: [`${REGISTRY_REL_PATH} unavailable; MET registry status reported as unknown.`],
+      };
+    }
+    const headerIdx = registry.indexOf('### MET\n');
+    if (headerIdx < 0) {
+      return {
+        registry_id: 'MET',
+        status: 'unknown',
+        authority: 'unknown',
+        forbidden: [] as string[],
+        invariant: 'unknown',
+        failure_prevented: [] as string[],
+        signal_improved: [] as string[],
+        upstream_dependencies: [] as string[],
+        downstream_consumers: [] as string[],
+        data_source: 'unknown',
+        source_artifacts_used: [REGISTRY_REL_PATH],
+        warnings: ['### MET section not present in system_registry.md; reporting unknown.'],
+      };
+    }
+    // Take everything from the first ### MET header until the next ### header.
+    const tail = registry.slice(headerIdx);
+    const nextHeader = tail.slice(8).search(/\n### /);
+    const block = nextHeader > 0 ? tail.slice(0, 8 + nextHeader) : tail;
+
+    const statusMatch = block.match(/\*\*Status:\*\*\s*([^\n]+)/);
+    const authorityMatch = block.match(/\*\*Authority:\*\*\s*([^\n]+)/);
+    const invariantMatch = block.match(/\*\*Invariant:\*\*\s*([^\n]+)/);
+    const status = statusMatch?.[1]?.trim().toLowerCase().includes('active, non-owning')
+      ? 'active_non_owning'
+      : (statusMatch?.[1]?.trim() ?? 'unknown');
+    const authority = authorityMatch?.[1]?.trim() ?? 'unknown';
+
+    function bulletsAfter(label: string): string[] {
+      const labelIdx = block.indexOf(`**${label}:**`);
+      if (labelIdx < 0) return [];
+      const after = block.slice(labelIdx);
+      const stop = after.search(/\n- \*\*[A-Z]/);
+      const region = stop > 0 ? after.slice(0, stop) : after;
+      const items: string[] = [];
+      for (const line of region.split('\n')) {
+        const m = line.match(/^\s+-\s+(.+)$/);
+        if (m) items.push(m[1].trim());
+      }
+      return items;
+    }
+
+    function inlineList(label: string): string[] {
+      const m = block.match(new RegExp(`\\*\\*${label}:\\*\\*\\s*([^\\n]+)`));
+      if (!m) return [];
+      return m[1].split(',').map((s) => s.trim()).filter(Boolean);
+    }
+
+    // Forbidden tokens are written inline in the registry as a comma-separated
+    // sentence on the same line as `**Forbidden:**`. The previous nested-bullet
+    // parser dropped them silently. Normalise to underscore tokens (e.g.
+    // 'decision ownership' → 'decision_ownership') so dashboard consumers that
+    // gate on token shape see consistent values.
+    const forbiddenTokens = inlineList('Forbidden').map((s) =>
+      s.replace(/[.\s]+$/, '').toLowerCase().replace(/\s+/g, '_'),
+    );
+
+    return {
+      registry_id: 'MET',
+      status,
+      authority: authority === 'NONE' ? 'NONE' : authority || 'unknown',
+      forbidden: forbiddenTokens,
+      invariant: invariantMatch?.[1]?.trim() ?? 'unknown',
+      failure_prevented: bulletsAfter('Failure Prevented'),
+      signal_improved: bulletsAfter('Signal Improved'),
+      upstream_dependencies: inlineList('Upstream Dependencies'),
+      downstream_consumers: inlineList('Downstream Consumers'),
+      data_source: 'artifact_store',
+      source_artifacts_used: [REGISTRY_REL_PATH],
+      warnings: authority === 'NONE'
+        ? []
+        : ['Authority not equal to NONE in registry; MET must remain non-owning.'],
+    };
+  }
+
+  const registryText = readRegistryFile();
+  const metRegistryStatusBlock = parseMetRegistryStatus(registryText);
+
+  // MET-FULL-ROADMAP — Top 3 next inputs aggregated from MET signals (observation only).
+  const topNextInputsBlock = {
+    items: (nextBestSliceRecommendation?.slice_candidates ?? []).slice(0, 3).map((slice) => ({
+      slice_candidate_id: slice.slice_candidate_id,
+      affected_systems: slice.affected_systems ?? [],
+      recommended_owner_system: slice.recommended_owner_system ?? 'unknown',
+      readiness_state: slice.readiness_state ?? 'unknown',
+      next_recommended_input: slice.scope_boundary ?? null,
+      source_artifacts_used: slice.source_artifacts_used ?? [],
+    })),
+    data_source: nextBestSliceRecommendation?.data_source ?? 'unknown',
+    source_artifacts_used: nextBestSliceRecommendation?.source_artifacts_used ?? [],
+    warnings: nextBestSliceRecommendation?.warnings ?? [
+      `${ARTIFACT_PATHS.nextBestSliceRecommendation} unavailable; top next inputs reported as unknown.`,
+    ],
+    status: nextBestSliceRecommendation ? 'warn' : 'unknown',
+  };
+
+  // MET-FULL-ROADMAP — owner handoff queue surfaces stale/none_observed/unknown
+  // owner read items; canonical owners adjudicate.
+  const ownerHandoffQueueBlock = {
+    items: (ownerReadObservationLedger?.owner_read_items ?? [])
+      .filter((item) => {
+        const state = String(item.read_observation_state ?? '');
+        return state === 'stale_candidate_signal' || state === 'none_observed' || state === 'unknown';
+      })
+      .slice(0, 5)
+      .map((item) => ({
+        owner_read_observation_id: item.owner_read_observation_id,
+        source_candidate_id: item.source_candidate_id,
+        recommended_owner_system: item.recommended_owner_system ?? 'unknown',
+        read_observation_state: item.read_observation_state ?? 'unknown',
+        next_recommended_input: item.next_recommended_input ?? null,
+        source_artifacts_used: item.source_artifacts_used ?? [],
+      })),
+    data_source: ownerReadObservationLedger?.data_source ?? 'unknown',
+    source_artifacts_used: ownerReadObservationLedger?.source_artifacts_used ?? [],
+    warnings: ownerReadObservationLedger?.warnings ?? [
+      `${ARTIFACT_PATHS.ownerReadObservationLedger} unavailable; owner handoff queue reported as unknown.`,
+    ],
+    status: ownerReadObservationLedger ? 'warn' : 'unknown',
+  };
+
+  // MET-FULL-ROADMAP — overall MET cockpit summary card.
+  // Counts and aggregate states are derived from artifact content; missing
+  // artifacts surface as 'unknown' rather than 0 / 'insufficient_cases'.
+  // Counts use the full source arrays — never the UI-capped slices — so the
+  // cockpit reports true backlog depth even when the rendered list is capped.
+  const topNextInputCount: number | 'unknown' = nextBestSliceRecommendation
+    ? (nextBestSliceRecommendation.slice_candidates ?? []).length
+    : 'unknown';
+  const ownerHandoffFullQueue = (ownerReadObservationLedger?.owner_read_items ?? []).filter(
+    (item) => {
+      const state = String(item.read_observation_state ?? '');
+      return state === 'stale_candidate_signal' || state === 'none_observed' || state === 'unknown';
+    },
+  );
+  const ownerHandoffQueueCount: number | 'unknown' = ownerReadObservationLedger
+    ? ownerHandoffFullQueue.length
+    : 'unknown';
+
+  // Aggregate calibration drift across buckets. Surface the strongest observed
+  // state (drifting > stable > insufficient_cases > unknown) so the cockpit
+  // moves with artifact content, not file presence.
+  function aggregateState(
+    states: Array<string | undefined>,
+    rank: Record<string, number>,
+    fallback: string,
+  ): string {
+    let best: string | null = null;
+    let bestRank = -Infinity;
+    for (const raw of states) {
+      const s = (raw ?? '').toString();
+      if (!(s in rank)) continue;
+      if (rank[s] > bestRank) {
+        bestRank = rank[s];
+        best = s;
+      }
+    }
+    return best ?? fallback;
+  }
+
+  const calibrationBucketStates = (
+    (calibrationDrift?.calibration_buckets as Array<Record<string, unknown>> | undefined) ?? []
+  ).map((b) => (b.drift_state as string | undefined));
+  const confidenceCalibrationState: string = calibrationDrift
+    ? aggregateState(
+        calibrationBucketStates,
+        {
+          unknown: 0,
+          insufficient_cases: 1,
+          stable: 2,
+          drifting: 3,
+        },
+        'unknown',
+      )
+    : 'unknown';
+
+  const recurrenceClusterStates = (
+    (recurringFailureCluster?.clusters as Array<Record<string, unknown>> | undefined) ?? []
+  ).map((c) => (c.recurrence_state as string | undefined));
+  const recurrenceState: string = recurringFailureCluster
+    ? aggregateState(
+        recurrenceClusterStates,
+        {
+          unknown: 0,
+          insufficient_cases: 1,
+          observed: 2,
+          recurring: 3,
+        },
+        'unknown',
+      )
+    : 'unknown';
+
+  // Outcome attribution aggregate: surface the strongest observed status.
+  const outcomeStatuses = (
+    (outcomeAttributionBlock.outcome_entries as Array<Record<string, unknown>>) ?? []
+  ).map((e) => (e.status as string | undefined));
+  const outcomeAttributionState: string = outcomeAttribution
+    ? aggregateState(
+        outcomeStatuses,
+        {
+          unknown: 0,
+          insufficient_evidence: 1,
+          partial: 2,
+          observed: 3,
+        },
+        'unknown',
+      )
+    : 'unknown';
+
+  // Debug readiness aggregate: surface the strongest observed readiness.
+  const debugReadinessStates = (
+    (debugReadinessSlaBlock.readiness_entries as Array<Record<string, unknown>>) ?? []
+  ).map((e) => (e.readiness_state as string | undefined));
+  const debugReadinessState: string = debugReadinessSla
+    ? aggregateState(
+        debugReadinessStates,
+        {
+          unknown: 0,
+          insufficient: 1,
+          partial: 2,
+          sufficient: 3,
+        },
+        'unknown',
+      )
+    : 'unknown';
+
+  const metCockpitBlock = {
+    trust_observation: 'see_trust_pulse',
+    weakest_loop_leg: bottleneck?.payload?.constrained_loop_leg ?? 'unknown',
+    top_next_input_count: topNextInputCount,
+    owner_handoff_queue_count: ownerHandoffQueueCount,
+    stale_candidate_pressure_state:
+      (staleCandidatePressureBlock as { pressure_summary?: Record<string, unknown> }).pressure_summary?.stale_count ?? 'unknown',
+    trend_readiness_state:
+      trendFrequencyHonestyGate?.trend_state ?? 'unknown',
+    debug_readiness_state: debugReadinessState,
+    artifact_integrity_state:
+      (signalIntegrityCheckBlock as { integrity_summary?: { overall_integrity_state?: string } }).integrity_summary?.overall_integrity_state ?? 'unknown',
+    outcome_attribution_state: outcomeAttributionState,
+    confidence_calibration_state: confidenceCalibrationState,
+    recurrence_state: recurrenceState,
+    anti_gaming_state:
+      (signalIntegrityCheckBlock as { integrity_summary?: { overall_integrity_state?: string } }).integrity_summary?.overall_integrity_state ?? 'unknown',
+    merge_conflict_pressure_state: mergeConflictPressure?.overall_state ?? 'unknown',
+    ...(() => {
+      // Provenance is derived from actual loaded slots so degraded data is
+      // never reported as fully artifact-backed. data_source = 'artifact_store'
+      // only when every required input loaded; otherwise 'partial' with a
+      // count of missing slots, or 'unknown' when nothing loaded.
+      const slots: Array<{ path: string; loaded: boolean }> = [
+        { path: ARTIFACT_PATHS.nextBestSliceRecommendation, loaded: nextBestSliceRecommendation !== null },
+        { path: ARTIFACT_PATHS.ownerReadObservationLedger, loaded: ownerReadObservationLedger !== null },
+        { path: ARTIFACT_PATHS.staleCandidatePressure, loaded: staleCandidatePressure !== null },
+        { path: ARTIFACT_PATHS.signalIntegrityCheck, loaded: signalIntegrityCheck !== null },
+        { path: ARTIFACT_PATHS.outcomeAttribution, loaded: outcomeAttribution !== null },
+        { path: ARTIFACT_PATHS.calibrationDrift, loaded: calibrationDrift !== null },
+        { path: ARTIFACT_PATHS.recurringFailureCluster, loaded: recurringFailureCluster !== null },
+        { path: ARTIFACT_PATHS.debugReadinessSla, loaded: debugReadinessSla !== null },
+      ];
+      const loadedSlots = slots.filter((s) => s.loaded);
+      const missingSlots = slots.filter((s) => !s.loaded);
+      const dataSource =
+        loadedSlots.length === 0
+          ? 'unknown'
+          : missingSlots.length === 0
+          ? 'artifact_store'
+          : 'partial';
+      const warnings = ['MET cockpit values are observations only; CDE/SEL/GOV remain canonical owners.'];
+      if (missingSlots.length > 0) {
+        warnings.push(
+          `MET cockpit provenance partial: ${missingSlots.length}/${slots.length} required artifacts missing (${missingSlots.map((s) => s.path).join(', ')}).`,
+        );
+      }
+      return {
+        data_source: dataSource,
+        source_artifacts_used: loadedSlots.map((s) => s.path),
+        missing_source_artifacts: missingSlots.map((s) => s.path),
+        warnings,
+      };
+    })(),
+    status: 'warn',
+  };
+
   // AEX-PQX-DASH-01 — AI programming governed-path block.
   //
   // MET observation only. Fail-closed: missing artifact degrades to status
@@ -1752,6 +2344,35 @@ export async function GET() {
     fold_candidate_proof_check: foldCandidateProofCheckBlock,
     operator_debuggability_drill: operatorDebuggabilityDrillBlock,
     generated_artifact_policy_handoff: generatedArtifactPolicyHandoffBlock,
+    met_registry_status: metRegistryStatusBlock,
+    met_cockpit: metCockpitBlock,
+    top_next_inputs: topNextInputsBlock,
+    owner_handoff: ownerHandoffQueueBlock,
+    stale_candidate_pressure: staleCandidatePressureBlock,
+    trend_readiness: trendReadyCasePackBlock,
+    override_evidence: overrideEvidenceSourceAdapterBlock,
+    fold_safety: foldCandidateProofCheckBlock,
+    outcome_attribution: outcomeAttributionBlock,
+    failure_reduction_signal: failureReductionSignalBlock,
+    recommendation_accuracy: recommendationAccuracyBlock,
+    calibration_drift: calibrationDriftBlock,
+    signal_confidence: signalConfidenceBlock,
+    cross_run_consistency: crossRunConsistencyBlock,
+    divergence_detection: divergenceDetectionBlock,
+    error_budget_observation: metErrorBudgetObservationBlock,
+    freeze_recommendation_signal: metFreezeRecommendationSignalBlock,
+    next_best_slice: nextBestSliceRecommendationBlock,
+    pqx_candidate_action_bundle: pqxCandidateActionBundleBlock,
+    counterfactuals: counterfactualReconstructionBlock,
+    earlier_intervention_signal: earlierInterventionSignalBlock,
+    recurring_failures: recurringFailureClusterBlock,
+    recurrence_severity_signal: recurrenceSeveritySignalBlock,
+    debug_readiness: debugReadinessSlaBlock,
+    time_to_explain: timeToExplainBlock,
+    metric_gaming_detection: metricGamingDetectionBlock,
+    misleading_signal_detection: misleadingSignalDetectionBlock,
+    signal_integrity: signalIntegrityCheckBlock,
+    merge_conflict_pressure: mergeConflictPressureBlock,
     governance_violations: governanceViolationsBlock,
     core_loop_compliance_summary: coreLoopComplianceSummaryBlock,
     ai_programming_governed_path: aiProgrammingGovernedPathBlock,
@@ -1788,6 +2409,28 @@ export async function GET() {
         ...(foldCandidateProofCheck?.source_artifacts_used ?? []),
         ...(operatorDebuggabilityDrill?.source_artifacts_used ?? []),
         ...(generatedArtifactPolicyHandoff?.source_artifacts_used ?? []),
+        ...(staleCandidatePressure?.source_artifacts_used ?? []),
+        ...(outcomeAttribution?.source_artifacts_used ?? []),
+        ...(failureReductionSignal?.source_artifacts_used ?? []),
+        ...(recommendationAccuracy?.source_artifacts_used ?? []),
+        ...(calibrationDrift?.source_artifacts_used ?? []),
+        ...(signalConfidence?.source_artifacts_used ?? []),
+        ...(crossRunConsistency?.source_artifacts_used ?? []),
+        ...(divergenceDetection?.source_artifacts_used ?? []),
+        ...(metErrorBudgetObservation?.source_artifacts_used ?? []),
+        ...(metFreezeRecommendationSignal?.source_artifacts_used ?? []),
+        ...(nextBestSliceRecommendation?.source_artifacts_used ?? []),
+        ...(pqxCandidateActionBundle?.source_artifacts_used ?? []),
+        ...(counterfactualReconstruction?.source_artifacts_used ?? []),
+        ...(earlierInterventionSignal?.source_artifacts_used ?? []),
+        ...(recurringFailureCluster?.source_artifacts_used ?? []),
+        ...(recurrenceSeveritySignal?.source_artifacts_used ?? []),
+        ...(timeToExplain?.source_artifacts_used ?? []),
+        ...(debugReadinessSla?.source_artifacts_used ?? []),
+        ...(metricGamingDetection?.source_artifacts_used ?? []),
+        ...(misleadingSignalDetection?.source_artifacts_used ?? []),
+        ...(signalIntegrityCheck?.source_artifacts_used ?? []),
+        ...(mergeConflictPressure?.source_artifacts_used ?? []),
         ...(governanceViolation?.source_artifacts_used ?? []),
         ...(Array.isArray(aiProgrammingGovernedPath?.source_artifacts_used)
           ? (aiProgrammingGovernedPath?.source_artifacts_used ?? []).filter(

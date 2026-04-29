@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/counterfactual_reconstruction_record.schema.json",
+  "title": "Counterfactual Reconstruction Record",
+  "description": "MET-owned non-authority observation record. Counterfactual Reconstruction Record surfaces measurement and signal observations only; canonical owners (CDE/SEL/GOV/REL) retain authority. Schema is permissive (additionalProperties=true) so MET artifacts can evolve without breaking the dashboard contract; required envelope fields are the floor.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "owner_system",
+    "data_source",
+    "source_artifacts_used",
+    "failure_prevented",
+    "signal_improved"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "counterfactual_reconstruction_record"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "owner_system": {
+      "type": "string",
+      "const": "MET"
+    },
+    "data_source": {
+      "type": "string"
+    },
+    "source_artifacts_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failure_prevented": {
+      "type": "string"
+    },
+    "signal_improved": {
+      "type": "string"
+    }
+  }
+}

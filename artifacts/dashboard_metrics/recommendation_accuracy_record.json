@@ -1,0 +1,63 @@
+{
+  "artifact_type": "recommendation_accuracy_record",
+  "schema_version": "1.0.0",
+  "record_id": "RAC-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/eval_candidate_record.json",
+    "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+    "artifacts/dashboard_metrics/outcome_attribution_record.json",
+    "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json"
+  ],
+  "reason_codes": [
+    "recommendation_accuracy_observation_only",
+    "confidence_is_not_authority",
+    "high_confidence_without_evidence_warns"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Confidence values are not authority. They flag when later outcomes contradict prior recommendation strength.",
+    "Where outcomes are not yet available, observed_accuracy stays unknown — never substituted with PASS or 100%."
+  ],
+  "failure_prevented": "Recommendations being treated as 'accurate' simply because they were emitted with high confidence — without checking whether the later outcome supported them.",
+  "signal_improved": "Each recommendation carries a calibration_bucket, an observed_accuracy or unknown, and a confidence_error when paired against an outcome_attribution_record entry.",
+  "recommendation_entries": [
+    {
+      "recommendation_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "source_artifact": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "confidence_signal": "medium",
+      "later_outcome": "insufficient_evidence",
+      "calibration_bucket": "medium_confidence_outcome_unknown",
+      "observed_accuracy": "unknown",
+      "confidence_error": "unknown",
+      "drift_state": "unknown",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/outcome_attribution_record.json"
+      ],
+      "next_recommended_input": "Retrieve owner-evidence pairing to compute accuracy.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_metrics/outcome_attribution_record.json"
+      ]
+    },
+    {
+      "recommendation_id": "POL-GOV-FALLBACK-REDUCTION",
+      "source_artifact": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "confidence_signal": "low",
+      "later_outcome": "unknown",
+      "calibration_bucket": "low_confidence_outcome_unknown",
+      "observed_accuracy": "unknown",
+      "confidence_error": "unknown",
+      "drift_state": "unknown",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/outcome_attribution_record.json"
+      ],
+      "next_recommended_input": "Pair with GOV after-state evidence before claiming accuracy.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json"
+      ]
+    }
+  ]
+}
