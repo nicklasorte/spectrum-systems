@@ -73,3 +73,10 @@ def test_completeness_score_full():
 def test_artifact_type():
     result = build_rfx_failure_replay_packet(failure_record=_full_record())
     assert result["artifact_type"] == "rfx_failure_replay_packet"
+
+
+def test_numeric_failure_id_does_not_raise():
+    # P1 fix: numeric failure_id from JSON payloads must not raise AttributeError.
+    result = build_rfx_failure_replay_packet(failure_record=_full_record(failure_id=42))
+    assert result["artifact_type"] == "rfx_failure_replay_packet"
+    assert result["failure_id"] == "42"

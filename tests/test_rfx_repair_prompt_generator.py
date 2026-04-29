@@ -125,3 +125,36 @@ def test_list_validation_cmds_accepted():
     result = generate_rfx_repair_prompt(rfx_proof=_proof())
     assert isinstance(result["validation_cmds"], list)
     assert len(result["validation_cmds"]) > 0
+
+
+def test_numeric_proof_ref_does_not_raise():
+    # P1 fix: numeric proof_ref from JSON payloads must not raise AttributeError.
+    result = generate_rfx_repair_prompt(rfx_proof=_proof(proof_ref=99))
+    assert result["artifact_type"] == "rfx_repair_prompt"
+    assert result["proof_ref"] == "99"
+
+
+def test_numeric_root_cause_does_not_raise():
+    # P1 fix: numeric root_cause must not raise AttributeError.
+    result = generate_rfx_repair_prompt(rfx_proof=_proof(root_cause=0))
+    assert "rfx_repair_missing_root_cause" in result["reason_codes_emitted"]
+
+
+def test_missing_proof_ref_lowers_completeness_score():
+    # P2 fix: missing proof_ref must reduce completeness_score below 1.0.
+    result = generate_rfx_repair_prompt(rfx_proof=_proof(proof_ref=""))
+    assert result["status"] == "incomplete"
+    assert result["signals"]["completeness_score"] < 1.0
+
+
+def test_missing_proof_ref_not_complete():
+    # P2 fix: rfx_repair_missing_proof_ref alone must keep status incomplete.
+    result = generate_rfx_repair_prompt(rfx_proof={
+        "root_cause": "schema drift",
+        "owner_context": "PQX",
+        "validation_cmds": ["pytest -q"],
+        "guard_constraints": ["no scope expansion"],
+    })
+    assert "rfx_repair_missing_proof_ref" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"
+    assert result["signals"]["completeness_score"] < 1.0

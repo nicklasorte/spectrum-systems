@@ -64,7 +64,7 @@ def build_rfx_failure_replay_packet(
             "signals": {"completeness_score": 0.0},
         }
 
-    failure_id = (failure_record.get("failure_id") or failure_record.get("id") or "").strip()
+    failure_id = str(failure_record.get("failure_id") or failure_record.get("id") or "").strip()
     if not failure_id:
         reason.append("rfx_replay_missing_failure_id")
 

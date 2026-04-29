@@ -78,15 +78,15 @@ def generate_rfx_repair_prompt(
             "signals": {"completeness_score": 0.0},
         }
 
-    proof_ref = (rfx_proof.get("proof_ref") or rfx_proof.get("id") or "").strip()
+    proof_ref = str(rfx_proof.get("proof_ref") or rfx_proof.get("id") or "").strip()
     if not proof_ref:
         reason.append("rfx_repair_missing_proof_ref")
 
-    root_cause = (rfx_proof.get("root_cause") or "").strip()
+    root_cause = str(rfx_proof.get("root_cause") or "").strip()
     if not root_cause:
         reason.append("rfx_repair_missing_root_cause")
 
-    owner_context = (rfx_proof.get("owner_context") or "").strip()
+    owner_context = str(rfx_proof.get("owner_context") or "").strip()
     if not owner_context:
         reason.append("rfx_repair_missing_owner_context")
 
@@ -105,8 +105,8 @@ def generate_rfx_repair_prompt(
     if not (proof_constraints or caller_constraints):
         reason.append("rfx_repair_missing_guard_constraints")
 
-    required_fields = 4
-    missing = len(set(reason) - {"rfx_repair_missing_proof_ref"})
+    required_fields = 5
+    missing = len(set(reason))
     completeness = max(0.0, (required_fields - missing) / required_fields)
 
     prompt_id = _stable_prompt_id(proof_ref, root_cause) if (proof_ref and root_cause) else None
