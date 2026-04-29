@@ -12720,7 +12720,7 @@
       ],
       "introduced_in": "1.3.152",
       "last_updated_in": "1.3.152",
-      "example_path": "contracts/examples/prl_repair_candidate.example.json",
+      "example_path": "contracts/schemas/prl/prl_repair_candidate.schema.json",
       "notes": "PRL-02 bounded repair suggestion. auto_apply is always false. Advisory only. Owned by PRL; consumed advisory-only by FRE and operators."
     },
     {
