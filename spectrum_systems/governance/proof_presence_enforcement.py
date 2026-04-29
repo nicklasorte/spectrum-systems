@@ -118,7 +118,9 @@ def _validate_loop_proof_bundle(proof: dict[str, Any]) -> dict[str, Any]:
 def _validate_core_loop_alignment_record(proof: dict[str, Any]) -> dict[str, Any]:
     """Validate a core_loop_alignment_record as proof presence evidence."""
     failure_reasons: list[str] = []
-    stages = proof.get("maps_to_stages") or []
+    stages = proof.get("maps_to_stages")
+    if not isinstance(stages, list):
+        stages = []
     stage_count = len(stages)
     transition_count = max(0, stage_count - 1)
 

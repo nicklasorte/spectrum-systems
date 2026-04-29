@@ -81,7 +81,12 @@ fi
 
 # ── Merge ─────────────────────────────────────────────────────────────────────
 echo "[sync] Merging origin/main..."
-git merge origin/main --no-edit --no-commit 2>&1 || true
+if ! git merge origin/main --no-edit --no-commit 2>&1; then
+    if [[ ! -f .git/MERGE_HEAD ]]; then
+        echo "[sync] ERROR: git merge failed (not a conflict — dirty worktree or hook failure). Aborting."
+        exit 1
+    fi
+fi
 
 # ── Collect conflicting files ─────────────────────────────────────────────────
 mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U 2>/dev/null || true)

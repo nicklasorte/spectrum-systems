@@ -104,6 +104,16 @@ def _replay_case(
     classifier: Callable[[dict[str, Any]], str | None] | None = None,
 ) -> dict[str, Any]:
     """Replay a single historical case and return a result record."""
+    if not isinstance(case, dict):
+        return {
+            "case_id": "unknown",
+            "failure_class": "",
+            "expected_classification": "",
+            "actual_classification": None,
+            "primary_reason_stable": False,
+            "result": "invalid_corpus_entry",
+            "detail": f"corpus entry must be a dict, got {type(case).__name__}",
+        }
     case_id = str(case.get("case_id") or "")
     failure_class = str(case.get("failure_class") or "")
     expected = str(case.get("expected_classification") or "")
