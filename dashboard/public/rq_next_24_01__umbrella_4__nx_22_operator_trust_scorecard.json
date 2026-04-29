@@ -1,7 +1,7 @@
 {
   "artifact_type": "operator_trust_scorecard",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-28T01:48:06Z",
+  "generated_at": "2026-04-29T19:16:58Z",
   "trust_level": "guarded_improving",
   "basis": [
     "taxonomy and error registry in place",

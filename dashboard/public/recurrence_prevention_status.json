@@ -1,7 +1,7 @@
 {
   "artifact_type": "recurrence_prevention_dashboard_feed",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-29T13:47:42Z",
+  "generated_at": "2026-04-29T19:17:25Z",
   "critical_failures_open": 0,
   "closure_requires_prevention_evidence": true,
   "status": "closed_with_evidence"

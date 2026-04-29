@@ -2,7 +2,7 @@
   "artifact_type": "repair_debt_escalation_result",
   "slice_id": "RS-18",
   "owner": "SEL",
-  "generated_at": "2026-04-28T01:47:44Z",
+  "generated_at": "2026-04-29T19:16:30Z",
   "escalation_triggered": false,
   "block_when_threshold_exceeded": true
 }

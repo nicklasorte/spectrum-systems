@@ -1,7 +1,7 @@
 {
   "artifact_type": "closeout_artifact",
   "batch_id": "RH-KERNEL-24-01",
-  "generated_at": "2026-04-28T07:31:39Z",
+  "generated_at": "2026-04-29T19:16:49Z",
   "status": "pass",
   "required_reporting_artifacts_non_empty": true,
   "final_success_conditions": {

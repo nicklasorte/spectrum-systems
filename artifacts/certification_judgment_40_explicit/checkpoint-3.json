@@ -2,7 +2,7 @@
   "artifact_type": "certification_judgment_checkpoint",
   "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
   "checkpoint": 3,
-  "generated_at": "2026-04-29T13:50:31Z",
+  "generated_at": "2026-04-29T19:17:05Z",
   "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
   "steps": [
     "STEP 09",

@@ -1,7 +1,7 @@
 {
   "artifact_type": "registry_alignment_result",
   "batch_id": "SHIFT-LEFT-MEMORY-24-01",
-  "generated_at": "2026-04-28T01:48:11Z",
+  "generated_at": "2026-04-29T19:17:05Z",
   "cross_checks": {
     "1_each_slice_maps_to_exactly_one_canonical_owner": "pass",
     "2_no_preparatory_artifact_is_authority": "pass",

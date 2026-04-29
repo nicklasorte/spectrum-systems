@@ -1,7 +1,7 @@
 {
   "artifact_type": "tpa_lineage_completeness_enforcement",
   "batch_id": "OPS-MASTER-01",
-  "generated_at": "2026-04-29T13:42:07Z",
+  "generated_at": "2026-04-29T19:16:08Z",
   "required_lineage_edges": [
     "AEX->TPA",
     "TPA->PQX",
