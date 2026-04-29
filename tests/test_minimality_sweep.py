@@ -33,16 +33,18 @@ def test_returns_cleanup_candidate_report() -> None:
 
 def test_required_fields_present() -> None:
     report = run_minimality_sweep(trace_id="t")
-    required = ["artifact_type", "schema_version", "report_id", "audit_timestamp", "candidates"]
+    required = ["artifact_type", "schema_version", "report_id", "audit_timestamp", "candidates", "non_authority_assertions"]
     for key in required:
         assert key in report, f"Missing: {key}"
 
 
-def test_no_enforcement_fields_emitted() -> None:
+def test_non_authority_assertions_valid() -> None:
     report = run_minimality_sweep(trace_id="t")
-    # Advisory-only: must not emit enforcement or deletion decisions.
-    assert "non_authority_assertions" not in report
-    assert report["artifact_type"] == "cleanup_candidate_report"
+    assertions = report["non_authority_assertions"]
+    assert isinstance(assertions, list)
+    assert "preparatory_only" in assertions
+    assert "not_control_authority" in assertions
+    assert "not_certification_authority" in assertions
 
 
 def test_all_candidate_classifications_are_valid() -> None:
@@ -57,9 +59,12 @@ def test_all_candidate_classifications_are_valid() -> None:
 def test_all_candidates_have_required_fields() -> None:
     report = run_minimality_sweep(trace_id="t")
     required_fields = ["artifact_path", "classification", "reason_code"]
+    allowed_fields = {"artifact_path", "artifact_kind", "classification", "reason_code", "evidence_role"}
     for candidate in report["candidates"]:
         for field in required_fields:
             assert field in candidate, f"Missing field '{field}' in candidate: {candidate}"
+        extra = set(candidate.keys()) - allowed_fields
+        assert not extra, f"Candidate has disallowed fields {extra}: {candidate}"
 
 
 def test_sweep_is_deterministic() -> None:

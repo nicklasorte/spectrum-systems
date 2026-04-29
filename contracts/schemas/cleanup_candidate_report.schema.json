@@ -60,7 +60,8 @@
           "no_deletion",
           "preparatory_only",
           "not_control_authority",
-          "not_enforcement_authority"
+          "not_enforcement_authority",
+          "not_certification_authority"
         ]
       }
     }

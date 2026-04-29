@@ -69,7 +69,11 @@ def main(argv: list[str] | None = None) -> int:
         if not proof_path.is_file():
             print(json.dumps({"error": f"proof artifact file not found: {args.proof_artifact_json}"}))
             return 2
-        proof_artifact = json.loads(proof_path.read_text(encoding="utf-8"))
+        try:
+            proof_artifact = json.loads(proof_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            print(json.dumps({"error": f"malformed proof artifact JSON: {exc}", "status": "error", "gate_status": "error"}))
+            return 2
 
     from spectrum_systems.governance.proof_presence_enforcement import enforce_proof_presence
 

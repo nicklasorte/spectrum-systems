@@ -112,7 +112,6 @@ def _scan_duplicate_schemas() -> list[dict[str, Any]]:
                     "artifact_kind": "schema",
                     "classification": classification,
                     "reason_code": f"DUPLICATE_SCHEMA:{artifact_type}",
-                    "detail": f"artifact_type '{artifact_type}' is also defined in {files[0]}",
                 })
     return candidates
 
@@ -139,7 +138,6 @@ def _scan_unused_schemas(manifest_types: set[str]) -> list[dict[str, Any]]:
             "artifact_kind": "schema",
             "classification": classification,
             "reason_code": "SCHEMA_NOT_IN_MANIFEST",
-            "detail": f"artifact_type '{artifact_type}' has no entry in standards-manifest.json",
         })
     return candidates
 
@@ -174,7 +172,6 @@ def _scan_overlapping_validators() -> list[dict[str, Any]]:
                     "artifact_kind": "script",
                     "classification": "unknown_blocked",
                     "reason_code": f"OVERLAPPING_VALIDATOR:{fn_name}",
-                    "detail": f"Function '{fn_name}' also appears in {scripts[0]}. Manual review required.",
                 })
     return candidates
 
@@ -202,6 +199,11 @@ def run_minimality_sweep(
         "report_id": _report_id(),
         "audit_timestamp": _now(),
         "candidates": all_candidates,
+        "non_authority_assertions": [
+            "preparatory_only",
+            "not_control_authority",
+            "not_certification_authority",
+        ],
     }
 
 
