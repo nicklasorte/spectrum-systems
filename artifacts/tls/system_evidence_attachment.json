@@ -388,6 +388,7 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
+          "artifacts/policy-engine-summary.md",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_mvp_graph.json",
@@ -502,7 +503,7 @@
           "tests/test_context_selector.py"
         ]
       },
-      "evidence_count": 101,
+      "evidence_count": 102,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CTX"
@@ -575,6 +576,7 @@
           "spectrum_systems/modules/governance/fail_closed_exhaustive_test.py",
           "spectrum_systems/modules/governance/policy_enforcement_integrity.py",
           "spectrum_systems/modules/hop/ai_failure_mapper.py",
+          "spectrum_systems/modules/hop/extraction_baseline_harness.py",
           "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/failure_trace.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
@@ -587,8 +589,7 @@
           "spectrum_systems/modules/runtime/control_loop_chaos.py",
           "spectrum_systems/modules/runtime/control_surface_manifest.py",
           "spectrum_systems/modules/runtime/enforcement_engine.py",
-          "spectrum_systems/modules/runtime/enforcement_gate.py",
-          "spectrum_systems/modules/runtime/eval_registry.py"
+          "spectrum_systems/modules/runtime/enforcement_gate.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -614,6 +615,7 @@
           "tests/fixtures/roadmaps/aut_reg_05a/sva_recovery_checkpoint.json",
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/hop/test_ai_failure_mapper.py",
+          "tests/hop/test_extraction_baseline.py",
           "tests/integration/e2e-pipeline.test.ts",
           "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
@@ -629,8 +631,7 @@
           "tests/test_chaos_fail_closed.py",
           "tests/test_contracts.py",
           "tests/test_control_executor.py",
-          "tests/test_control_integration.py",
-          "tests/test_control_loop.py"
+          "tests/test_control_integration.py"
         ]
       },
       "evidence_count": 110,
@@ -931,6 +932,7 @@
         "docs": [
           "docs/architecture/system_registry.md",
           "docs/governance/authority_shape_preflight.md",
+          "docs/governance/pytest_pr_selection_integrity_policy.json",
           "docs/hop/batch2_followups.md",
           "docs/hop/golden_workflow.md",
           "docs/hop/hop006_issue_extraction_design.md",
@@ -952,8 +954,7 @@
           "docs/reviews/TLS-GUARD-01-DELIVERY-REPORT.md",
           "docs/reviews/hop005_authority_eval_hardening_review.md",
           "docs/reviews/hop006a_current_state_review.md",
-          "docs/reviews/hop006a_design_redteam.md",
-          "docs/reviews/hop_batch1_review.md"
+          "docs/reviews/hop006a_design_redteam.md"
         ],
         "modules": [
           "spectrum_systems/cli/hop_cli.py",
@@ -968,6 +969,7 @@
           "spectrum_systems/modules/hop/eval_factory.py",
           "spectrum_systems/modules/hop/evaluator.py",
           "spectrum_systems/modules/hop/experience_store.py",
+          "spectrum_systems/modules/hop/extraction_baseline_harness.py",
           "spectrum_systems/modules/hop/failure_analysis.py",
           "spectrum_systems/modules/hop/frontier.py",
           "spectrum_systems/modules/hop/mutation_policy.py",
@@ -979,8 +981,7 @@
           "spectrum_systems/modules/hop/promotion_readiness.py",
           "spectrum_systems/modules/hop/proposer.py",
           "spectrum_systems/modules/hop/rollback_signals.py",
-          "spectrum_systems/modules/hop/safety_checks.py",
-          "spectrum_systems/modules/hop/sandbox.py"
+          "spectrum_systems/modules/hop/safety_checks.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1009,6 +1010,7 @@
           "tests/hop/test_evaluator.py",
           "tests/hop/test_experience_store.py",
           "tests/hop/test_experience_store_concurrency.py",
+          "tests/hop/test_extraction_baseline.py",
           "tests/hop/test_failure_analysis.py",
           "tests/hop/test_fix_pass.py",
           "tests/hop/test_frontier.py",
@@ -1018,8 +1020,7 @@
           "tests/hop/test_integration_pipeline.py",
           "tests/hop/test_mutation_policy.py",
           "tests/hop/test_optimization_loop.py",
-          "tests/hop/test_patterns.py",
-          "tests/hop/test_phase2_red_team.py"
+          "tests/hop/test_patterns.py"
         ]
       },
       "evidence_count": 107,
@@ -1031,6 +1032,7 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
+          "artifacts/policy-engine-summary.md",
           "artifacts/rfx_super_01_delivery_report.json",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
@@ -1138,7 +1140,7 @@
           "tests/test_wpg_precedent.py"
         ]
       },
-      "evidence_count": 95,
+      "evidence_count": 96,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JDX"
@@ -1147,6 +1149,7 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
+          "artifacts/policy-engine-summary.md",
           "artifacts/rfx_super_01_delivery_report.json",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
@@ -1192,6 +1195,7 @@
         ],
         "modules": [
           "spectrum_systems/modules/governance/judgment_store.py",
+          "spectrum_systems/modules/hop/extraction_baseline_harness.py",
           "spectrum_systems/modules/runtime/jsx.py",
           "spectrum_systems/modules/runtime/judgment_engine.py",
           "spectrum_systems/modules/runtime/judgment_learning.py",
@@ -1207,6 +1211,7 @@
           "scripts/validate_system_registry.py"
         ],
         "tests": [
+          "tests/hop/test_extraction_baseline.py",
           "tests/test_3ls_phase3_judgment_policy.py",
           "tests/test_contract_enforcement.py",
           "tests/test_contracts.py",
@@ -1219,7 +1224,7 @@
           "tests/tls_dependency_graph/conftest.py"
         ]
       },
-      "evidence_count": 60,
+      "evidence_count": 63,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JSX"
@@ -2850,6 +2855,7 @@
           "artifacts/governed_kernel_24_01/registry_cross_check.json",
           "artifacts/governed_kernel_24_01/run_contract.json",
           "artifacts/ops_master_01/pre_pqx_contract_readiness_artifact.json",
+          "artifacts/policy-engine-summary.md",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/control_prep_readiness_record.CONTROL-05.json",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.CONTROL_PREP_LAYER.json",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.DRIFT_LAYER.json",
@@ -2857,8 +2863,7 @@
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.SLICE_IMPROVEMENT_LAYER.json",
           "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-01-artifact-trace.json",
           "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-02-artifact-trace.json",
-          "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
-          "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/adaptive_safety_record.ADAPT-02.json"
+          "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
