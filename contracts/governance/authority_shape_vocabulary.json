@@ -131,7 +131,18 @@
       "contracts/schemas/authority_repair_execution_record.schema.json",
       "contracts/schemas/failure_explanation_packet.schema.json",
       "contracts/schemas/replay_validation_report.schema.json",
-      "contracts/schemas/eval_candidate_registry.schema.json"
+      "contracts/schemas/eval_candidate_registry.schema.json",
+      "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
+      "spectrum_systems/modules/runtime/failure_explanation.py",
+      "spectrum_systems/modules/runtime/historical_replay_validator.py",
+      "spectrum_systems/modules/runtime/minimality_sweep.py",
+      "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
+      "spectrum_systems/governance/proof_presence_enforcement.py",
+      "scripts/run_proof_presence_enforcement.py",
+      "scripts/run_authority_preflight_expanded.py",
+      "scripts/run_failure_explanation.py",
+      "scripts/run_historical_replay_validator.py",
+      "scripts/run_minimality_sweep.py"
     ]
   },
   "clusters": {
