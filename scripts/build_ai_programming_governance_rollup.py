@@ -70,6 +70,8 @@ def _aggregate_leg_status(statuses: list[str]) -> str:
         return "unknown"
     if "partial" in statuses:
         return "partial"
+    if all(s in {"present", "not_required"} for s in statuses) and any(s == "present" for s in statuses):
+        return "present"
     if all(s == "present" for s in statuses) and statuses:
         return "present"
     if all(s == "not_required" for s in statuses) and statuses:
@@ -114,12 +116,11 @@ def build_rollup(fail_closed: bool = False) -> int:
 
     if not items:
         print(
-            f"WARN: no ai_programming_work_item_record items found after filtering in {SOURCE_DIR}",
+            f"FAIL: no ai_programming_work_item_record items found after filtering in {SOURCE_DIR}. "
+            "Producing a rollup with zero items would be schema-invalid and mask ingestion gaps.",
             file=sys.stderr,
         )
-        if fail_closed:
-            print("FAIL: --fail-closed and no work-item records found after filtering", file=sys.stderr)
-            return 1
+        return 1
 
     total = len(items)
     codex_count = sum(1 for i in items if i.get("tool_source") == "codex")

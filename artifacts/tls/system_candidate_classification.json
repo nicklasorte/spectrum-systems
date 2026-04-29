@@ -36,7 +36,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 118,
+      "evidence_count": 119,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -52,7 +52,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 118,
+      "evidence_count": 119,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -364,7 +364,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 125,
+      "evidence_count": 126,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
