@@ -1,7 +1,7 @@
 {
   "artifact_type": "repair_latency_umbrella_checkpoint",
   "batch_id": "REPAIR-LATENCY-24-01",
-  "generated_at": "2026-04-29T19:32:14Z",
+  "generated_at": "2026-04-29T20:01:24Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-1",
   "umbrella_name": "SHIFT_LEFT_REPAIR_DETECTION",

@@ -1,7 +1,7 @@
 {
   "artifact_type": "rq_master_umbrella_checkpoint",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-29T19:33:21Z",
+  "generated_at": "2026-04-29T20:01:21Z",
   "umbrella_id": "UMBRELLA-8",
   "umbrella_name": "READINESS_AND_PROMOTION_DISCIPLINE",
   "intent": "Execute READINESS_AND_PROMOTION_DISCIPLINE with serial hard checkpoint enforcement",

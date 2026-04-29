@@ -189,6 +189,69 @@
   ],
   "artifacts": [
     {
+      "artifact_type": "3ls_failure_recurrence_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_failure_recurrence_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_handoff_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_handoff_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_loop_run_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_loop_run_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_operator_debuggability_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_operator_debuggability_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_replayability_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_replayability_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_scope_risk_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_scope_risk_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_surface_coverage_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_surface_coverage_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_system_measurement_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_system_measurement_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_trust_gap_closure_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_trust_gap_closure_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "abstention_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `abstention_record`.",
@@ -346,6 +409,27 @@
       "artifact_type": "ai_model_response",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `ai_model_response`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_governance_rollup_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_loop_violation_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_work_item_record`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -2489,6 +2573,13 @@
       "artifact_type": "eval_case",
       "artifact_class": "review",
       "description": "Governed artifact for contract `eval_case`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "eval_case_candidate",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `eval_case_candidate`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -5736,6 +5827,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "pr_failure_capture_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `pr_failure_capture_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "pra_changed_scope_extraction_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `pra_changed_scope_extraction_record`.",
@@ -5781,6 +5879,13 @@
       "artifact_type": "pra_system_impact_mapping_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `pra_system_impact_mapping_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "pre_pr_failure_packet",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `pre_pr_failure_packet`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -6033,6 +6138,34 @@
       "artifact_type": "prioritized_adoption_candidate_set",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `prioritized_adoption_candidate_set`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_eval_case",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_eval_case`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_eval_generation_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_eval_generation_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_gate_result",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_gate_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_repair_candidate",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_repair_candidate`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -9418,6 +9551,96 @@
   ],
   "contracts": [
     {
+      "contract_name": "3ls_failure_recurrence_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_failure_recurrence_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_handoff_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_handoff_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_loop_run_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_loop_run_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_operator_debuggability_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_operator_debuggability_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_replayability_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_replayability_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_scope_risk_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_scope_risk_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_surface_coverage_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_surface_coverage_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_system_measurement_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_system_measurement_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_trust_gap_closure_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_trust_gap_closure_record"
+      ]
+    },
+    {
       "contract_name": "abstention_record",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -9635,6 +9858,36 @@
       ],
       "related_artifact_types": [
         "ai_model_response"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_governance_rollup_record"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_loop_violation_record"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_work_item_record"
       ]
     },
     {
@@ -12646,6 +12899,16 @@
       ],
       "related_artifact_types": [
         "eval_case"
+      ]
+    },
+    {
+      "contract_name": "eval_case_candidate",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "eval_case_candidate"
       ]
     },
     {
@@ -17206,6 +17469,16 @@
       ]
     },
     {
+      "contract_name": "pr_failure_capture_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "pr_failure_capture_record"
+      ]
+    },
+    {
       "contract_name": "pra_changed_scope_extraction_record",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -17273,6 +17546,16 @@
       ],
       "related_artifact_types": [
         "pra_system_impact_mapping_record"
+      ]
+    },
+    {
+      "contract_name": "pre_pr_failure_packet",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "pre_pr_failure_packet"
       ]
     },
     {
@@ -17633,6 +17916,46 @@
       ],
       "related_artifact_types": [
         "prioritized_adoption_candidate_set"
+      ]
+    },
+    {
+      "contract_name": "prl_eval_case",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_eval_case"
+      ]
+    },
+    {
+      "contract_name": "prl_eval_generation_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_eval_generation_record"
+      ]
+    },
+    {
+      "contract_name": "prl_gate_result",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_gate_result"
+      ]
+    },
+    {
+      "contract_name": "prl_repair_candidate",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_repair_candidate"
       ]
     },
     {
@@ -22366,6 +22689,69 @@
   "edges": [
     {
       "from_type": "artifact",
+      "from_id": "3ls_failure_recurrence_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_failure_recurrence_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_handoff_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_handoff_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_loop_run_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_loop_run_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_operator_debuggability_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_operator_debuggability_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_replayability_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_replayability_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_scope_risk_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_scope_risk_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_surface_coverage_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_surface_coverage_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_system_measurement_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_system_measurement_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_trust_gap_closure_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_trust_gap_closure_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "abstention_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -22517,6 +22903,27 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "ai_model_response"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "ai_programming_governance_rollup_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_governance_rollup_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "ai_programming_loop_violation_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_loop_violation_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "ai_programming_work_item_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_work_item_record"
     },
     {
       "from_type": "artifact",
@@ -24624,6 +25031,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "eval_case"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "eval_case_candidate",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "eval_case_candidate"
     },
     {
       "from_type": "artifact",
@@ -27812,6 +28226,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "pr_failure_capture_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "pr_failure_capture_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "pra_changed_scope_extraction_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -27858,6 +28279,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "pra_system_impact_mapping_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "pre_pr_failure_packet",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "pre_pr_failure_packet"
     },
     {
       "from_type": "artifact",
@@ -28110,6 +28538,34 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "prioritized_adoption_candidate_set"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_eval_case",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_eval_case"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_eval_generation_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_eval_generation_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_gate_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_gate_result"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_repair_candidate",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_repair_candidate"
     },
     {
       "from_type": "artifact",
@@ -31417,6 +31873,69 @@
     },
     {
       "from_type": "contract",
+      "from_id": "3ls_failure_recurrence_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_failure_recurrence_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_handoff_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_handoff_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_loop_run_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_loop_run_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_operator_debuggability_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_operator_debuggability_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_replayability_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_replayability_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_scope_risk_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_scope_risk_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_surface_coverage_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_surface_coverage_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_system_measurement_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_system_measurement_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_trust_gap_closure_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_trust_gap_closure_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "abstention_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -31568,6 +32087,27 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "ai_model_response"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_governance_rollup_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_governance_rollup_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_loop_violation_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_loop_violation_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_work_item_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_work_item_record"
     },
     {
       "from_type": "contract",
@@ -33675,6 +34215,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "eval_case"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "eval_case_candidate",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "eval_case_candidate"
     },
     {
       "from_type": "contract",
@@ -36863,6 +37410,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "pr_failure_capture_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "pr_failure_capture_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "pra_changed_scope_extraction_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -36909,6 +37463,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "pra_system_impact_mapping_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "pre_pr_failure_packet",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "pre_pr_failure_packet"
     },
     {
       "from_type": "contract",
@@ -37161,6 +37722,34 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "prioritized_adoption_candidate_set"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_eval_case",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_eval_case"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_eval_generation_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_eval_generation_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_gate_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_gate_result"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_repair_candidate",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_repair_candidate"
     },
     {
       "from_type": "contract",

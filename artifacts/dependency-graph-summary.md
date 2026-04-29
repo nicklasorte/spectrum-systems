@@ -12,6 +12,15 @@
 - working-paper-review-engine (operational_engine, loop=document_production, maturity=6) consumes: review_guidance, working_paper_input; emits: reviewer_comment_set; contracts: provenance_record, reviewer_comment_set, working_paper_input
 
 ## Artifacts
+- 3ls_failure_recurrence_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_failure_recurrence_record`.
+- 3ls_handoff_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_handoff_record`.
+- 3ls_loop_run_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_loop_run_record`.
+- 3ls_operator_debuggability_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_operator_debuggability_record`.
+- 3ls_replayability_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_replayability_record`.
+- 3ls_scope_risk_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_scope_risk_record`.
+- 3ls_surface_coverage_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_surface_coverage_record`.
+- 3ls_system_measurement_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_system_measurement_record`.
+- 3ls_trust_gap_closure_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_trust_gap_closure_record`.
 - abstention_record [coordination] producers: —; consumers: —; Governed artifact for contract `abstention_record`.
 - action_item_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `action_item_artifact`.
 - action_linkage_record [coordination] producers: —; consumers: —; Governed artifact for contract `action_linkage_record`.
@@ -35,6 +44,9 @@
 - agent_failure_record [coordination] producers: —; consumers: —; Governed artifact for contract `agent_failure_record`.
 - ai_model_request [coordination] producers: —; consumers: —; Governed artifact for contract `ai_model_request`.
 - ai_model_response [coordination] producers: —; consumers: —; Governed artifact for contract `ai_model_response`.
+- ai_programming_governance_rollup_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_governance_rollup_record`.
+- ai_programming_loop_violation_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_loop_violation_record`.
+- ai_programming_work_item_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_work_item_record`.
 - ail_ai_pattern_mining_record [governance] producers: —; consumers: —; Governed artifact for contract `ail_ai_pattern_mining_record`.
 - ail_ai_roadmap_candidate_record [governance] producers: —; consumers: —; Governed artifact for contract `ail_ai_roadmap_candidate_record`.
 - ail_continuous_pattern_learning_record [coordination] producers: —; consumers: —; Governed artifact for contract `ail_continuous_pattern_learning_record`.
@@ -340,6 +352,7 @@
 - eval_candidate_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `eval_candidate_artifact`.
 - eval_canonicalization_policy [coordination] producers: —; consumers: —; Governed artifact for contract `eval_canonicalization_policy`.
 - eval_case [review] producers: —; consumers: —; Governed artifact for contract `eval_case`.
+- eval_case_candidate [governance] producers: —; consumers: —; Governed artifact for contract `eval_case_candidate`.
 - eval_coverage_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `eval_coverage_artifact`.
 - eval_coverage_redteam_findings [coordination] producers: —; consumers: —; Governed artifact for contract `eval_coverage_redteam_findings`.
 - eval_coverage_registry [coordination] producers: —; consumers: —; Governed artifact for contract `eval_coverage_registry`.
@@ -800,6 +813,7 @@
 - pqx_slice_execution_record [coordination] producers: —; consumers: —; Governed artifact for contract `pqx_slice_execution_record`.
 - pqx_strategy_status_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `pqx_strategy_status_artifact`.
 - pqx_triage_plan_record [coordination] producers: —; consumers: —; Governed artifact for contract `pqx_triage_plan_record`.
+- pr_failure_capture_record [governance] producers: —; consumers: —; Governed artifact for contract `pr_failure_capture_record`.
 - pra_changed_scope_extraction_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_changed_scope_extraction_record`.
 - pra_ci_review_extraction_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_ci_review_extraction_record`.
 - pra_pull_request_anchor_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_pull_request_anchor_record`.
@@ -807,6 +821,7 @@
 - pra_pull_request_metadata_normalization_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_pull_request_metadata_normalization_record`.
 - pra_pull_request_resolution_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_pull_request_resolution_record`.
 - pra_system_impact_mapping_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_system_impact_mapping_record`.
+- pre_pr_failure_packet [governance] producers: —; consumers: —; Governed artifact for contract `pre_pr_failure_packet`.
 - precedent_conflict_record [coordination] producers: —; consumers: —; Governed artifact for contract `precedent_conflict_record`.
 - precedent_ranking_evaluation_record [coordination] producers: —; consumers: —; Governed artifact for contract `precedent_ranking_evaluation_record`.
 - precedent_retrieval [coordination] producers: —; consumers: —; Governed artifact for contract `precedent_retrieval`.
@@ -843,6 +858,10 @@
 - prg_signal_prioritization_record [governance] producers: —; consumers: —; Governed artifact for contract `prg_signal_prioritization_record`.
 - prg_smallest_safe_next_batch_recommendation [governance] producers: —; consumers: —; Governed artifact for contract `prg_smallest_safe_next_batch_recommendation`.
 - prioritized_adoption_candidate_set [coordination] producers: —; consumers: —; Governed artifact for contract `prioritized_adoption_candidate_set`.
+- prl_eval_case [governance] producers: —; consumers: —; Governed artifact for contract `prl_eval_case`.
+- prl_eval_generation_record [governance] producers: —; consumers: —; Governed artifact for contract `prl_eval_generation_record`.
+- prl_gate_result [governance] producers: —; consumers: —; Governed artifact for contract `prl_gate_result`.
+- prl_repair_candidate [governance] producers: —; consumers: —; Governed artifact for contract `prl_repair_candidate`.
 - prm_ai_prompt_admissibility_result [governance] producers: —; consumers: —; Governed artifact for contract `prm_ai_prompt_admissibility_result`.
 - prm_ai_task_registry_record [governance] producers: —; consumers: —; Governed artifact for contract `prm_ai_task_registry_record`.
 - prm_artifact_taxonomy_validation_result [coordination] producers: —; consumers: —; Governed artifact for contract `prm_artifact_taxonomy_validation_result`.
@@ -1322,6 +1341,15 @@
 - xrun_signal_quality_result [coordination] producers: —; consumers: —; Governed artifact for contract `xrun_signal_quality_result`.
 
 ## Contracts
+- 3ls_failure_recurrence_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_failure_recurrence_record
+- 3ls_handoff_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_handoff_record
+- 3ls_loop_run_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_loop_run_record
+- 3ls_operator_debuggability_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_operator_debuggability_record
+- 3ls_replayability_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_replayability_record
+- 3ls_scope_risk_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_scope_risk_record
+- 3ls_surface_coverage_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_surface_coverage_record
+- 3ls_system_measurement_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_system_measurement_record
+- 3ls_trust_gap_closure_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_trust_gap_closure_record
 - abstention_record [coordination] intended consumers: spectrum-systems; artifacts: abstention_record
 - action_item_artifact [coordination] intended consumers: spectrum-systems; artifacts: action_item_artifact
 - action_linkage_record [coordination] intended consumers: spectrum-systems; artifacts: action_linkage_record
@@ -1344,6 +1372,9 @@
 - agent_failure_record [coordination] intended consumers: spectrum-systems; artifacts: agent_failure_record
 - ai_model_request [coordination] intended consumers: spectrum-systems; artifacts: ai_model_request
 - ai_model_response [coordination] intended consumers: spectrum-systems; artifacts: ai_model_response
+- ai_programming_governance_rollup_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_governance_rollup_record
+- ai_programming_loop_violation_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_loop_violation_record
+- ai_programming_work_item_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_work_item_record
 - ail_ai_pattern_mining_record [governance] intended consumers: spectrum-systems; artifacts: ail_ai_pattern_mining_record
 - ail_ai_roadmap_candidate_record [governance] intended consumers: spectrum-systems; artifacts: ail_ai_roadmap_candidate_record
 - ail_continuous_pattern_learning_record [coordination] intended consumers: spectrum-systems; artifacts: ail_continuous_pattern_learning_record
@@ -1645,6 +1676,7 @@
 - eval_candidate_artifact [coordination] intended consumers: spectrum-systems; artifacts: eval_candidate_artifact
 - eval_canonicalization_policy [coordination] intended consumers: spectrum-systems; artifacts: eval_canonicalization_policy
 - eval_case [review] intended consumers: spectrum-systems; artifacts: eval_case
+- eval_case_candidate [governance] intended consumers: spectrum-systems; artifacts: eval_case_candidate
 - eval_coverage_artifact [coordination] intended consumers: spectrum-systems; artifacts: eval_coverage_artifact
 - eval_coverage_redteam_findings [coordination] intended consumers: spectrum-systems; artifacts: eval_coverage_redteam_findings
 - eval_coverage_registry [coordination] intended consumers: spectrum-systems; artifacts: eval_coverage_registry
@@ -2100,6 +2132,7 @@
 - pqx_slice_execution_record [coordination] intended consumers: spectrum-systems; artifacts: pqx_slice_execution_record
 - pqx_strategy_status_artifact [coordination] intended consumers: spectrum-systems; artifacts: pqx_strategy_status_artifact
 - pqx_triage_plan_record [coordination] intended consumers: spectrum-systems; artifacts: pqx_triage_plan_record
+- pr_failure_capture_record [governance] intended consumers: spectrum-systems; artifacts: pr_failure_capture_record
 - pra_changed_scope_extraction_record [coordination] intended consumers: spectrum-systems; artifacts: pra_changed_scope_extraction_record
 - pra_ci_review_extraction_record [coordination] intended consumers: spectrum-systems; artifacts: pra_ci_review_extraction_record
 - pra_pull_request_anchor_record [coordination] intended consumers: spectrum-systems; artifacts: pra_pull_request_anchor_record
@@ -2107,6 +2140,7 @@
 - pra_pull_request_metadata_normalization_record [coordination] intended consumers: spectrum-systems; artifacts: pra_pull_request_metadata_normalization_record
 - pra_pull_request_resolution_record [coordination] intended consumers: spectrum-systems; artifacts: pra_pull_request_resolution_record
 - pra_system_impact_mapping_record [coordination] intended consumers: spectrum-systems; artifacts: pra_system_impact_mapping_record
+- pre_pr_failure_packet [governance] intended consumers: spectrum-systems; artifacts: pre_pr_failure_packet
 - precedent_conflict_record [coordination] intended consumers: spectrum-systems; artifacts: precedent_conflict_record
 - precedent_ranking_evaluation_record [coordination] intended consumers: spectrum-systems; artifacts: precedent_ranking_evaluation_record
 - precedent_retrieval [coordination] intended consumers: spectrum-systems; artifacts: precedent_retrieval
@@ -2143,6 +2177,10 @@
 - prg_signal_prioritization_record [governance] intended consumers: spectrum-systems; artifacts: prg_signal_prioritization_record
 - prg_smallest_safe_next_batch_recommendation [governance] intended consumers: spectrum-systems; artifacts: prg_smallest_safe_next_batch_recommendation
 - prioritized_adoption_candidate_set [coordination] intended consumers: spectrum-systems; artifacts: prioritized_adoption_candidate_set
+- prl_eval_case [governance] intended consumers: spectrum-systems; artifacts: prl_eval_case
+- prl_eval_generation_record [governance] intended consumers: spectrum-systems; artifacts: prl_eval_generation_record
+- prl_gate_result [governance] intended consumers: spectrum-systems; artifacts: prl_gate_result
+- prl_repair_candidate [governance] intended consumers: spectrum-systems; artifacts: prl_repair_candidate
 - prm_ai_prompt_admissibility_result [governance] intended consumers: spectrum-systems; artifacts: prm_ai_prompt_admissibility_result
 - prm_ai_task_registry_record [governance] intended consumers: spectrum-systems; artifacts: prm_ai_task_registry_record
 - prm_artifact_taxonomy_validation_result [coordination] intended consumers: spectrum-systems; artifacts: prm_artifact_taxonomy_validation_result

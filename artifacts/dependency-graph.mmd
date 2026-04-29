@@ -8,6 +8,15 @@ flowchart TD
   sys_spectrum_systems["spectrum-systems\ngovernance"]
   sys_system_factory["system-factory\nfactory"]
   sys_working_paper_review_engine["working-paper-review-engine\noperational_engine"]
+  art_3ls_failure_recurrence_record["3ls_failure_recurrence_record\ncoordination"]
+  art_3ls_handoff_record["3ls_handoff_record\ncoordination"]
+  art_3ls_loop_run_record["3ls_loop_run_record\ncoordination"]
+  art_3ls_operator_debuggability_record["3ls_operator_debuggability_record\ncoordination"]
+  art_3ls_replayability_record["3ls_replayability_record\ncoordination"]
+  art_3ls_scope_risk_record["3ls_scope_risk_record\ncoordination"]
+  art_3ls_surface_coverage_record["3ls_surface_coverage_record\ncoordination"]
+  art_3ls_system_measurement_record["3ls_system_measurement_record\ncoordination"]
+  art_3ls_trust_gap_closure_record["3ls_trust_gap_closure_record\ncoordination"]
   art_abstention_record["abstention_record\ncoordination"]
   art_action_item_artifact["action_item_artifact\ncoordination"]
   art_action_linkage_record["action_linkage_record\ncoordination"]
@@ -31,6 +40,9 @@ flowchart TD
   art_agent_failure_record["agent_failure_record\ncoordination"]
   art_ai_model_request["ai_model_request\ncoordination"]
   art_ai_model_response["ai_model_response\ncoordination"]
+  art_ai_programming_governance_rollup_record["ai_programming_governance_rollup_record\ngovernance"]
+  art_ai_programming_loop_violation_record["ai_programming_loop_violation_record\ngovernance"]
+  art_ai_programming_work_item_record["ai_programming_work_item_record\ngovernance"]
   art_ail_ai_pattern_mining_record["ail_ai_pattern_mining_record\ngovernance"]
   art_ail_ai_roadmap_candidate_record["ail_ai_roadmap_candidate_record\ngovernance"]
   art_ail_continuous_pattern_learning_record["ail_continuous_pattern_learning_record\ncoordination"]
@@ -336,6 +348,7 @@ flowchart TD
   art_eval_candidate_artifact["eval_candidate_artifact\ncoordination"]
   art_eval_canonicalization_policy["eval_canonicalization_policy\ncoordination"]
   art_eval_case["eval_case\nreview"]
+  art_eval_case_candidate["eval_case_candidate\ngovernance"]
   art_eval_coverage_artifact["eval_coverage_artifact\ncoordination"]
   art_eval_coverage_redteam_findings["eval_coverage_redteam_findings\ncoordination"]
   art_eval_coverage_registry["eval_coverage_registry\ncoordination"]
@@ -796,6 +809,7 @@ flowchart TD
   art_pqx_slice_execution_record["pqx_slice_execution_record\ncoordination"]
   art_pqx_strategy_status_artifact["pqx_strategy_status_artifact\ncoordination"]
   art_pqx_triage_plan_record["pqx_triage_plan_record\ncoordination"]
+  art_pr_failure_capture_record["pr_failure_capture_record\ngovernance"]
   art_pra_changed_scope_extraction_record["pra_changed_scope_extraction_record\ncoordination"]
   art_pra_ci_review_extraction_record["pra_ci_review_extraction_record\ncoordination"]
   art_pra_pull_request_anchor_record["pra_pull_request_anchor_record\ncoordination"]
@@ -803,6 +817,7 @@ flowchart TD
   art_pra_pull_request_metadata_normalization_record["pra_pull_request_metadata_normalization_record\ncoordination"]
   art_pra_pull_request_resolution_record["pra_pull_request_resolution_record\ncoordination"]
   art_pra_system_impact_mapping_record["pra_system_impact_mapping_record\ncoordination"]
+  art_pre_pr_failure_packet["pre_pr_failure_packet\ngovernance"]
   art_precedent_conflict_record["precedent_conflict_record\ncoordination"]
   art_precedent_ranking_evaluation_record["precedent_ranking_evaluation_record\ncoordination"]
   art_precedent_retrieval["precedent_retrieval\ncoordination"]
@@ -839,6 +854,10 @@ flowchart TD
   art_prg_signal_prioritization_record["prg_signal_prioritization_record\ngovernance"]
   art_prg_smallest_safe_next_batch_recommendation["prg_smallest_safe_next_batch_recommendation\ngovernance"]
   art_prioritized_adoption_candidate_set["prioritized_adoption_candidate_set\ncoordination"]
+  art_prl_eval_case["prl_eval_case\ngovernance"]
+  art_prl_eval_generation_record["prl_eval_generation_record\ngovernance"]
+  art_prl_gate_result["prl_gate_result\ngovernance"]
+  art_prl_repair_candidate["prl_repair_candidate\ngovernance"]
   art_prm_ai_prompt_admissibility_result["prm_ai_prompt_admissibility_result\ngovernance"]
   art_prm_ai_task_registry_record["prm_ai_task_registry_record\ngovernance"]
   art_prm_artifact_taxonomy_validation_result["prm_artifact_taxonomy_validation_result\ncoordination"]
@@ -1316,6 +1335,15 @@ flowchart TD
   art_xrl_outcome_trust_weight_record["xrl_outcome_trust_weight_record\ncoordination"]
   art_xrl_real_world_outcome_integration_record["xrl_real_world_outcome_integration_record\ncoordination"]
   art_xrun_signal_quality_result["xrun_signal_quality_result\ncoordination"]
+  con_3ls_failure_recurrence_record["3ls_failure_recurrence_record\ncontract"]
+  con_3ls_handoff_record["3ls_handoff_record\ncontract"]
+  con_3ls_loop_run_record["3ls_loop_run_record\ncontract"]
+  con_3ls_operator_debuggability_record["3ls_operator_debuggability_record\ncontract"]
+  con_3ls_replayability_record["3ls_replayability_record\ncontract"]
+  con_3ls_scope_risk_record["3ls_scope_risk_record\ncontract"]
+  con_3ls_surface_coverage_record["3ls_surface_coverage_record\ncontract"]
+  con_3ls_system_measurement_record["3ls_system_measurement_record\ncontract"]
+  con_3ls_trust_gap_closure_record["3ls_trust_gap_closure_record\ncontract"]
   con_abstention_record["abstention_record\ncontract"]
   con_action_item_artifact["action_item_artifact\ncontract"]
   con_action_linkage_record["action_linkage_record\ncontract"]
@@ -1338,6 +1366,9 @@ flowchart TD
   con_agent_failure_record["agent_failure_record\ncontract"]
   con_ai_model_request["ai_model_request\ncontract"]
   con_ai_model_response["ai_model_response\ncontract"]
+  con_ai_programming_governance_rollup_record["ai_programming_governance_rollup_record\ncontract"]
+  con_ai_programming_loop_violation_record["ai_programming_loop_violation_record\ncontract"]
+  con_ai_programming_work_item_record["ai_programming_work_item_record\ncontract"]
   con_ail_ai_pattern_mining_record["ail_ai_pattern_mining_record\ncontract"]
   con_ail_ai_roadmap_candidate_record["ail_ai_roadmap_candidate_record\ncontract"]
   con_ail_continuous_pattern_learning_record["ail_continuous_pattern_learning_record\ncontract"]
@@ -1639,6 +1670,7 @@ flowchart TD
   con_eval_candidate_artifact["eval_candidate_artifact\ncontract"]
   con_eval_canonicalization_policy["eval_canonicalization_policy\ncontract"]
   con_eval_case["eval_case\ncontract"]
+  con_eval_case_candidate["eval_case_candidate\ncontract"]
   con_eval_coverage_artifact["eval_coverage_artifact\ncontract"]
   con_eval_coverage_redteam_findings["eval_coverage_redteam_findings\ncontract"]
   con_eval_coverage_registry["eval_coverage_registry\ncontract"]
@@ -2094,6 +2126,7 @@ flowchart TD
   con_pqx_slice_execution_record["pqx_slice_execution_record\ncontract"]
   con_pqx_strategy_status_artifact["pqx_strategy_status_artifact\ncontract"]
   con_pqx_triage_plan_record["pqx_triage_plan_record\ncontract"]
+  con_pr_failure_capture_record["pr_failure_capture_record\ncontract"]
   con_pra_changed_scope_extraction_record["pra_changed_scope_extraction_record\ncontract"]
   con_pra_ci_review_extraction_record["pra_ci_review_extraction_record\ncontract"]
   con_pra_pull_request_anchor_record["pra_pull_request_anchor_record\ncontract"]
@@ -2101,6 +2134,7 @@ flowchart TD
   con_pra_pull_request_metadata_normalization_record["pra_pull_request_metadata_normalization_record\ncontract"]
   con_pra_pull_request_resolution_record["pra_pull_request_resolution_record\ncontract"]
   con_pra_system_impact_mapping_record["pra_system_impact_mapping_record\ncontract"]
+  con_pre_pr_failure_packet["pre_pr_failure_packet\ncontract"]
   con_precedent_conflict_record["precedent_conflict_record\ncontract"]
   con_precedent_ranking_evaluation_record["precedent_ranking_evaluation_record\ncontract"]
   con_precedent_retrieval["precedent_retrieval\ncontract"]
@@ -2137,6 +2171,10 @@ flowchart TD
   con_prg_signal_prioritization_record["prg_signal_prioritization_record\ncontract"]
   con_prg_smallest_safe_next_batch_recommendation["prg_smallest_safe_next_batch_recommendation\ncontract"]
   con_prioritized_adoption_candidate_set["prioritized_adoption_candidate_set\ncontract"]
+  con_prl_eval_case["prl_eval_case\ncontract"]
+  con_prl_eval_generation_record["prl_eval_generation_record\ncontract"]
+  con_prl_gate_result["prl_gate_result\ncontract"]
+  con_prl_repair_candidate["prl_repair_candidate\ncontract"]
   con_prm_ai_prompt_admissibility_result["prm_ai_prompt_admissibility_result\ncontract"]
   con_prm_ai_task_registry_record["prm_ai_task_registry_record\ncontract"]
   con_prm_artifact_taxonomy_validation_result["prm_artifact_taxonomy_validation_result\ncontract"]
@@ -2609,6 +2647,15 @@ flowchart TD
   con_xrl_outcome_trust_weight_record["xrl_outcome_trust_weight_record\ncontract"]
   con_xrl_real_world_outcome_integration_record["xrl_real_world_outcome_integration_record\ncontract"]
   con_xrun_signal_quality_result["xrun_signal_quality_result\ncontract"]
+  art_3ls_failure_recurrence_record -. governed_by .-> con_3ls_failure_recurrence_record
+  art_3ls_handoff_record -. governed_by .-> con_3ls_handoff_record
+  art_3ls_loop_run_record -. governed_by .-> con_3ls_loop_run_record
+  art_3ls_operator_debuggability_record -. governed_by .-> con_3ls_operator_debuggability_record
+  art_3ls_replayability_record -. governed_by .-> con_3ls_replayability_record
+  art_3ls_scope_risk_record -. governed_by .-> con_3ls_scope_risk_record
+  art_3ls_surface_coverage_record -. governed_by .-> con_3ls_surface_coverage_record
+  art_3ls_system_measurement_record -. governed_by .-> con_3ls_system_measurement_record
+  art_3ls_trust_gap_closure_record -. governed_by .-> con_3ls_trust_gap_closure_record
   art_abstention_record -. governed_by .-> con_abstention_record
   art_action_item_artifact -. governed_by .-> con_action_item_artifact
   art_action_linkage_record -. governed_by .-> con_action_linkage_record
@@ -2631,6 +2678,9 @@ flowchart TD
   art_agent_failure_record -. governed_by .-> con_agent_failure_record
   art_ai_model_request -. governed_by .-> con_ai_model_request
   art_ai_model_response -. governed_by .-> con_ai_model_response
+  art_ai_programming_governance_rollup_record -. governed_by .-> con_ai_programming_governance_rollup_record
+  art_ai_programming_loop_violation_record -. governed_by .-> con_ai_programming_loop_violation_record
+  art_ai_programming_work_item_record -. governed_by .-> con_ai_programming_work_item_record
   art_ail_ai_pattern_mining_record -. governed_by .-> con_ail_ai_pattern_mining_record
   art_ail_ai_roadmap_candidate_record -. governed_by .-> con_ail_ai_roadmap_candidate_record
   art_ail_continuous_pattern_learning_record -. governed_by .-> con_ail_continuous_pattern_learning_record
@@ -2932,6 +2982,7 @@ flowchart TD
   art_eval_candidate_artifact -. governed_by .-> con_eval_candidate_artifact
   art_eval_canonicalization_policy -. governed_by .-> con_eval_canonicalization_policy
   art_eval_case -. governed_by .-> con_eval_case
+  art_eval_case_candidate -. governed_by .-> con_eval_case_candidate
   art_eval_coverage_artifact -. governed_by .-> con_eval_coverage_artifact
   art_eval_coverage_redteam_findings -. governed_by .-> con_eval_coverage_redteam_findings
   art_eval_coverage_registry -. governed_by .-> con_eval_coverage_registry
@@ -3387,6 +3438,7 @@ flowchart TD
   art_pqx_slice_execution_record -. governed_by .-> con_pqx_slice_execution_record
   art_pqx_strategy_status_artifact -. governed_by .-> con_pqx_strategy_status_artifact
   art_pqx_triage_plan_record -. governed_by .-> con_pqx_triage_plan_record
+  art_pr_failure_capture_record -. governed_by .-> con_pr_failure_capture_record
   art_pra_changed_scope_extraction_record -. governed_by .-> con_pra_changed_scope_extraction_record
   art_pra_ci_review_extraction_record -. governed_by .-> con_pra_ci_review_extraction_record
   art_pra_pull_request_anchor_record -. governed_by .-> con_pra_pull_request_anchor_record
@@ -3394,6 +3446,7 @@ flowchart TD
   art_pra_pull_request_metadata_normalization_record -. governed_by .-> con_pra_pull_request_metadata_normalization_record
   art_pra_pull_request_resolution_record -. governed_by .-> con_pra_pull_request_resolution_record
   art_pra_system_impact_mapping_record -. governed_by .-> con_pra_system_impact_mapping_record
+  art_pre_pr_failure_packet -. governed_by .-> con_pre_pr_failure_packet
   art_precedent_conflict_record -. governed_by .-> con_precedent_conflict_record
   art_precedent_ranking_evaluation_record -. governed_by .-> con_precedent_ranking_evaluation_record
   art_precedent_retrieval -. governed_by .-> con_precedent_retrieval
@@ -3430,6 +3483,10 @@ flowchart TD
   art_prg_signal_prioritization_record -. governed_by .-> con_prg_signal_prioritization_record
   art_prg_smallest_safe_next_batch_recommendation -. governed_by .-> con_prg_smallest_safe_next_batch_recommendation
   art_prioritized_adoption_candidate_set -. governed_by .-> con_prioritized_adoption_candidate_set
+  art_prl_eval_case -. governed_by .-> con_prl_eval_case
+  art_prl_eval_generation_record -. governed_by .-> con_prl_eval_generation_record
+  art_prl_gate_result -. governed_by .-> con_prl_gate_result
+  art_prl_repair_candidate -. governed_by .-> con_prl_repair_candidate
   art_prm_ai_prompt_admissibility_result -. governed_by .-> con_prm_ai_prompt_admissibility_result
   art_prm_ai_task_registry_record -. governed_by .-> con_prm_ai_task_registry_record
   art_prm_artifact_taxonomy_validation_result -. governed_by .-> con_prm_artifact_taxonomy_validation_result
@@ -3902,6 +3959,15 @@ flowchart TD
   art_xrl_outcome_trust_weight_record -. governed_by .-> con_xrl_outcome_trust_weight_record
   art_xrl_real_world_outcome_integration_record -. governed_by .-> con_xrl_real_world_outcome_integration_record
   art_xrun_signal_quality_result -. governed_by .-> con_xrun_signal_quality_result
+  con_3ls_failure_recurrence_record -->|validates| art_3ls_failure_recurrence_record
+  con_3ls_handoff_record -->|validates| art_3ls_handoff_record
+  con_3ls_loop_run_record -->|validates| art_3ls_loop_run_record
+  con_3ls_operator_debuggability_record -->|validates| art_3ls_operator_debuggability_record
+  con_3ls_replayability_record -->|validates| art_3ls_replayability_record
+  con_3ls_scope_risk_record -->|validates| art_3ls_scope_risk_record
+  con_3ls_surface_coverage_record -->|validates| art_3ls_surface_coverage_record
+  con_3ls_system_measurement_record -->|validates| art_3ls_system_measurement_record
+  con_3ls_trust_gap_closure_record -->|validates| art_3ls_trust_gap_closure_record
   con_abstention_record -->|validates| art_abstention_record
   con_action_item_artifact -->|validates| art_action_item_artifact
   con_action_linkage_record -->|validates| art_action_linkage_record
@@ -3924,6 +3990,9 @@ flowchart TD
   con_agent_failure_record -->|validates| art_agent_failure_record
   con_ai_model_request -->|validates| art_ai_model_request
   con_ai_model_response -->|validates| art_ai_model_response
+  con_ai_programming_governance_rollup_record -->|validates| art_ai_programming_governance_rollup_record
+  con_ai_programming_loop_violation_record -->|validates| art_ai_programming_loop_violation_record
+  con_ai_programming_work_item_record -->|validates| art_ai_programming_work_item_record
   con_ail_ai_pattern_mining_record -->|validates| art_ail_ai_pattern_mining_record
   con_ail_ai_roadmap_candidate_record -->|validates| art_ail_ai_roadmap_candidate_record
   con_ail_continuous_pattern_learning_record -->|validates| art_ail_continuous_pattern_learning_record
@@ -4225,6 +4294,7 @@ flowchart TD
   con_eval_candidate_artifact -->|validates| art_eval_candidate_artifact
   con_eval_canonicalization_policy -->|validates| art_eval_canonicalization_policy
   con_eval_case -->|validates| art_eval_case
+  con_eval_case_candidate -->|validates| art_eval_case_candidate
   con_eval_coverage_artifact -->|validates| art_eval_coverage_artifact
   con_eval_coverage_redteam_findings -->|validates| art_eval_coverage_redteam_findings
   con_eval_coverage_registry -->|validates| art_eval_coverage_registry
@@ -4680,6 +4750,7 @@ flowchart TD
   con_pqx_slice_execution_record -->|validates| art_pqx_slice_execution_record
   con_pqx_strategy_status_artifact -->|validates| art_pqx_strategy_status_artifact
   con_pqx_triage_plan_record -->|validates| art_pqx_triage_plan_record
+  con_pr_failure_capture_record -->|validates| art_pr_failure_capture_record
   con_pra_changed_scope_extraction_record -->|validates| art_pra_changed_scope_extraction_record
   con_pra_ci_review_extraction_record -->|validates| art_pra_ci_review_extraction_record
   con_pra_pull_request_anchor_record -->|validates| art_pra_pull_request_anchor_record
@@ -4687,6 +4758,7 @@ flowchart TD
   con_pra_pull_request_metadata_normalization_record -->|validates| art_pra_pull_request_metadata_normalization_record
   con_pra_pull_request_resolution_record -->|validates| art_pra_pull_request_resolution_record
   con_pra_system_impact_mapping_record -->|validates| art_pra_system_impact_mapping_record
+  con_pre_pr_failure_packet -->|validates| art_pre_pr_failure_packet
   con_precedent_conflict_record -->|validates| art_precedent_conflict_record
   con_precedent_ranking_evaluation_record -->|validates| art_precedent_ranking_evaluation_record
   con_precedent_retrieval -->|validates| art_precedent_retrieval
@@ -4723,6 +4795,10 @@ flowchart TD
   con_prg_signal_prioritization_record -->|validates| art_prg_signal_prioritization_record
   con_prg_smallest_safe_next_batch_recommendation -->|validates| art_prg_smallest_safe_next_batch_recommendation
   con_prioritized_adoption_candidate_set -->|validates| art_prioritized_adoption_candidate_set
+  con_prl_eval_case -->|validates| art_prl_eval_case
+  con_prl_eval_generation_record -->|validates| art_prl_eval_generation_record
+  con_prl_gate_result -->|validates| art_prl_gate_result
+  con_prl_repair_candidate -->|validates| art_prl_repair_candidate
   con_prm_ai_prompt_admissibility_result -->|validates| art_prm_ai_prompt_admissibility_result
   con_prm_ai_task_registry_record -->|validates| art_prm_ai_task_registry_record
   con_prm_artifact_taxonomy_validation_result -->|validates| art_prm_artifact_taxonomy_validation_result
