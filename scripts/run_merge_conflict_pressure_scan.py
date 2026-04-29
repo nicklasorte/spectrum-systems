@@ -39,18 +39,37 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = REPO_ROOT / "artifacts" / "dashboard_metrics" / "merge_conflict_pressure_record.json"
 
 
-def _run(cmd: list[str]) -> str:
+def _run(cmd: list[str]) -> tuple[str, int]:
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT, check=False)
-    return result.stdout.strip()
+    return result.stdout.strip(), result.returncode
 
 
 def _changed_files(rev_a: str, rev_b: str) -> list[str]:
-    out = _run(["git", "diff", "--name-only", f"{rev_a}...{rev_b}"])
+    out, rc = _run(["git", "diff", "--name-only", f"{rev_a}...{rev_b}"])
+    if rc != 0:
+        return []
     return [line.strip() for line in out.splitlines() if line.strip()]
 
 
+def _resolve_ref(ref: str) -> str:
+    """Return the resolved SHA for a ref, or "" if git rev-parse fails.
+
+    `git rev-parse BAD_REF` exits non-zero but echoes BAD_REF to stdout, so
+    callers must check the return code rather than trusting truthiness of
+    stdout. This helper does that and surfaces the empty string on failure
+    so the caller can degrade to 'unknown'.
+    """
+    out, rc = _run(["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"])
+    if rc != 0:
+        return ""
+    return out
+
+
 def _merge_base(rev_a: str, rev_b: str) -> str:
-    return _run(["git", "merge-base", rev_a, rev_b])
+    out, rc = _run(["git", "merge-base", rev_a, rev_b])
+    if rc != 0:
+        return ""
+    return out
 
 
 @dataclass
@@ -132,9 +151,11 @@ def scan(base_ref: str, head_ref: str) -> dict:
     # Verify both refs resolve before attempting merge-base. If git fails to
     # resolve a ref or compute a merge base, the cockpit must surface
     # 'unknown' rather than silently report no_pressure_observed — a clean
-    # state from a command failure is a false negative.
-    base_resolved = _run(["git", "rev-parse", base_ref])
-    head_resolved = _run(["git", "rev-parse", head_ref])
+    # state from a command failure is a false negative. `git rev-parse`
+    # exits non-zero on bad refs but echoes the bad ref name to stdout, so
+    # we route through `_resolve_ref` which checks the return code.
+    base_resolved = _resolve_ref(base_ref)
+    head_resolved = _resolve_ref(head_ref)
     merge_base = _merge_base(base_ref, head_ref) if base_resolved and head_resolved else ""
 
     git_lookup_ok = bool(base_resolved and head_resolved and merge_base)

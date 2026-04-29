@@ -62,9 +62,10 @@ def test_scanner_reports_unknown_when_git_ref_lookup_fails(tmp_path: Path):
     # An invalid ref that git cannot rev-parse must degrade to 'unknown'
     # rather than silently report 'no_pressure_observed'. A clean state from
     # a command failure is a false negative for operators.
+    bad_ref = "DOES_NOT_EXIST_REF_FOR_MET_SCAN_TEST"
     m.main([
         "--base-ref",
-        "DOES_NOT_EXIST_REF_FOR_MET_SCAN_TEST",
+        bad_ref,
         "--head-ref",
         "HEAD",
         "--output",
@@ -76,3 +77,11 @@ def test_scanner_reports_unknown_when_git_ref_lookup_fails(tmp_path: Path):
     assert "git_ref_lookup_failed" in data["reason_codes"]
     # A warning must name the failure mode so dashboards surface it.
     assert any("Git ref lookup failed" in w for w in data["warnings"])
+    # base_resolved must NOT echo the bad ref string. `git rev-parse BAD_REF`
+    # exits non-zero but writes BAD_REF to stdout; the scanner must route
+    # through the return-code check and surface 'unknown' instead.
+    assert data["base_resolved"] == "unknown"
+    assert bad_ref not in data["base_resolved"]
+    # The diagnostic must name 'did not resolve' (ref-resolution failure),
+    # not 'merge-base returned empty' (the downstream symptom).
+    assert any("did not resolve" in w for w in data["warnings"])
