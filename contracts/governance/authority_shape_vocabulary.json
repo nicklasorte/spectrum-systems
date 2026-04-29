@@ -142,7 +142,8 @@
       "scripts/run_authority_preflight_expanded.py",
       "scripts/run_failure_explanation.py",
       "scripts/run_historical_replay_validator.py",
-      "scripts/run_minimality_sweep.py"
+      "scripts/run_minimality_sweep.py",
+      "docs/governance/preflight_required_surface_test_overrides.json"
     ]
   },
   "clusters": {
