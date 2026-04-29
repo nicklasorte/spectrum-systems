@@ -40,7 +40,11 @@ def main(argv: list[str] | None = None) -> int:
         if not cases_path.is_file():
             print(json.dumps({"error": f"cases file not found: {args.additional_cases_json}"}))
             return 2
-        additional_cases = json.loads(cases_path.read_text(encoding="utf-8"))
+        try:
+            additional_cases = json.loads(cases_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            print(json.dumps({"error": f"malformed additional-cases JSON: {exc}", "status": "error"}))
+            return 2
 
     from spectrum_systems.modules.runtime.historical_replay_validator import (
         HistoricalReplayValidatorError,
@@ -54,8 +58,8 @@ def main(argv: list[str] | None = None) -> int:
             additional_cases=additional_cases,
         )
     except HistoricalReplayValidatorError as e:
-        print(json.dumps({"error": str(e)}))
-        return 1
+        print(json.dumps({"error": str(e), "status": "error"}))
+        return 2
 
     output = json.dumps(report, indent=2)
     print(output)
