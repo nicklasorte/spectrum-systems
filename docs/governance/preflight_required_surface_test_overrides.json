@@ -60,6 +60,12 @@
   "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json": [
     "tests/metrics/test_met_04_18_contract_selection.py"
   ],
+  "artifacts/dashboard_metrics/ai_programming_governed_path_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/governance_violation_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
   "artifacts/dashboard_cases/case_index_record.json": [
     "tests/metrics/test_met_04_18_contract_selection.py"
   ],

@@ -1,14 +1,18 @@
 {
   "artifact_type": "governance_violation_record",
   "schema_version": "1.0.0",
-  "record_id": "GVL-DASH-AEX-PQX-DASH-02-001",
+  "record_id": "GVL-DASH-AEX-PQX-DASH-02-002",
   "created_at": "2026-04-29T00:00:00Z",
   "owner_system": "MET",
   "data_source": "artifact_store",
   "status": "block",
-  "violation_count": 4,
+  "violation_count": 6,
   "source_artifacts_used": [
     "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
+    "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
+    "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+    "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+    "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
     "artifacts/dashboard_seed/control_decision_record.json",
     "artifacts/dashboard_seed/enforcement_action_record.json",
     "artifacts/dashboard_seed/eval_summary_record.json",
@@ -17,68 +21,98 @@
   "warnings": [
     "MET emits violation observations only; it does not enforce, decide, or approve. CDE is the canonical decision authority and SEL is the canonical enforcement authority.",
     "Violations are derived from the absence of governed-loop artifacts (AEX/PQX/EVL/TPA/CDE/SEL legs) for AI programming work items.",
-    "When upstream evidence is absent, this record does not infer that the leg is present; missing artifacts surface as missing legs."
+    "When upstream evidence is absent, this record does not infer that the leg is present; missing artifacts surface as missing legs.",
+    "violation_count updated from 4 to 6 in record v002: AIPG-CODEX-001 (AEX missing) and AIPG-CLAUDE-001 (PQX missing) are now represented as explicit violations backed by source evidence records in artifacts/ai_programming/."
   ],
   "reason_codes": [
     "core_loop_leg_missing",
     "ai_programming_repo_mutation_observed",
     "lineage_to_aex_pqx_missing",
-    "no_authority_claim_by_MET"
+    "no_authority_claim_by_MET",
+    "bootstrap_gap_aex_pqx_dash_02_built_before_intake_instrumented"
   ],
   "failure_prevented": "AI programming (Codex + Claude) repo mutations passing through the dashboard without an artifact-backed AEX → PQX → EVL → TPA → CDE → SEL trail being silently rendered as PASS.",
-  "signal_improved": "Each AI programming work item that bypasses any required core-loop leg surfaces as a named violation with the missing leg, agent type, and next recommended input.",
+  "signal_improved": "Each AI programming work item that bypasses any required core-loop leg surfaces as a named violation with the missing leg, agent type, source evidence ref, and next recommended input. All six violations are now backed by source evidence in artifacts/ai_programming/.",
   "violations": [
     {
-      "violation_id": "GVL-AEX-MISSING-CLAUDE-001",
+      "violation_id": "GVL-AEX-MISSING-CODEX-001",
+      "work_item_id": "AIPG-CODEX-001",
+      "agent_type": "codex",
+      "violation_type": "aex_missing",
+      "missing_leg": "AEX",
+      "repo_mutating": true,
+      "source_artifacts_used": [
+        "artifacts/ai_programming/aipg_codex_001_work_item_record.json"
+      ],
+      "why_it_matters": "AEX is the admission/intake leg. Without a governed AEX record for this Codex-driven repo mutation, downstream legs cannot be lineage-bound to a structured input. The existing aex_admission_evidence_record references req-aex-trust-01-1, not AIPG-CODEX-001.",
+      "next_recommended_input": "Produce an AEX intake record naming work_item_id=AIPG-CODEX-001 and link it as an upstream source for the PQX execution record. Human review required to confirm retroactive AEX evidence is permissible."
+    },
+    {
+      "violation_id": "GVL-PQX-MISSING-CLAUDE-001",
+      "work_item_id": "AIPG-CLAUDE-001",
+      "agent_type": "claude",
+      "violation_type": "pqx_missing",
+      "missing_leg": "PQX",
+      "repo_mutating": true,
+      "source_artifacts_used": [
+        "artifacts/ai_programming/aipg_claude_001_work_item_record.json"
+      ],
+      "why_it_matters": "PQX is the sole execution authority. A repo-mutating change with no PQX execution record cannot be replayed and bypasses the only governed execution boundary.",
+      "next_recommended_input": "Emit a PQX execution record for the branch claude/ai-governed-path-dashboard-ypm4c; link AEX upstream and EVL downstream. Human review required to confirm PQX evidence can be produced retroactively."
+    },
+    {
+      "violation_id": "GVL-AEX-MISSING-CLAUDE-002",
       "work_item_id": "AEX-PQX-DASH-02",
       "agent_type": "claude",
       "violation_type": "aex_missing",
       "missing_leg": "AEX",
       "repo_mutating": true,
       "source_artifacts_used": [
-        "artifacts/dashboard_metrics/ai_programming_governed_path_record.json"
+        "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json"
       ],
-      "why_it_matters": "AEX is the admission/intake leg. Without a governed AEX record for this Claude-driven repo mutation, downstream legs cannot be lineage-bound to a structured input.",
-      "next_recommended_input": "Produce an AEX intake record naming work_item_id=AEX-PQX-DASH-02 and link it as an upstream source for the PQX execution record."
+      "why_it_matters": "AEX is the admission/intake leg. Without a governed AEX record for this Claude-driven repo mutation (the dashboard implementation), downstream legs cannot be lineage-bound to a structured input. This is a bootstrap gap: the dashboard was built before AEX intake was instrumented for Claude work.",
+      "next_recommended_input": "Human review required. Confirm whether retroactive AEX evidence can be produced for AEX-PQX-DASH-02 (the dashboard implementation). If not, this violation will permanently carry missing AEX."
     },
     {
-      "violation_id": "GVL-PQX-MISSING-CLAUDE-001",
+      "violation_id": "GVL-PQX-MISSING-CLAUDE-002",
       "work_item_id": "AEX-PQX-DASH-02",
       "agent_type": "claude",
       "violation_type": "pqx_missing",
       "missing_leg": "PQX",
       "repo_mutating": true,
       "source_artifacts_used": [
-        "artifacts/dashboard_metrics/ai_programming_governed_path_record.json"
+        "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json"
       ],
-      "why_it_matters": "PQX is the sole execution authority. A repo-mutating change with no PQX execution record cannot be replayed and bypasses the only governed execution boundary.",
-      "next_recommended_input": "Emit a PQX execution record for the dashboard files written under this work item; link AEX upstream and EVL downstream."
+      "why_it_matters": "PQX is the sole execution authority. A repo-mutating change (the dashboard implementation) with no PQX execution record cannot be replayed and bypasses the only governed execution boundary.",
+      "next_recommended_input": "Emit a PQX execution record for the dashboard files written under work item AEX-PQX-DASH-02; link AEX upstream and EVL downstream. Human review required."
     },
     {
-      "violation_id": "GVL-LINEAGE-MISSING-CODEX-001",
+      "violation_id": "GVL-LINEAGE-MISSING-CODEX-002",
       "work_item_id": "AEX-PQX-DASH-02-CODEX-PRECURSOR",
       "agent_type": "codex",
       "violation_type": "lineage_missing",
       "missing_leg": "lineage",
       "repo_mutating": true,
       "source_artifacts_used": [
+        "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
         "artifacts/dashboard_seed/lineage_record.json"
       ],
-      "why_it_matters": "Codex-authored repo mutations without a lineage record cannot be tied to AEX/PQX/EVL artifacts; downstream certification cannot prove the loop was traversed.",
-      "next_recommended_input": "Backfill a lineage_record entry for the Codex precursor work item linking AEX intake → PQX execution → EVL evaluation."
+      "why_it_matters": "Codex-authored repo mutations without a lineage record cannot be tied to AEX/PQX/EVL artifacts; downstream certification cannot prove the loop was traversed. AEX and PQX evidence exists (partial) but is not explicitly chained to this work item.",
+      "next_recommended_input": "Backfill a lineage_record entry for the Codex precursor work item linking AEX intake (aex_admission_evidence_record.json) → PQX execution (preflight.pqx_slice_execution_record.json) → EVL evaluation, explicitly naming work_item_id=AEX-PQX-DASH-02-CODEX-PRECURSOR."
     },
     {
-      "violation_id": "GVL-CDE-MISSING-UNKNOWN-001",
+      "violation_id": "GVL-CDE-MISSING-CLAUDE-001",
       "work_item_id": "AEX-PQX-DASH-02",
-      "agent_type": "unknown_ai_agent",
+      "agent_type": "claude",
       "violation_type": "cde_missing",
       "missing_leg": "CDE",
       "repo_mutating": true,
       "source_artifacts_used": [
+        "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
         "artifacts/dashboard_seed/control_decision_record.json"
       ],
       "why_it_matters": "CDE is the sole control-decision authority. Without a control_decision artifact for this work item, no allow/warn/freeze/block has been recorded and promotion cannot be governed.",
-      "next_recommended_input": "Request a CDE control_decision_record for AEX-PQX-DASH-02 and forward EVL/TPA evidence for adjudication."
+      "next_recommended_input": "Request a CDE control_decision_record for AEX-PQX-DASH-02 and forward EVL/TPA evidence for adjudication. Note: CDE decision cannot be requested until AEX and PQX legs are also resolved."
     }
   ]
 }
