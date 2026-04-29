@@ -180,6 +180,7 @@ def generate_authority_repair_candidates(
             "patches": patches,
             "safe_to_apply": safe_to_apply,
             "blocked_reason": blocked_reason,
+            "producer_authority": "FRE",
             "non_authority_assertions": [
                 "This candidate requires CDE authorization before PQX applies it.",
                 "Only rename and vocabulary_correction patch types are permitted.",

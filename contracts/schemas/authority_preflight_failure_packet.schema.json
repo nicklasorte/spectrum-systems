@@ -86,6 +86,7 @@
       "type": "string",
       "enum": ["pass", "fail"]
     },
+    "producer_authority": { "type": "string", "const": "AEX" },
     "non_authority_assertions": {
       "type": "array",
       "items": { "type": "string" }

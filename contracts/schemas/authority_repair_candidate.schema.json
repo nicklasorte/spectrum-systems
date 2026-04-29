@@ -49,6 +49,7 @@
     },
     "safe_to_apply": { "type": "boolean" },
     "blocked_reason": { "type": ["string", "null"] },
+    "producer_authority": { "type": "string", "const": "FRE" },
     "non_authority_assertions": {
       "type": "array",
       "items": { "type": "string" }

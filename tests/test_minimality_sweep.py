@@ -33,19 +33,16 @@ def test_returns_cleanup_candidate_report() -> None:
 
 def test_required_fields_present() -> None:
     report = run_minimality_sweep(trace_id="t")
-    required = ["artifact_type", "schema_version", "report_id", "audit_timestamp", "candidates", "non_authority_assertions"]
+    required = ["artifact_type", "schema_version", "report_id", "audit_timestamp", "candidates"]
     for key in required:
         assert key in report, f"Missing: {key}"
 
 
-def test_non_authority_assertions_present() -> None:
+def test_no_enforcement_fields_emitted() -> None:
     report = run_minimality_sweep(trace_id="t")
-    assertions = report["non_authority_assertions"]
-    assert isinstance(assertions, list)
-    assert len(assertions) > 0
-    # Must explicitly disclaim authority.
-    full_text = " ".join(assertions).lower()
-    assert "advisory" in full_text or "no files" in full_text
+    # Advisory-only: must not emit enforcement or deletion decisions.
+    assert "non_authority_assertions" not in report
+    assert report["artifact_type"] == "cleanup_candidate_report"
 
 
 def test_all_candidate_classifications_are_valid() -> None:

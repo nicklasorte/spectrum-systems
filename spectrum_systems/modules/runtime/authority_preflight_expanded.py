@@ -360,6 +360,7 @@ def run_authority_preflight_expanded(
         "shadow_overlaps": all_overlaps,
         "forbidden_symbols": all_forbidden,
         "status": status,
+        "producer_authority": "AEX",
         "non_authority_assertions": [
             "This packet is advisory evidence only.",
             "Canonical owners (AEX/CDE/SEL) perform enforcement.",

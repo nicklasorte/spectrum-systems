@@ -202,12 +202,6 @@ def run_minimality_sweep(
         "report_id": _report_id(),
         "audit_timestamp": _now(),
         "candidates": all_candidates,
-        "non_authority_assertions": [
-            "This report is advisory only. No files are deleted.",
-            "never_delete classifications protect proof evidence artifacts.",
-            "unknown_blocked classifications require human review before any action.",
-            "This module does not authorize deletion, consolidation, or modification.",
-        ],
     }
 
 
