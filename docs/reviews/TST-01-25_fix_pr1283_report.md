@@ -70,3 +70,10 @@
 ## Remaining risks
 - Fast PR gate still depends on contract preflight execution cost for broad diffs.
 - Legacy gate-name compatibility file paths still appear in preflight changed-file lists when comparing against older base commits.
+
+
+## Final documentation-only cleanup note
+- Remaining authority-shape violations were confined to `docs/review-actions/PLAN-TST-01-25-FIX-PR1283-2026-04-28.md`.
+- Replaced stale readiness-authority wording with readiness-evidence wording (`run_readiness_evidence_gate`, `readiness_evidence_gate_result`, and readiness evidence language).
+- Authority-shape preflight after this cleanup: `status: pass`, `violation_count: 0`.
+- Tests run for this cleanup: `python -m pytest tests/test_ci_gate_scripts.py tests/test_ci_drift_detector.py`.
