@@ -1,0 +1,45 @@
+{
+  "artifact_type": "admission_policy_observation",
+  "schema_version": "1.0.0",
+  "observation_id": "apo-0a1b2c3d4e5f6789",
+  "request_id": "req-aex-trust-01-1",
+  "trace_id": "trace-aex-trust-01-1",
+  "run_id": "run-aex-trust-01-1",
+  "created_at": "2026-04-29T12:00:00Z",
+  "produced_by": "AEXSelAdmissionSignal",
+  "producer_authority": "AEX",
+  "admission_outcome": "admitted",
+  "reason_codes": [
+    "repo_write_signal_detected",
+    "context_capability_request"
+  ],
+  "input_refs": [
+    "codex_build_request:req-aex-trust-01-1"
+  ],
+  "output_refs": [
+    "build_admission_record:adm-aex-trust-01-1",
+    "normalized_execution_request:req-aex-trust-01-1"
+  ],
+  "downstream_refs": {
+    "consumer_systems": [
+      "SEL",
+      "ENF",
+      "POL"
+    ],
+    "handoff_refs": [
+      "sel_enforcement_input:adm-aex-trust-01-1",
+      "policy_observation_inbox:adm-aex-trust-01-1"
+    ]
+  },
+  "evidence_refs": [
+    "admission_evidence_record:aer-0a1b2c3d4e5f6789"
+  ],
+  "replay_refs": {
+    "input_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "output_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "replay_command_ref": "scripts/replay_aex_admission.py --fixture tests/aex/fixtures/admission_admit_repo_write.json"
+  },
+  "policy_refs": [
+    "policy_registry_record:aex_admission_policy_v1"
+  ]
+}

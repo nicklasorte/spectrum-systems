@@ -1,0 +1,13 @@
+{
+  "prompt_text": "modify the repo somehow",
+  "trace_id": "trace-aex-trust-01-2",
+  "created_at": "2026-04-29T12:00:00Z",
+  "produced_by": "codex",
+  "target_paths": [
+    "contracts/schemas/build_admission_record.schema.json"
+  ],
+  "requested_outputs": [
+    "patch"
+  ],
+  "source_prompt_kind": "codex_build_request"
+}

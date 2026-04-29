@@ -1,0 +1,12 @@
+{
+  "request_id": "req-aex-trust-01-3",
+  "prompt_text": "do the thing",
+  "trace_id": "trace-aex-trust-01-3",
+  "created_at": "2026-04-29T12:00:00Z",
+  "produced_by": "codex",
+  "target_paths": [
+    "contracts/schemas/build_admission_record.schema.json"
+  ],
+  "requested_outputs": [],
+  "source_prompt_kind": "codex_build_request"
+}

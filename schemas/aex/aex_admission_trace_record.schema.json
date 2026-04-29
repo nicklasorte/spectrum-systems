@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/aex/aex_admission_trace_record.schema.json",
+  "title": "AEX Admission Trace Record (supplemental)",
+  "description": "Supplemental structural schema for AEX admission trace observability records. Mirrors contracts/schemas/admission_trace_record.schema.json. AEX produces traces; OBS owns the trace store.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_record_id",
+    "request_id",
+    "trace_id",
+    "run_id",
+    "span_id",
+    "parent_span_id",
+    "started_at",
+    "finished_at",
+    "produced_by",
+    "producer_authority",
+    "admission_outcome",
+    "admission_artifact_ref",
+    "normalized_execution_request_ref",
+    "downstream_refs",
+    "observability_owner_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "admission_trace_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trace_record_id": {
+      "type": "string",
+      "pattern": "^atr-[0-9a-f]{16}$"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "span_id": {
+      "type": "string",
+      "pattern": "^span-[0-9a-f]{16}$"
+    },
+    "parent_span_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "produced_by": {
+      "type": "string"
+    },
+    "producer_authority": {
+      "const": "AEX"
+    },
+    "admission_outcome": {
+      "enum": [
+        "admitted",
+        "rejected",
+        "indeterminate"
+      ]
+    },
+    "admission_artifact_ref": {
+      "type": "string"
+    },
+    "normalized_execution_request_ref": {
+      "type": "string"
+    },
+    "downstream_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "observability_owner_ref": {
+      "const": "OBS"
+    }
+  }
+}

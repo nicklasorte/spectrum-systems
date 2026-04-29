@@ -1,0 +1,29 @@
+{
+  "artifact_type": "aex_gov_readiness_observation",
+  "schema_version": "1.0.0",
+  "observation_id": "agro-aex-trust-01-1",
+  "observed_at": "2026-04-29T12:00:00Z",
+  "produced_by": "AEXSelAdmissionSignal",
+  "producer_authority": "AEX",
+  "readiness_authority": "GOV",
+  "readiness_authority_owner_ref": "GOV",
+  "purpose": "AEX-emitted observation of admission-side readiness inputs that GOV (governance/readiness authority) can consume. AEX does NOT decide readiness, certify, or promote.",
+  "request_id": "req-aex-trust-01-1",
+  "trace_id": "trace-aex-trust-01-1",
+  "run_id": "run-aex-trust-01-1",
+  "admission_artifact_ref": "build_admission_record:adm-aex-trust-01-1",
+  "normalized_execution_request_ref": "normalized_execution_request:req-aex-trust-01-1",
+  "evidence_refs": [
+    "artifacts/aex/aex_admission_evidence_record.json",
+    "artifacts/aex/aex_admission_trace_record.json",
+    "artifacts/aex/aex_admission_replay_record.json",
+    "artifacts/aex/aex_sel_enforcement_input.json"
+  ],
+  "non_authority_assertions": [
+    "aex_does_not_own_governance_readiness_authority",
+    "aex_does_not_own_promotion_authority",
+    "aex_does_not_own_certification_authority",
+    "aex_does_not_own_control_decision_authority",
+    "aex_does_not_own_enforcement_authority"
+  ]
+}
