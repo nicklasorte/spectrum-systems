@@ -403,10 +403,10 @@ they feed OBS / LIN / REP / SLO.
   eval cases from improvement proposals), FRE (failure-derived candidates feed
   FRE diagnosis only via governed adoption), CDE (control authority external to
   HOP — HOP never decides promotion; improvement proposals require CDE/GOV
-  approval), RDX (receives split-requirement signals from over-scoped execution
+  review), RDX (receives split-requirement signals from over-scoped execution
   proposals — advisory only), HNX (receives checkpoint-requirement signals from
-  missing-checkpoint proposals — advisory only), SEL (receives enforcement-rule
-  signals — SEL retains all enforcement authority).
+  missing-checkpoint proposals — advisory only), SEL (receives compliance signals
+  from improvement proposals — SEL retains all signal-gate ownership).
 - **Primary Code Paths:**
   - `spectrum_systems/modules/hop/experience_store.py`
   - `spectrum_systems/modules/hop/evaluator.py`
