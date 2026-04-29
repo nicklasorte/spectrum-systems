@@ -203,6 +203,17 @@ class TestDriftDetectorFailsOnOrphanedScriptInvocation:
         rc, stdout, stderr = _run_detector(tmp_path)
         assert rc != 0, "Should fail when a workflow invokes a script that does not exist"
 
+    def test_fails_when_workflow_invokes_nonexistent_script_via_python3(self, tmp_path: Path) -> None:
+        _setup_valid_repo(tmp_path)
+        wf = tmp_path / ".github/workflows/artifact-boundary.yml"
+        wf.write_text(
+            "name: test\non: push\njobs:\n  j:\n    runs-on: ubuntu-latest\n"
+            "    steps:\n      - run: python3 scripts/nonexistent_tool.py\n",
+            encoding="utf-8",
+        )
+        rc, stdout, stderr = _run_detector(tmp_path)
+        assert rc != 0, "Should fail when python3 invokes a script that does not exist"
+
     def test_passes_when_workflow_invokes_existing_script(self, tmp_path: Path) -> None:
         _setup_valid_repo(tmp_path)
         wf = tmp_path / ".github/workflows/artifact-boundary.yml"

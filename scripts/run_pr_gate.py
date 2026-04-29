@@ -6,10 +6,11 @@ This script contains NO policy decisions, NO schema shortcuts, NO test selection
 logic, and NO certification logic. It is a thin sequencer only.
 
 Gate order:
-  1. Contract Gate     → scripts/run_contract_gate.py
+  1. Contract Gate       → scripts/run_contract_gate.py
   2. Test Selection Gate → scripts/run_test_selection_gate.py
-  3. Runtime Test Gate → scripts/run_runtime_test_gate.py
-  4. Governance Gate   → scripts/run_governance_gate.py
+  3. Runtime Test Gate   → scripts/run_runtime_test_gate.py
+  4. Governance Gate     → scripts/run_governance_gate.py
+  4.5. CI Drift Detector → scripts/run_ci_drift_detector.py
   5. Certification Gate (fast, only when cert paths touched) → scripts/run_certification_gate.py
 
 Final artifact: outputs/pr_gate/pr_gate_result.json
@@ -247,6 +248,37 @@ def main() -> None:
                 "affected_files": [],
                 "failed_command": "scripts/run_governance_gate.py",
                 "artifact_refs": [str(gates_dir / "governance_gate_result.json")],
+            },
+            output_dir, args.base_ref, args.head_ref,
+        )
+        sys.exit(1)
+
+    # Gate 4.5: CI Drift Detector — must run at merge time, not just nightly
+    ci_drift_output = Path("outputs/ci_drift_detector/drift_report.json")
+    ok = _run_gate(
+        "ci_drift_detector",
+        [
+            sys.executable, "scripts/run_ci_drift_detector.py",
+            "--repo-root", repo_root,
+            "--output", str(ci_drift_output),
+        ],
+        repo_root,
+        ci_drift_output,
+        executed_commands,
+        gate_results,
+    )
+    if not ok:
+        _emit_final_result(
+            "block", gate_results, executed_commands, "ci_drift_detector",
+            {
+                "gate_name": "pr_gate",
+                "failure_class": "gate_failure",
+                "root_cause": "CI Drift Detector found unmapped workflows or missing gate schemas",
+                "blocking_reason": "ci_drift_detector returned non-zero",
+                "next_action": "Review outputs/ci_drift_detector/drift_report.json for drift findings",
+                "affected_files": [],
+                "failed_command": "scripts/run_ci_drift_detector.py",
+                "artifact_refs": [str(ci_drift_output)],
             },
             output_dir, args.base_ref, args.head_ref,
         )
