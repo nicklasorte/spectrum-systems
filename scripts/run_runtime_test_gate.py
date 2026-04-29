@@ -18,7 +18,6 @@ import time
 
 _GATE_NAME = "runtime_test_gate"
 _SCHEMA_VERSION = "1.0.0"
-_SELECTION_GATE_RESULT = "outputs/gates/test_selection_gate_result.json"
 
 
 def _sha256(text: str) -> str:
@@ -106,9 +105,11 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     repo_root = Path(args.repo_root)
 
-    # Load selected targets from upstream gate
+    # Load selected targets from upstream gate — use output_dir so --output-dir
+    # (i.e. --gates-dir from run_pr_gate.py) is respected rather than a hard-coded path
+    selection_result_path = output_dir / "test_selection_gate_result.json"
     selection_result = _load_json_file(
-        repo_root / _SELECTION_GATE_RESULT, "test_selection_gate_result", output_dir
+        selection_result_path, "test_selection_gate_result", output_dir
     )
 
     selected_targets: list[str] = selection_result.get("selected_targets") or []
@@ -119,7 +120,7 @@ def main() -> None:
             "Verify test_selection_gate completed successfully",
             [],
             "scripts/run_runtime_test_gate.py",
-            [_SELECTION_GATE_RESULT],
+            [str(selection_result_path)],
             output_dir,
         )
 
@@ -180,7 +181,7 @@ def main() -> None:
             "Fix failing tests before this PR can be promoted",
             selected_targets,
             " ".join(pytest_cmd),
-            [_SELECTION_GATE_RESULT],
+            [str(selection_result_path)],
             output_dir,
             extra_details=details,
         )
