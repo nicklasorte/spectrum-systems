@@ -7,6 +7,83 @@ Spectrum Systems is a governed execution runtime for artifact-first, policy-cont
 It is not a chat system, agent framework, or prompt wrapper. Every input, decision, execution
 step, and output is a versioned, schema-bound artifact. There are no shadow paths.
 
+## AEX Admission Rule
+
+All repo-mutating agent work must begin with an AEX-style admission step before implementation.
+
+Before editing any files, the agent must identify:
+
+- request type and intended outcome
+- exact changed surfaces (files, workflows, schemas, tests, docs)
+- authority-shape risks across canonical-owner boundaries (per `docs/architecture/system_registry.md`)
+- required tests and eval coverage
+- required schema or artifact updates
+- required governance mappings, where they exist (e.g. test-gating, selection, and ownership mappings declared in `docs/architecture/system_registry.md` or `docs/governance/`)
+- required replay and observability updates
+- whether the scope is too large and must be split
+
+If the work touches any governed surface, including:
+
+- `.github/workflows/`
+- `scripts/`
+- `contracts/`
+- `spectrum_systems/`
+- `tests/`
+- `docs/governance/`
+- system registry or architecture artifacts
+
+then the agent must either:
+
+1. Update all corresponding mappings, tests, schemas, and governance artifacts in the same change
+1. OR stop and report the missing mapping before proceeding
+
+### Authority Boundary
+
+AEX is an admission boundary only.
+
+It may produce:
+
+- admission evidence
+- policy observations
+- normalized execution requests
+- downstream input signals
+- trace / provenance / lineage
+
+It must NOT claim or implement:
+
+- enforcement authority
+- certification authority
+- promotion authority
+- final control decisions
+
+All such authority remains with the canonical owner declared in `docs/architecture/system_registry.md`. AEX emits admission evidence and downstream support inputs only; it does not redefine any 3-letter system's ownership.
+
+### Fail-Closed Principle
+
+If required signals, mappings, or coverage are missing, the agent must fail closed:
+
+- do not proceed with implementation
+- do not create partial or unmapped changes
+- do not assume downstream systems will "handle it"
+
+Instead:
+
+- report the gap
+- propose the minimal required fix
+- or split the work into smaller, admissible slices
+
+### Intent
+
+This rule ensures:
+
+- no orphaned workflows, scripts, or schemas
+- no missing test coverage for governed surfaces
+- no authority-shape violations
+- no hidden logic outside governed artifacts
+- no CI drift caused by agent-generated changes
+
+All changes must be admissible, traceable, testable, and governed before execution.
+
 ## Operational Loop
 
 ```
@@ -30,10 +107,7 @@ Modules are hard-separated. No module may cross-write another module’s artifac
 |`control/*`    |Emits `allow / warn / freeze / block`        |
 |`enforcement/*`|Executes enforcement actions                 |
 
-- CDE is the sole decision authority.
-- TLC is the sole orchestration authority.
-- PQX is the sole execution authority.
-- SEL is the sole enforcement authority.
+Decision, orchestration, execution, and enforcement assignments are canonical in `docs/architecture/system_registry.md`. Instruction docs must not redefine those assignments here.
 
 ## Hard Rules
 

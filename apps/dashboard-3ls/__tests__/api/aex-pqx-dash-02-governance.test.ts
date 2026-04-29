@@ -164,8 +164,10 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
     expect(intelligenceSrc).toContain(
       "governanceViolation: 'artifacts/dashboard_metrics/governance_violation_record.json'",
     );
+    // After merge with main, the AI programming governed-path artifact path
+    // is exported as a constant by lib/aiProgrammingGovernance.ts.
     expect(intelligenceSrc).toContain(
-      "aiProgrammingGovernedPath:\n    'artifacts/dashboard_metrics/ai_programming_governed_path_record.json'",
+      'aiProgrammingGovernedPath: AI_PROGRAMMING_GOVERNED_PATH_ARTIFACT_PATH',
     );
     expect(intelligenceSrc).toContain('loaded: governanceViolation !== null');
     expect(intelligenceSrc).toContain('loaded: aiProgrammingGovernedPath !== null');
@@ -262,25 +264,24 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
   });
 
   it('fail-closed: work-item counts derived from per-work-item summary, not hard-coded', () => {
-    // After the merge with origin/main, ai_programming_work_items[] can
-    // contain multiple entries. Hard-coding total_work_items to 1 would
-    // under-report blocked scope. Counts must derive from
-    // computeCoreLoopSummary's per-item summary when work_items exist.
-    expect(intelligenceSrc).toContain('hasWorkItems');
-    expect(intelligenceSrc).toContain('perItemSummary.work_items.length');
-    expect(intelligenceSrc).toContain('perItemSummary.core_loop_complete_count');
-    expect(intelligenceSrc).toContain('perItemSummary.blocked_work_items.length');
-    // The previous hard-coded `? 1 : 'unknown'` total must not remain.
+    // After main's PR #1287 renamed the lib to aiProgrammingGovernance,
+    // counts derive from `governedPathSummary.total_ai_programming_work_items`,
+    // `.governed_work_count`, `.bypass_risk_count` — never hard-coded to 1.
+    expect(intelligenceSrc).toContain('rawWorkItems');
+    expect(intelligenceSrc).toContain('governedPathSummary.total_ai_programming_work_items');
+    expect(intelligenceSrc).toContain('governedPathSummary.governed_work_count');
+    expect(intelligenceSrc).toContain('governedPathSummary.bypass_risk_count');
     expect(intelligenceSrc).not.toContain("totalWorkItems = aiProgrammingGovernedPath ? 1 : 'unknown'");
   });
 
-  it('missing_by_leg uses per-work-item counts when work_items exist', () => {
-    // missing_by_leg should report the count of items per leg that are
-    // missing (richer signal for blocked-scope consumers) rather than the
-    // aggregate single-row 0/1 indicator.
-    expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.AEX');
-    expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.PQX');
-    expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.SEL');
+  it('fail-closed: empty ai_programming_work_items[] reports 0, not 1', () => {
+    // Codex P2 — when the artifact is present but the per-item array is
+    // empty, counts must be 0 (no observed items). Falling through to a
+    // hard-coded 1 would create a phantom work item.
+    expect(intelligenceSrc).toContain('rawWorkItems !== null && rawWorkItems.length === 0');
+    expect(intelligenceSrc).toMatch(
+      /rawWorkItems !== null && rawWorkItems\.length === 0\s*\?\s*0/,
+    );
   });
 
   it('fail-closed: violation_count uses raw violations[] not just filtered set', () => {

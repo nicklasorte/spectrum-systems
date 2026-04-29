@@ -532,6 +532,21 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
             "control_surface_gap_packet_governance",
             "control-surface gap packet governance seam changed",
         )
+    if path in {"AGENTS.md", "CLAUDE.md"}:
+        return (
+            True,
+            "governance_instruction_doc",
+            "root governance instruction doc changed (subject to system registry guard)",
+        )
+    if path in {
+        "docs/governance/pytest_pr_selection_integrity_policy.json",
+        "docs/governance/preflight_required_surface_test_overrides.json",
+    }:
+        return (
+            True,
+            "preflight_selection_policy",
+            "preflight selection policy/override surface changed",
+        )
     if path.startswith("spectrum_systems/modules/runtime/"):
         return True, "runtime_module", "runtime module changed"
     if path.startswith("spectrum_systems/orchestration/"):

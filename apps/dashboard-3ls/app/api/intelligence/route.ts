@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { loadArtifact } from '@/lib/artifactLoader';
 import { buildSourceEnvelope } from '@/lib/sourceClassification';
 import {
-  computeCoreLoopSummary,
+  AI_PROGRAMMING_GOVERNED_PATH_ARTIFACT_PATH,
+  computeGovernedPathSummary,
   type AiProgrammingGovernedPathRecord,
-} from '@/lib/aiProgrammingCoreLoop';
+} from '@/lib/aiProgrammingGovernance';
 import type {
   CheckpointSummary,
   RepoSnapshot,
@@ -68,9 +69,8 @@ const ARTIFACT_PATHS = {
     'artifacts/dashboard_metrics/generated_artifact_policy_handoff_record.json',
   // AEX-PQX-DASH-02 — governance violation panel + core-loop compliance.
   governanceViolation: 'artifacts/dashboard_metrics/governance_violation_record.json',
-  // AEX-PQX-DASH-01-REFINE — AI programming governed path (per-work-item).
-  aiProgrammingGovernedPath:
-    'artifacts/dashboard_metrics/ai_programming_governed_path_record.json',
+  // AEX-PQX-DASH-01 — AI programming governed path (per-work-item).
+  aiProgrammingGovernedPath: AI_PROGRAMMING_GOVERNED_PATH_ARTIFACT_PATH,
 };
 
 // AEX-PQX-DASH-02 — fixed core-loop legs the dashboard reports compliance over.
@@ -440,6 +440,13 @@ export async function GET() {
     classified_paths?: Array<Record<string, unknown>>;
   }>(ARTIFACT_PATHS.metGeneratedArtifactClassification);
 
+  // AEX-PQX-DASH-01 — AI programming governed-path observation. MET reads only.
+  // AEX-PQX-DASH-02 also reads the same artifact for its aggregate
+  // core_loop_compliance roll-up; cast to the intersection of both shapes.
+  const aiProgrammingGovernedPath = loadArtifact<
+    AiProgrammingGovernedPathRecord & AIProgrammingGovernedPathRecord
+  >(ARTIFACT_PATHS.aiProgrammingGovernedPath);
+
   const ownerReadObservationLedger = loadArtifact<{
     data_source?: string;
     source_artifacts_used?: string[];
@@ -500,13 +507,6 @@ export async function GET() {
   const governanceViolation = loadArtifact<GovernanceViolationRecord>(
     ARTIFACT_PATHS.governanceViolation,
   );
-  // AEX-PQX-DASH-01-REFINE — AI Programming Governed Path observation record.
-  // Per-work-item core-loop observations (AEX → PQX → EVL → TPA → CDE → SEL).
-  // AEX-PQX-DASH-02 also reads the same artifact for its aggregate
-  // core_loop_compliance roll-up. MET observes only.
-  const aiProgrammingGovernedPath = loadArtifact<
-    AiProgrammingGovernedPathRecord & AIProgrammingGovernedPathRecord
-  >(ARTIFACT_PATHS.aiProgrammingGovernedPath);
 
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
@@ -596,7 +596,12 @@ export async function GET() {
       ...(operatorDebuggabilityDrill?.warnings ?? []),
       ...(generatedArtifactPolicyHandoff?.warnings ?? []),
       ...(governanceViolation?.warnings ?? []),
-      ...(aiProgrammingGovernedPath?.warnings ?? []),
+      // Main's filter — guards against malformed warnings entries.
+      ...(Array.isArray(aiProgrammingGovernedPath?.warnings)
+        ? (aiProgrammingGovernedPath?.warnings ?? []).filter(
+            (w): w is string => typeof w === 'string',
+          )
+        : []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -1341,33 +1346,36 @@ export async function GET() {
         warnings: [`${ARTIFACT_PATHS.generatedArtifactPolicyHandoff} unavailable; generated-artifact policy handoff reported as unknown.`],
       };
 
-  // AEX-PQX-DASH-01-REFINE — Compute the AI programming core-loop proof
-  // summary. The dashboard surfaces counts by leg, missing-by-leg counts,
-  // weakest leg, and blocked work items derived only from artifact-backed
-  // observations. No authority outcome is claimed by MET.
-  const aiProgrammingCoreLoopSummary = computeCoreLoopSummary(
-    aiProgrammingGovernedPath,
-    `${ARTIFACT_PATHS.aiProgrammingGovernedPath} unavailable; AI programming core-loop proof reported as unknown.`,
-  );
+  // AEX-PQX-DASH-01 — AI programming governed-path block.
+  //
+  // MET observation only. Fail-closed: missing artifact degrades to status
+  // 'unknown' and unknown counts (never 0). Repo-mutating Codex or Claude
+  // work with missing AEX or PQX evidence renders 'block' so the panel
+  // cannot read green when admission or execution proof is absent.
+  const governedPathSummary = computeGovernedPathSummary(aiProgrammingGovernedPath);
   const aiProgrammingGovernedPathBlock = {
-    overall_status: aiProgrammingCoreLoopSummary.overall_status,
-    core_loop_summary: aiProgrammingCoreLoopSummary,
-    aex_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.aex_present_count,
-    pqx_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.pqx_present_count,
-    evl_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.evl_present_count,
-    tpa_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.tpa_present_count,
-    cde_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.cde_present_count,
-    sel_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.sel_present_count,
-    missing_by_leg: aiProgrammingCoreLoopSummary.missing_by_leg,
-    blocked_work_items: aiProgrammingCoreLoopSummary.blocked_work_items,
-    weakest_leg: aiProgrammingCoreLoopSummary.weakest_leg,
-    codex_count: aiProgrammingCoreLoopSummary.codex_work_item_count,
-    claude_count: aiProgrammingCoreLoopSummary.claude_work_item_count,
-    core_loop_complete_count: aiProgrammingCoreLoopSummary.core_loop_complete_count,
-    work_items: aiProgrammingCoreLoopSummary.work_items,
-    data_source: aiProgrammingCoreLoopSummary.data_source,
-    source_artifacts_used: aiProgrammingCoreLoopSummary.source_artifacts_used,
-    warnings: aiProgrammingCoreLoopSummary.warnings,
+    status: governedPathSummary.status,
+    data_source: governedPathSummary.data_source,
+    source_artifacts_used: governedPathSummary.source_artifacts_used,
+    warnings: aiProgrammingGovernedPath
+      ? governedPathSummary.warnings
+      : [
+          ...governedPathSummary.warnings,
+          `${ARTIFACT_PATHS.aiProgrammingGovernedPath} unavailable; ai_programming_governed_path_record missing.`,
+        ],
+    reason_codes: governedPathSummary.reason_codes,
+    failure_prevented: governedPathSummary.failure_prevented,
+    signal_improved: governedPathSummary.signal_improved,
+    total_ai_programming_work_items: governedPathSummary.total_ai_programming_work_items,
+    codex_work_count: governedPathSummary.codex_work_count,
+    claude_work_count: governedPathSummary.claude_work_count,
+    governed_work_count: governedPathSummary.governed_work_count,
+    bypass_risk_count: governedPathSummary.bypass_risk_count,
+    unknown_path_count: governedPathSummary.unknown_path_count,
+    aex_present_count: governedPathSummary.aex_present_count,
+    pqx_present_count: governedPathSummary.pqx_present_count,
+    ai_programming_work_items: governedPathSummary.ai_programming_work_items,
+    top_attention_items: governedPathSummary.top_attention_items,
   };
 
   // MET-04 — feedback items list (filter to sourced items only).
@@ -1573,56 +1581,51 @@ export async function GET() {
     coreLoopStatus = 'warn';
   }
 
-  // Work-item counts: derive from the per-work-item summary that
-  // computeCoreLoopSummary() already produces from
-  // ai_programming_work_items[]. Hard-coding to 1 would under-report scope
-  // as soon as the artifact carries multiple work items (the seed already
-  // ships 4). Falls back to the aggregate-only computation when no
-  // per-work-item array is present.
-  const perItemSummary = aiProgrammingCoreLoopSummary;
-  const hasWorkItems = (perItemSummary.work_items?.length ?? 0) > 0;
+  // Work-item counts: derive from `governedPathSummary` (main's
+  // computeGovernedPathSummary) which already counts items from
+  // ai_programming_work_items[]. Three cases, all fail-closed:
+  //   1. Artifact missing — `'unknown'`.
+  //   2. Artifact present, work_items[] empty — `0` (NOT 1: a phantom
+  //      work item would mislead governance summaries; "no observed
+  //      items" is a real, distinct state).
+  //   3. Artifact present with N items — N (and N-derived counts).
+  const rawWorkItems = Array.isArray(aiProgrammingGovernedPath?.ai_programming_work_items)
+    ? aiProgrammingGovernedPath!.ai_programming_work_items!
+    : null;
   const totalWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
     ? 'unknown'
-    : hasWorkItems
-      ? perItemSummary.work_items.length
-      : 1;
+    : rawWorkItems !== null
+      ? rawWorkItems.length
+      : governedPathSummary.total_ai_programming_work_items ?? 'unknown';
   const compliantWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
     ? 'unknown'
-    : hasWorkItems
-      ? perItemSummary.core_loop_complete_count
-      : coreLoopComplete === true
-        ? 1
-        : 0;
+    : rawWorkItems !== null && rawWorkItems.length === 0
+      ? 0
+      : typeof governedPathSummary.governed_work_count === 'number'
+        ? governedPathSummary.governed_work_count
+        : 'unknown';
   const blockedWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
     ? 'unknown'
-    : hasWorkItems
-      ? perItemSummary.blocked_work_items.length
-      : coreLoopStatus === 'block'
-        ? 1
-        : 0;
+    : rawWorkItems !== null && rawWorkItems.length === 0
+      ? 0
+      : typeof governedPathSummary.bypass_risk_count === 'number'
+        ? governedPathSummary.bypass_risk_count
+        : 'unknown';
 
-  // missing_by_leg: when per-work-item observations exist, use the count of
-  // items with each leg missing (richer signal for blocked-scope consumers);
-  // otherwise fall back to the aggregate single-row indicator.
+  // missing_by_leg: aggregate single-row indicator over the artifact's
+  // declared `core_loop_compliance` map (1 when leg is missing in
+  // aggregate, 0 otherwise). 'unknown' only when the entire artifact is
+  // absent.
   const missingByLeg: Record<CoreLoopLeg, number | 'unknown'> = !aiProgrammingGovernedPath
     ? { AEX: 'unknown', PQX: 'unknown', EVL: 'unknown', TPA: 'unknown', CDE: 'unknown', SEL: 'unknown' }
-    : hasWorkItems
-      ? {
-          AEX: perItemSummary.missing_by_leg.AEX,
-          PQX: perItemSummary.missing_by_leg.PQX,
-          EVL: perItemSummary.missing_by_leg.EVL,
-          TPA: perItemSummary.missing_by_leg.TPA,
-          CDE: perItemSummary.missing_by_leg.CDE,
-          SEL: perItemSummary.missing_by_leg.SEL,
-        }
-      : {
-          AEX: legStates.AEX === 'missing' ? 1 : 0,
-          PQX: legStates.PQX === 'missing' ? 1 : 0,
-          EVL: legStates.EVL === 'missing' ? 1 : 0,
-          TPA: legStates.TPA === 'missing' ? 1 : 0,
-          CDE: legStates.CDE === 'missing' ? 1 : 0,
-          SEL: legStates.SEL === 'missing' ? 1 : 0,
-        };
+    : {
+        AEX: legStates.AEX === 'missing' ? 1 : 0,
+        PQX: legStates.PQX === 'missing' ? 1 : 0,
+        EVL: legStates.EVL === 'missing' ? 1 : 0,
+        TPA: legStates.TPA === 'missing' ? 1 : 0,
+        CDE: legStates.CDE === 'missing' ? 1 : 0,
+        SEL: legStates.SEL === 'missing' ? 1 : 0,
+      };
 
   const coreLoopComplianceSummaryBlock = aiProgrammingGovernedPath
     ? {
@@ -1773,7 +1776,11 @@ export async function GET() {
         ...(operatorDebuggabilityDrill?.source_artifacts_used ?? []),
         ...(generatedArtifactPolicyHandoff?.source_artifacts_used ?? []),
         ...(governanceViolation?.source_artifacts_used ?? []),
-        ...(aiProgrammingGovernedPath?.source_artifacts_used ?? []),
+        ...(Array.isArray(aiProgrammingGovernedPath?.source_artifacts_used)
+          ? (aiProgrammingGovernedPath?.source_artifacts_used ?? []).filter(
+              (s): s is string => typeof s === 'string',
+            )
+          : []),
       ])
     ),
     intelligence_summary: {

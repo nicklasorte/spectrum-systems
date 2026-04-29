@@ -1,231 +1,96 @@
 {
   "schema_version": "1.0.0",
   "artifact_type": "ai_programming_governed_path_record",
-  "record_id": "AI-PROG-CORE-LOOP-001",
+  "record_id": "AIPG-DASH-AEX-PQX-DASH-01",
   "created_at": "2026-04-29T00:00:00Z",
   "owner_system": "MET",
+  "case_id": "ai-programming-governed-path-001",
   "data_source": "artifact_store",
   "source_artifacts_used": [
-    "artifacts/dashboard_seed/source_artifact_record.json",
     "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
-    "artifacts/dashboard_seed/eval_summary_record.json",
-    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/pqx_runs/pqx_003/admitted_slices_20.json",
+    "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
     "artifacts/dashboard_seed/control_decision_record.json",
-    "artifacts/dashboard_seed/enforcement_action_record.json"
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/lineage_record.json",
+    "docs/architecture/system_registry.md"
   ],
   "reason_codes": [
-    "core_loop_observation_only",
+    "ai_programming_governed_path_observation_only",
     "no_authority_claim_by_MET",
-    "owner_recommendation_AEX_PQX_EVL_TPA_CDE_SEL"
+    "owner_recommendations_route_to_AEX_and_PQX",
+    "missing_aex_admission_observation_for_codex_work",
+    "missing_pqx_execution_observation_for_claude_work"
   ],
   "warnings": [
-    "MET observes only. AEX admits work; PQX runs bounded work; EVL evaluates; TPA reports trust/policy signal; CDE reports control signal; SEL reports enforcement/readiness signal. The dashboard does not claim any authority outcome."
+    "This record is a MET observation of AI programming work items routed through AEX and PQX. It does not claim AEX admitted, PQX executed, EVL evaluated, CDE decided, or SEL enforced.",
+    "AEX is the canonical admission authority for repo-mutating execution. PQX is the canonical execution authority. EVL owns eval. CDE owns control. SEL owns enforcement.",
+    "Source signals are seeded from preflight PQX slice execution evidence and the dashboard_seed loop. Coverage is partial; unknowns remain visible by design."
   ],
-  "failure_prevented": "AI programming work being read as governed when only AEX or only PQX has produced an artifact and the rest of the core loop has not been observed.",
-  "signal_improved": "Each Codex/Claude work item carries a six-leg observation row with first_missing_leg, weakest_leg, and core_loop_complete derived only from artifact-backed evidence.",
-  "core_loop_legs": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"],
+  "failure_prevented": "AI programming changes (Codex, Claude) entering the repo without observable AEX admission or PQX execution evidence being read as governed when they are not.",
+  "signal_improved": "Dashboard exposes whether each AI programming work item carries AEX admission evidence and PQX execution evidence, with bypass risk surfaced when proof is absent.",
   "ai_programming_work_items": [
     {
-      "work_item_id": "AIP-CODEX-001",
-      "agent": "codex",
-      "title": "RFX cross-system roadmap compression",
+      "work_item_id": "AIPG-CODEX-001",
+      "agent_type": "codex",
+      "source_ref": "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+      "pr_ref": "unknown",
+      "branch_ref": "unknown",
+      "changed_files_count": "unknown",
       "repo_mutating": true,
-      "core_loop_observations": {
-        "AEX": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/source_artifact_record.json"
-          ],
-          "reason_codes": ["aex_admission_artifact_present"]
-        },
-        "PQX": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
-          ],
-          "reason_codes": ["pqx_bounded_work_artifact_present"]
-        },
-        "EVL": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/eval_summary_record.json"
-          ],
-          "reason_codes": ["evl_evaluation_artifact_present"]
-        },
-        "TPA": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/trust_policy_decision_record.json"
-          ],
-          "reason_codes": ["tpa_trust_policy_signal_present"]
-        },
-        "CDE": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/control_decision_record.json"
-          ],
-          "reason_codes": ["cde_control_signal_present"]
-        },
-        "SEL": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/enforcement_action_record.json"
-          ],
-          "reason_codes": ["sel_enforcement_readiness_signal_present"]
-        }
-      },
-      "first_missing_leg": null,
-      "weakest_leg": "TPA",
-      "core_loop_complete": true,
-      "hard_block_reason": null,
-      "next_recommended_input": "No additional input required; core loop fully observed."
+      "aex_admission_observation": "missing",
+      "pqx_execution_observation": "present",
+      "eval_observation": "partial",
+      "control_signal_observation": "partial",
+      "enforcement_or_readiness_signal_observation": "partial",
+      "lineage_observation": "partial",
+      "bypass_risk": "aex_missing",
+      "next_recommended_input": "Attach AEX admission evidence (admitted_slices reference, admission decision, source_artifacts_used) for Codex work item AIPG-CODEX-001 so the governed path through AEX can be observed end-to-end.",
+      "source_artifacts_used": [
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+        "artifacts/pqx_runs/pqx_003/admitted_slices_20.json"
+      ]
     },
     {
-      "work_item_id": "AIP-CODEX-002",
-      "agent": "codex",
-      "title": "MET owner closure and trend honesty hardening",
+      "work_item_id": "AIPG-CLAUDE-001",
+      "agent_type": "claude",
+      "source_ref": "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+      "pr_ref": "unknown",
+      "branch_ref": "claude/ai-governed-path-dashboard-ypm4c",
+      "changed_files_count": "unknown",
       "repo_mutating": true,
-      "core_loop_observations": {
-        "AEX": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/source_artifact_record.json"
-          ],
-          "reason_codes": ["aex_admission_artifact_present"]
-        },
-        "PQX": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
-          ],
-          "reason_codes": ["pqx_bounded_work_artifact_present"]
-        },
-        "EVL": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/eval_summary_record.json"
-          ],
-          "reason_codes": ["evl_evaluation_artifact_present"]
-        },
-        "TPA": {
-          "observation": "partial",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/trust_policy_decision_record.json"
-          ],
-          "reason_codes": ["tpa_signal_partial_owner_recommendation_TPA"]
-        },
-        "CDE": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/control_decision_record.json"
-          ],
-          "reason_codes": ["cde_control_signal_present"]
-        },
-        "SEL": {
-          "observation": "missing",
-          "source_artifacts_used": [],
-          "reason_codes": ["sel_enforcement_readiness_signal_absent"]
-        }
-      },
-      "first_missing_leg": "SEL",
-      "weakest_leg": "SEL",
-      "core_loop_complete": false,
-      "hard_block_reason": "SEL_signal_absent",
-      "next_recommended_input": "Forward to SEL for enforcement/readiness signal before promotion is observable."
+      "aex_admission_observation": "partial",
+      "pqx_execution_observation": "missing",
+      "eval_observation": "partial",
+      "control_signal_observation": "partial",
+      "enforcement_or_readiness_signal_observation": "partial",
+      "lineage_observation": "partial",
+      "bypass_risk": "pqx_missing",
+      "next_recommended_input": "Attach PQX execution evidence (pqx_slice_execution_record reference, execution_status, source_artifacts_used) for Claude work item AIPG-CLAUDE-001 so the governed path through PQX can be observed end-to-end.",
+      "source_artifacts_used": [
+        "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+        "artifacts/dashboard_seed/lineage_record.json"
+      ]
     },
     {
-      "work_item_id": "AIP-CLAUDE-001",
-      "agent": "claude",
-      "title": "MET-19-33 hardening",
+      "work_item_id": "AIPG-UNKNOWN-001",
+      "agent_type": "unknown_ai_agent",
+      "source_ref": "artifacts/blf_01_baseline_failure_fix/failure_inventory.json",
+      "pr_ref": "unknown",
+      "branch_ref": "unknown",
+      "changed_files_count": "unknown",
       "repo_mutating": true,
-      "core_loop_observations": {
-        "AEX": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/source_artifact_record.json"
-          ],
-          "reason_codes": ["aex_admission_artifact_present"]
-        },
-        "PQX": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
-          ],
-          "reason_codes": ["pqx_bounded_work_artifact_present"]
-        },
-        "EVL": {
-          "observation": "partial",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/eval_summary_record.json"
-          ],
-          "reason_codes": ["evl_partial_evidence_observed"]
-        },
-        "TPA": {
-          "observation": "missing",
-          "source_artifacts_used": [],
-          "reason_codes": ["tpa_signal_absent_owner_recommendation_TPA"]
-        },
-        "CDE": {
-          "observation": "unknown",
-          "source_artifacts_used": [],
-          "reason_codes": ["cde_signal_unknown_owner_recommendation_CDE"]
-        },
-        "SEL": {
-          "observation": "unknown",
-          "source_artifacts_used": [],
-          "reason_codes": ["sel_signal_unknown_owner_recommendation_SEL"]
-        }
-      },
-      "first_missing_leg": "TPA",
-      "weakest_leg": "TPA",
-      "core_loop_complete": false,
-      "hard_block_reason": "TPA_signal_absent",
-      "next_recommended_input": "Forward to TPA for trust/policy signal; downstream CDE and SEL observations remain unknown until upstream signals are present."
-    },
-    {
-      "work_item_id": "AIP-CLAUDE-002",
-      "agent": "claude",
-      "title": "Core-loop proof dashboard refine",
-      "repo_mutating": true,
-      "core_loop_observations": {
-        "AEX": {
-          "observation": "present",
-          "source_artifacts_used": [
-            "artifacts/dashboard_seed/source_artifact_record.json"
-          ],
-          "reason_codes": ["aex_admission_artifact_present"]
-        },
-        "PQX": {
-          "observation": "missing",
-          "source_artifacts_used": [],
-          "reason_codes": ["pqx_bounded_work_artifact_absent"]
-        },
-        "EVL": {
-          "observation": "unknown",
-          "source_artifacts_used": [],
-          "reason_codes": ["evl_signal_unknown_no_pqx_input"]
-        },
-        "TPA": {
-          "observation": "unknown",
-          "source_artifacts_used": [],
-          "reason_codes": ["tpa_signal_unknown_no_evl_input"]
-        },
-        "CDE": {
-          "observation": "unknown",
-          "source_artifacts_used": [],
-          "reason_codes": ["cde_signal_unknown_no_upstream_input"]
-        },
-        "SEL": {
-          "observation": "unknown",
-          "source_artifacts_used": [],
-          "reason_codes": ["sel_signal_unknown_no_upstream_input"]
-        }
-      },
-      "first_missing_leg": "PQX",
-      "weakest_leg": "PQX",
-      "core_loop_complete": false,
-      "hard_block_reason": "PQX_signal_absent",
-      "next_recommended_input": "PQX bounded-run artifact not yet observed for this work item; route to PQX before downstream legs can be observed."
+      "aex_admission_observation": "unknown",
+      "pqx_execution_observation": "unknown",
+      "eval_observation": "unknown",
+      "control_signal_observation": "unknown",
+      "enforcement_or_readiness_signal_observation": "unknown",
+      "lineage_observation": "unknown",
+      "bypass_risk": "unknown",
+      "next_recommended_input": "Identify the AI programming agent type (codex | claude | other) for work item AIPG-UNKNOWN-001 and attach AEX admission plus PQX execution evidence so the governed path can be observed.",
+      "source_artifacts_used": [
+        "artifacts/blf_01_baseline_failure_fix/failure_inventory.json"
+      ]
     }
   ],
   "status": "block",
