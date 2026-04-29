@@ -18,7 +18,7 @@ from spectrum_systems.utils.deterministic_id import deterministic_id
 from spectrum_systems.modules.prl.failure_classifier import Classification
 from spectrum_systems.modules.prl.failure_parser import ParsedFailure
 
-_SCHEMA_DIR = Path(__file__).resolve().parents[3] / "contracts" / "schemas" / "prl"
+_SCHEMA_DIR = Path(__file__).resolve().parents[3] / "contracts" / "schemas"
 
 
 def _load_schema(name: str) -> dict[str, Any]:

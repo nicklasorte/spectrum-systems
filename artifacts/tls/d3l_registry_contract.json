@@ -16,6 +16,7 @@
     "POL",
     "PQX",
     "PRA",
+    "PRL",
     "PRM",
     "RAX",
     "REP",
@@ -89,7 +90,7 @@
     "SHA",
     "SIV"
   ],
-  "generated_at": "2026-04-28T12:30:56Z",
+  "generated_at": "2026-04-29T20:04:37Z",
   "maturity_universe": [
     "AEX",
     "CAP",
@@ -107,6 +108,7 @@
     "POL",
     "PQX",
     "PRA",
+    "PRL",
     "PRM",
     "RAX",
     "REP",
@@ -136,6 +138,7 @@
     "POL",
     "PQX",
     "PRA",
+    "PRL",
     "PRM",
     "RAX",
     "REP",

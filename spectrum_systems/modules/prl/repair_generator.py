@@ -17,7 +17,7 @@ from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 from spectrum_systems.utils.deterministic_id import deterministic_id
 from spectrum_systems.modules.prl.failure_classifier import Classification
 
-_SCHEMA_DIR = Path(__file__).resolve().parents[3] / "contracts" / "schemas" / "prl"
+_SCHEMA_DIR = Path(__file__).resolve().parents[3] / "contracts" / "schemas"
 
 _REPAIR_TEMPLATES: dict[str, dict[str, str]] = {
     "pytest_selection_missing": {

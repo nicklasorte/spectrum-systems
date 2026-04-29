@@ -54,7 +54,7 @@ from spectrum_systems.utils.deterministic_id import deterministic_id
 
 import jsonschema
 
-_PRL_SCHEMA_DIR = REPO_ROOT / "contracts" / "schemas" / "prl"
+_PRL_SCHEMA_DIR = REPO_ROOT / "contracts" / "schemas"
 
 
 def _now_iso() -> str:

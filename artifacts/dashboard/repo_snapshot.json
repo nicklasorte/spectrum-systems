@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-29T20:01:55Z",
-  "freshness_timestamp_utc": "2026-04-29T20:01:55Z",
+  "generated_at": "2026-04-29T20:02:23Z",
+  "freshness_timestamp_utc": "2026-04-29T20:02:23Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 8910,
+    "files_total": 8927,
     "runtime_modules": 327,
     "tests": 831,
     "contracts_total": 2860,

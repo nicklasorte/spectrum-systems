@@ -24,7 +24,7 @@ from spectrum_systems.modules.prl.failure_classifier import (
     KNOWN_FAILURE_CLASSES,
 )
 
-_SCHEMA_DIR = Path(__file__).resolve().parents[3] / "contracts" / "schemas" / "prl"
+_SCHEMA_DIR = Path(__file__).resolve().parents[3] / "contracts" / "schemas"
 
 _EVAL_TEMPLATES: dict[str, dict[str, Any]] = {
     "pytest_selection_missing": {
