@@ -1,6 +1,6 @@
 # Ecosystem Health Report
 
-Generated: 2026-04-29T19:31:49Z  
+Generated: 2026-04-29T19:43:52Z  
 Sources: `ecosystem/ecosystem-registry.json`, `governance/reports/contract-dependency-graph.json`, `artifacts/policy-engine-report.json`
 
 **Overall Health**: ⚠️ `WARNING`
