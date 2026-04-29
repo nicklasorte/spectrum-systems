@@ -43,6 +43,14 @@ def test_rt_n18_missing_guard_constraints_fails():
     assert "rfx_repair_missing_guard_constraints" in result["reason_codes_emitted"]
 
 
+def test_empty_proof_guard_constraints_not_shared():
+    # P2 fix: mutating the returned guard_constraints must not affect defaults.
+    r1 = generate_rfx_repair_prompt(rfx_proof=None)
+    r1["guard_constraints"].append("injected")
+    r2 = generate_rfx_repair_prompt(rfx_proof=None)
+    assert "injected" not in r2["guard_constraints"]
+
+
 def test_rt_n18_complete_proof_passes():
     result = generate_rfx_repair_prompt(rfx_proof=_proof())
     assert result["status"] == "complete"

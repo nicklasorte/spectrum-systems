@@ -34,6 +34,29 @@ def test_rt_n09_stable_after_revalidation():
     assert good["reason_codes_emitted"] == []
 
 
+def test_unregistered_case_id_flagged():
+    # P2 fix: registered_case_ids is now enforced; unknown ID emits rfx_v2_case_unregistered.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[_case(id="unknown-id")],
+        registered_case_ids={"known-id"},
+    )
+    assert "rfx_v2_case_unregistered" in result["reason_codes_emitted"]
+
+
+def test_registered_case_id_passes():
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[_case(id="c1")],
+        registered_case_ids={"c1"},
+    )
+    assert "rfx_v2_case_unregistered" not in result["reason_codes_emitted"]
+
+
+def test_no_registered_set_skips_membership_check():
+    # When registered_case_ids is not supplied, no unregistered check runs.
+    result = build_rfx_golden_failure_corpus_v2(cases=[_case(id="any-id")])
+    assert "rfx_v2_case_unregistered" not in result["reason_codes_emitted"]
+
+
 def test_empty_corpus_flagged():
     result = build_rfx_golden_failure_corpus_v2(cases=[])
     assert "rfx_v2_corpus_empty" in result["reason_codes_emitted"]

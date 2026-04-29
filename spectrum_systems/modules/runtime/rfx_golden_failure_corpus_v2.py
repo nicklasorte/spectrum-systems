@@ -22,6 +22,7 @@ Reason codes:
   rfx_v2_case_missing_category    — case lacks a failure-category label
   rfx_v2_corpus_empty             — no cases supplied
   rfx_v2_duplicate_case_id        — two cases share the same ID
+  rfx_v2_case_unregistered        — case ID absent from registered_case_ids when the set is supplied
 """
 
 from __future__ import annotations
@@ -68,6 +69,10 @@ def build_rfx_golden_failure_corpus_v2(
             reason.append("rfx_v2_case_missing_id")
         elif case_id in seen_ids:
             reason.append("rfx_v2_duplicate_case_id")
+        else:
+            # Only check registration when registered_case_ids was explicitly supplied.
+            if registered_case_ids and case_id not in registered_case_ids:
+                reason.append("rfx_v2_case_unregistered")
         seen_ids.add(case_id)
 
         if not c.get("trace_ref"):

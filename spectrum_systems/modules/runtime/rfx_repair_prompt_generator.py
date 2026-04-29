@@ -72,7 +72,7 @@ def generate_rfx_repair_prompt(
             "root_cause": None,
             "owner_context": None,
             "validation_cmds": [],
-            "guard_constraints": _ALWAYS_CONSTRAINTS,
+            "guard_constraints": list(_ALWAYS_CONSTRAINTS),
             "reason_codes_emitted": sorted(set(reason)),
             "status": "incomplete",
             "signals": {"completeness_score": 0.0},
