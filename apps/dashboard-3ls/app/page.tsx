@@ -794,8 +794,9 @@ export default function DashboardPage() {
                   </p>
                 ))}
                 <p className="text-[10px] opacity-80 text-slate-700 dark:text-slate-300">
-                  Per-leg compliance is artifact-backed. AEX or PQX missing on a
-                  repo-mutating work item forces BLOCK.
+                  Per-leg compliance is artifact-backed. AEX or PQX missing
+                  forces BLOCK; any other required leg missing forces BLOCK
+                  when repo_mutating is true.
                 </p>
               </section>
             );

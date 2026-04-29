@@ -1401,9 +1401,10 @@ export async function GET() {
 
   // AEX-PQX-DASH-02 — core-loop compliance summary. Aggregates per-leg
   // present/partial/missing/unknown for the AI programming governed path.
-  // BLOCK if AEX or PQX missing on a repo-mutating work item; BLOCK if any
-  // required leg missing on repo-mutating work; WARN on partial; UNKNOWN if
-  // insufficient evidence.
+  // BLOCK if AEX or PQX missing (unconditional — these legs prove admission
+  // and execution and are required for any governed path); BLOCK if any
+  // required leg missing AND repo_mutating === true; WARN on partial; UNKNOWN
+  // if insufficient evidence.
   const compliance = aiProgrammingGovernedPath?.core_loop_compliance ?? {};
   const legStates: Record<CoreLoopLeg, LegState> = {
     AEX: (compliance.AEX as LegState) ?? 'unknown',
