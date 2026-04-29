@@ -2006,6 +2006,7 @@
         ],
         "docs": [
           "docs/architecture/system_registry.md",
+          "docs/governance/preflight_required_surface_test_overrides.json",
           "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
           "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md"
         ],
@@ -2048,7 +2049,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 42,
+      "evidence_count": 43,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"

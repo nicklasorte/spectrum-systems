@@ -28,7 +28,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
         re.compile(
             r"authority.shape.violation|authority_shape_leak|authority_leak"
             r"|cert_missing_authority_shape_preflight|AGS-\d+.*violation"
-            r"|AUTHORITY_SHAPE_VIOLATION",
+            r"|AUTHORITY_SHAPE_VIOLATION"
+            r"|violation_count.*[1-9]|canonical_owners",
             re.IGNORECASE,
         ),
         "Authority shape violation detected in changed files",
@@ -38,7 +39,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
         re.compile(
             r"registry[\._\s]mismatch|system_registry_mismatch"
             r"|validate_system_registry.*FAIL|registry.*not.*registered"
-            r"|canonical.*owner.*missing",
+            r"|canonical.*owner.*missing"
+            r"|INCOMPLETE_SYSTEM_REGISTRATION|UNOWNED_SYSTEM_SURFACE",
             re.IGNORECASE,
         ),
         "System registry mismatch or guard failure",
