@@ -7,7 +7,7 @@
   "producer_authority": "AEX",
   "readiness_authority": "GOV",
   "readiness_authority_owner_ref": "GOV",
-  "purpose": "AEX-emitted observation of admission-side readiness inputs that GOV (governance/readiness authority) can consume. AEX does NOT decide readiness, certify, or promote.",
+  "purpose": "AEX-emitted observation of admission-side readiness inputs that GOV (governance/readiness authority) can consume. AEX is observer-only and emits readiness_observation/readiness_evidence; GOV/REL retain ownership of the downstream outcomes.",
   "request_id": "req-aex-trust-01-1",
   "trace_id": "trace-aex-trust-01-1",
   "run_id": "run-aex-trust-01-1",
