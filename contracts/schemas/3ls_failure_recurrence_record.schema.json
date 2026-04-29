@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/3ls_failure_recurrence_record.schema.json",
+  "title": "3LS Failure Recurrence Record",
+  "description": "Measurement of repeated CI/system failures. Observation only; does not classify or gate. Fail-closed: recurrence_count must be at least 1 and failure_class must align with the repo failure taxonomy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "created_at",
+    "provenance",
+    "failure_class",
+    "recurrence_count",
+    "first_seen_ref",
+    "last_seen_ref",
+    "affected_systems",
+    "recurrence_fingerprint",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "3ls_failure_recurrence_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_system", "inputs"],
+      "properties": {
+        "source_system": {"type": "string", "pattern": "^[A-Z0-9]{2,8}$"},
+        "inputs": {"type": "array", "items": {"type": "string"}},
+        "simulated": {"type": "boolean"}
+      }
+    },
+    "record_id": {"type": "string"},
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "pytest_selection_missing",
+        "schema_validation_failure",
+        "contract_drift",
+        "handoff_incomplete",
+        "loop_incomplete",
+        "eval_gate_missing",
+        "policy_violation",
+        "replay_mismatch",
+        "ci_infrastructure",
+        "lint_failure",
+        "unknown"
+      ]
+    },
+    "recurrence_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "first_seen_ref": {"type": "string", "minLength": 1},
+    "last_seen_ref": {"type": "string", "minLength": 1},
+    "affected_systems": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "pattern": "^[A-Z0-9]{2,8}$"}
+    },
+    "recurrence_fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "authority_scope": {"type": "string", "const": "observation_only"},
+    "notes": {"type": "string"}
+  }
+}

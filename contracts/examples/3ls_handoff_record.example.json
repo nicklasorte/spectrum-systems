@@ -1,0 +1,24 @@
+{
+  "artifact_type": "3ls_handoff_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-3ls-handoff-aex-pqx-001",
+  "created_at": "2026-04-29T00:01:00Z",
+  "provenance": {
+    "source_system": "OBS",
+    "inputs": [
+      "artifacts/runtime/aex/admission_bundle.json",
+      "artifacts/runtime/pqx/pqx_slice_execution_record.json"
+    ],
+    "simulated": false
+  },
+  "record_id": "3ls-handoff-aex-pqx-2026-04-29-001",
+  "from_system": "AEX",
+  "to_system": "PQX",
+  "handoff_status": "complete",
+  "upstream_artifact_ref": "artifacts/runtime/aex/admission_bundle.json",
+  "downstream_artifact_ref": "artifacts/runtime/pqx/pqx_slice_execution_record.json",
+  "missing_refs": [],
+  "reason_codes": [],
+  "authority_scope": "observation_only",
+  "notes": "Observed AEX -> PQX handoff. Canonical owners are unchanged."
+}

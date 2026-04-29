@@ -1,7 +1,7 @@
 {
   "artifact_type": "dashboard_freshness_status_record",
   "contract_version": "1.0.0",
-  "timestamp": "2026-04-28T07:31:51Z",
+  "timestamp": "2026-04-29T13:47:42Z",
   "overall_verdict": "pass",
   "artifacts": [
     {
@@ -14,6 +14,6 @@
       ]
     }
   ],
-  "trace_id": "trace-20260428T073151Z",
-  "refresh_run_id": "refresh-20260428T073151Z"
+  "trace_id": "trace-20260429T134742Z",
+  "refresh_run_id": "refresh-20260429T134742Z"
 }
