@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pr_test_shard_result.schema.json",
+  "title": "PR Test Shard Result",
+  "description": "Schema for parallel PR shard execution results, selection records, and precheck parity records. authority_scope is observation_only for all sub-types.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "shard_name",
+    "status",
+    "selected_tests",
+    "commands_run",
+    "duration_ms",
+    "failure_summary",
+    "artifact_refs",
+    "trace_refs",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "pr_test_shard_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "shard_name": {
+      "type": "string",
+      "enum": [
+        "contract",
+        "governance",
+        "dashboard",
+        "changed_scope",
+        "runtime_core",
+        "measurement"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "block",
+        "skipped"
+      ]
+    },
+    "selected_tests": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "duration_ms": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "failure_summary": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Required when status is 'fail' or 'block'. Must be non-null for those statuses."
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "authority_scope": {
+      "type": "string",
+      "const": "observation_only"
+    }
+  },
+  "if": {
+    "properties": {
+      "status": {
+        "enum": [
+          "fail",
+          "block"
+        ]
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "failure_summary": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "pr_test_shard_selection": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://spectrum-systems.org/contracts/pr_test_shard_selection.schema.json",
+      "title": "PR Test Shard Selection",
+      "description": "Artifact recording which tests were selected for a given shard based on changed paths and governed surfaces.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "mode",
+        "shard_name",
+        "base_ref",
+        "head_ref",
+        "changed_paths",
+        "governed_surfaces",
+        "selected_test_files",
+        "coverage_ratio",
+        "fallback_used",
+        "status",
+        "reason_codes",
+        "trace_refs",
+        "authority_scope"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "const": "pr_test_shard_selection"
+        },
+        "schema_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "ci",
+            "precheck"
+          ]
+        },
+        "shard_name": {
+          "type": "string"
+        },
+        "base_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "changed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "governed_surfaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selected_test_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coverage_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "fallback_used": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "selected",
+            "empty_allowed",
+            "block"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "trace_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authority_scope": {
+          "type": "string",
+          "const": "observation_only"
+        }
+      }
+    },
+    "precheck_selection_parity": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://spectrum-systems.org/contracts/precheck_selection_parity.schema.json",
+      "title": "Precheck Selection Parity",
+      "description": "Artifact recording whether precheck shard selection matched CI shard selection.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "ci_selection_ref",
+        "precheck_selection_ref",
+        "parity_status",
+        "mismatched_shards",
+        "mismatched_tests",
+        "reason_codes",
+        "authority_scope"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "const": "precheck_selection_parity"
+        },
+        "schema_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "ci_selection_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "precheck_selection_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parity_status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail"
+          ]
+        },
+        "mismatched_shards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mismatched_tests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authority_scope": {
+          "type": "string",
+          "const": "observation_only"
+        }
+      }
+    }
+  }
+}
