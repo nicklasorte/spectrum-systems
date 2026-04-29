@@ -1,7 +1,7 @@
 {
   "artifact_type": "recommendation_rollback_heuristic",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-28T01:48:06Z",
+  "generated_at": "2026-04-29T20:28:52Z",
   "trigger_conditions": {
     "critical_failure_rate_ge": 0.3,
     "calibration_error_abs_ge": 0.1,

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/eval_candidate_registry.schema.json",
+  "title": "eval_candidate_registry",
+  "description": "GOV-managed registry of failure-derived eval candidates. Stores schema-bound entries only — no free-text evals. PQX includes registered entries on replay. Governed adoption required before promotion to active eval set.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "registry_id",
+    "trace_id",
+    "entries",
+    "total_entries",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": { "const": "eval_candidate_registry" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "registry_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["entry_id", "source_failure_ref", "failure_class", "eval_type", "adoption_status", "deterministic", "added_at"],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "source_failure_ref": { "type": "string" },
+          "failure_class": { "type": "string" },
+          "eval_type": {
+            "type": "string",
+            "enum": ["authority_shape", "registry_guard", "manifest_drift", "proof_presence", "replay_mismatch", "coverage_gap"]
+          },
+          "adoption_status": {
+            "type": "string",
+            "enum": ["pending_review", "adopted", "rejected", "deferred"]
+          },
+          "deterministic": { "type": "boolean" },
+          "scenario_name": { "type": "string" },
+          "expected_outcome": { "type": "string" },
+          "added_at": { "type": "string", "format": "date-time" },
+          "adopted_at": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "total_entries": { "type": "integer", "minimum": 0 },
+    "emitted_at": { "type": "string", "format": "date-time" }
+  }
+}

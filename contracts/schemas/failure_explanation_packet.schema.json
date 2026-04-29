@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/failure_explanation_packet.schema.json",
+  "title": "failure_explanation_packet",
+  "description": "OBS/FRE debuggability surface attached to all BLOCK/FREEZE outcomes. Provides primary_reason, stage_of_failure, triggering artifact, expected vs actual, and suggested repair. Enables triage in under 5 minutes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "packet_id",
+    "trace_id",
+    "outcome",
+    "primary_reason",
+    "stage_of_failure",
+    "triggering_artifact",
+    "expected_behavior",
+    "actual_behavior",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": { "const": "failure_explanation_packet" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "packet_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "outcome": {
+      "type": "string",
+      "enum": ["block", "freeze"]
+    },
+    "primary_reason": { "type": "string", "minLength": 1 },
+    "stage_of_failure": {
+      "type": "string",
+      "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL", "REP", "LIN", "GOV", "FRE", "OBS", "unknown"]
+    },
+    "triggering_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_type", "artifact_id"],
+      "properties": {
+        "artifact_type": { "type": "string" },
+        "artifact_id": { "type": "string" },
+        "artifact_ref": { "type": "string" }
+      }
+    },
+    "expected_behavior": { "type": "string", "minLength": 1 },
+    "actual_behavior": { "type": "string", "minLength": 1 },
+    "suggested_repair": { "type": ["string", "null"] },
+    "repair_safe": { "type": ["boolean", "null"] },
+    "operator_action": { "type": ["string", "null"] },
+    "ambiguity_note": { "type": ["string", "null"] },
+    "emitted_at": { "type": "string", "format": "date-time" }
+  }
+}

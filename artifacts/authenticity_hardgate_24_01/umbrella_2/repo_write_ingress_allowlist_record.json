@@ -2,7 +2,7 @@
   "artifact_type": "repo_write_ingress_allowlist_record",
   "slice_id": "AH-12",
   "owner": "AEX",
-  "generated_at": "2026-04-29T13:50:29Z",
+  "generated_at": "2026-04-29T20:24:12Z",
   "allowlist_mode": "contracted",
   "alternate_callers_require_mandatory_ingress": true
 }

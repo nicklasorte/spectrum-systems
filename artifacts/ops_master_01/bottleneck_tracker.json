@@ -1,7 +1,7 @@
 {
   "artifact_type": "bottleneck_tracker",
   "batch_id": "OPS-MASTER-01",
-  "generated_at": "2026-04-29T13:42:07Z",
+  "generated_at": "2026-04-29T20:28:00Z",
   "active_bottlenecks": [
     {
       "name": "repair_loop_latency",

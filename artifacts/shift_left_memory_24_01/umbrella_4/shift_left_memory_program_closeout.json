@@ -2,7 +2,7 @@
   "artifact_type": "shift_left_memory_program_closeout",
   "slice_id": "SM-24",
   "owner": "PRG",
-  "generated_at": "2026-04-28T01:48:11Z",
+  "generated_at": "2026-04-29T20:28:58Z",
   "authoritative": false,
   "repair_loop_latency_direction": "improving"
 }

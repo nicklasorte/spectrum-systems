@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/replay_validation_report.schema.json",
+  "title": "replay_validation_report",
+  "description": "RPL+EVL report for historical PR replay backtest. Compares expected vs actual failure classification and primary_reason stability across known failing PRs. Fails if mismatches, missing classifications, or non-deterministic results are found.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "report_id",
+    "trace_id",
+    "replayed_cases",
+    "total_cases",
+    "passed_cases",
+    "failed_cases",
+    "mismatch_cases",
+    "overall_status",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": { "const": "replay_validation_report" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "report_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "replayed_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "failure_class", "expected_classification", "actual_classification", "primary_reason_stable", "result"],
+        "properties": {
+          "case_id": { "type": "string" },
+          "failure_class": { "type": "string" },
+          "expected_classification": { "type": "string" },
+          "actual_classification": { "type": ["string", "null"] },
+          "primary_reason_stable": { "type": "boolean" },
+          "result": {
+            "type": "string",
+            "enum": ["pass", "mismatch", "missing_classification", "non_deterministic"]
+          },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "total_cases": { "type": "integer", "minimum": 0 },
+    "passed_cases": { "type": "integer", "minimum": 0 },
+    "failed_cases": { "type": "integer", "minimum": 0 },
+    "mismatch_cases": { "type": "integer", "minimum": 0 },
+    "overall_status": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "failure_reason": { "type": ["string", "null"] },
+    "emitted_at": { "type": "string", "format": "date-time" }
+  }
+}
