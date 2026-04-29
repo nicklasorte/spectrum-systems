@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { loadArtifact } from '@/lib/artifactLoader';
 import { buildSourceEnvelope } from '@/lib/sourceClassification';
+import {
+  computeCoreLoopSummary,
+  type AiProgrammingGovernedPathRecord,
+} from '@/lib/aiProgrammingCoreLoop';
 import type {
   CheckpointSummary,
   RepoSnapshot,
@@ -64,6 +68,7 @@ const ARTIFACT_PATHS = {
     'artifacts/dashboard_metrics/generated_artifact_policy_handoff_record.json',
   // AEX-PQX-DASH-02 — governance violation panel + core-loop compliance.
   governanceViolation: 'artifacts/dashboard_metrics/governance_violation_record.json',
+  // AEX-PQX-DASH-01-REFINE — AI programming governed path (per-work-item).
   aiProgrammingGovernedPath:
     'artifacts/dashboard_metrics/ai_programming_governed_path_record.json',
 };
@@ -491,13 +496,17 @@ export async function GET() {
     policy_alignment_items?: Array<Record<string, unknown>>;
   }>(ARTIFACT_PATHS.generatedArtifactPolicyHandoff);
 
-  // AEX-PQX-DASH-02 — governance violation panel + AI programming governed path.
+  // AEX-PQX-DASH-02 — governance violation panel.
   const governanceViolation = loadArtifact<GovernanceViolationRecord>(
     ARTIFACT_PATHS.governanceViolation,
   );
-  const aiProgrammingGovernedPath = loadArtifact<AIProgrammingGovernedPathRecord>(
-    ARTIFACT_PATHS.aiProgrammingGovernedPath,
-  );
+  // AEX-PQX-DASH-01-REFINE — AI Programming Governed Path observation record.
+  // Per-work-item core-loop observations (AEX → PQX → EVL → TPA → CDE → SEL).
+  // AEX-PQX-DASH-02 also reads the same artifact for its aggregate
+  // core_loop_compliance roll-up. MET observes only.
+  const aiProgrammingGovernedPath = loadArtifact<
+    AiProgrammingGovernedPathRecord & AIProgrammingGovernedPathRecord
+  >(ARTIFACT_PATHS.aiProgrammingGovernedPath);
 
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
@@ -1332,6 +1341,35 @@ export async function GET() {
         warnings: [`${ARTIFACT_PATHS.generatedArtifactPolicyHandoff} unavailable; generated-artifact policy handoff reported as unknown.`],
       };
 
+  // AEX-PQX-DASH-01-REFINE — Compute the AI programming core-loop proof
+  // summary. The dashboard surfaces counts by leg, missing-by-leg counts,
+  // weakest leg, and blocked work items derived only from artifact-backed
+  // observations. No authority outcome is claimed by MET.
+  const aiProgrammingCoreLoopSummary = computeCoreLoopSummary(
+    aiProgrammingGovernedPath,
+    `${ARTIFACT_PATHS.aiProgrammingGovernedPath} unavailable; AI programming core-loop proof reported as unknown.`,
+  );
+  const aiProgrammingGovernedPathBlock = {
+    overall_status: aiProgrammingCoreLoopSummary.overall_status,
+    core_loop_summary: aiProgrammingCoreLoopSummary,
+    aex_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.aex_present_count,
+    pqx_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.pqx_present_count,
+    evl_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.evl_present_count,
+    tpa_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.tpa_present_count,
+    cde_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.cde_present_count,
+    sel_present_count: aiProgrammingCoreLoopSummary.counts_by_leg.sel_present_count,
+    missing_by_leg: aiProgrammingCoreLoopSummary.missing_by_leg,
+    blocked_work_items: aiProgrammingCoreLoopSummary.blocked_work_items,
+    weakest_leg: aiProgrammingCoreLoopSummary.weakest_leg,
+    codex_count: aiProgrammingCoreLoopSummary.codex_work_item_count,
+    claude_count: aiProgrammingCoreLoopSummary.claude_work_item_count,
+    core_loop_complete_count: aiProgrammingCoreLoopSummary.core_loop_complete_count,
+    work_items: aiProgrammingCoreLoopSummary.work_items,
+    data_source: aiProgrammingCoreLoopSummary.data_source,
+    source_artifacts_used: aiProgrammingCoreLoopSummary.source_artifacts_used,
+    warnings: aiProgrammingCoreLoopSummary.warnings,
+  };
+
   // MET-04 — feedback items list (filter to sourced items only).
   const feedbackItems = (failureFeedback?.feedback_items ?? []).filter(
     (i) =>
@@ -1650,6 +1688,7 @@ export async function GET() {
     generated_artifact_policy_handoff: generatedArtifactPolicyHandoffBlock,
     governance_violations: governanceViolationsBlock,
     core_loop_compliance_summary: coreLoopComplianceSummaryBlock,
+    ai_programming_governed_path: aiProgrammingGovernedPathBlock,
     source_artifacts_used: Array.from(
       new Set([
         ...(envelope.source_artifacts_used ?? []),
