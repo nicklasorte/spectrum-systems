@@ -91,7 +91,10 @@ def check_rfx_cl_proof_alignment(
             present_count += 1
             if expected_type_name != "any":
                 expected_type = _TYPE_MAP.get(expected_type_name)
-                if expected_type and not isinstance(rfx_proof[field], expected_type):
+                if expected_type and (
+                    not isinstance(rfx_proof[field], expected_type)
+                    or (expected_type is int and isinstance(rfx_proof[field], bool))
+                ):
                     reason.append("rfx_cl_proof_type_mismatch")
                     mismatched_fields.append(field)
 

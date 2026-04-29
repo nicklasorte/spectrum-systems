@@ -34,6 +34,22 @@ def test_type_mismatch_flagged():
     assert "rfx_cl_proof_type_mismatch" in result["reason_codes_emitted"]
 
 
+def test_bool_rejected_for_int_field():
+    # P2 fix: bool is a subclass of int; True/False must not pass int type check.
+    schema = {"count": "int"}
+    result = check_rfx_cl_proof_alignment(rfx_proof={"count": True}, cl_proof_schema=schema)
+    assert "rfx_cl_proof_type_mismatch" in result["reason_codes_emitted"]
+
+    result_false = check_rfx_cl_proof_alignment(rfx_proof={"count": False}, cl_proof_schema=schema)
+    assert "rfx_cl_proof_type_mismatch" in result_false["reason_codes_emitted"]
+
+
+def test_int_value_accepted_for_int_field():
+    schema = {"count": "int"}
+    result = check_rfx_cl_proof_alignment(rfx_proof={"count": 42}, cl_proof_schema=schema)
+    assert "rfx_cl_proof_type_mismatch" not in result["reason_codes_emitted"]
+
+
 def test_empty_rfx_proof_flagged():
     result = check_rfx_cl_proof_alignment(rfx_proof=None, cl_proof_schema=_CL_SCHEMA)
     assert "rfx_cl_proof_empty_rfx" in result["reason_codes_emitted"]

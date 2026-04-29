@@ -34,7 +34,7 @@ def _build_forbidden_patterns() -> list[re.Pattern[str]]:
         ("certifi" + "es",),
         ("author" + "izes",),
         ("adjudicat" + "es",),
-        ("enforc" + "es final",),
+        ("enforc" + "es",),
         ("promot" + "es",),
         ("own" + "s authority",),
         ("grant" + "s authority",),

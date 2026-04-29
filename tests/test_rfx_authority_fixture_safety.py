@@ -20,6 +20,16 @@ def test_rt_n10_static_forbidden_phrase_blocked():
     assert result["status"] == "unsafe"
 
 
+def test_rt_n10_enforces_standalone_blocked():
+    # P1 fix: "enforces" (without "final") must be caught as a forbidden phrase.
+    standalone = "enforc" + "es"
+    result = check_rfx_authority_fixture_safety(
+        fixtures=[_fx(text=f"RFX {standalone} policy.")]
+    )
+    assert "rfx_fixture_static_forbidden_phrase" in result["reason_codes_emitted"]
+    assert result["status"] == "unsafe"
+
+
 def test_rt_n10_clean_fixture_passes():
     result = check_rfx_authority_fixture_safety(
         fixtures=[_fx(text="RFX supplies evidence and emits findings.")]
