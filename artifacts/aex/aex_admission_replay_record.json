@@ -1,0 +1,18 @@
+{
+  "artifact_type": "admission_replay_record",
+  "created_at": "2026-04-29T11:33:56Z",
+  "deterministic": true,
+  "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
+  "input_hash": "sha256:dfae674afcbcd9bb5d1cde51ceff4dbdf424a175c3decf7778a440592d519820",
+  "output_hash": "sha256:cdf422750c6e37025a2e6fc40a3b473d25adefaf66523bb621b9a6457b26a8fd",
+  "produced_by": "AEXAdmissionReplay",
+  "producer_authority": "AEX",
+  "replay_command": "python scripts/replay_aex_admission.py --fixture tests/aex/fixtures/admission_admit_repo_write.json",
+  "replay_id": "arr-b8711e9d92df7104",
+  "replay_owner_ref": "REP",
+  "replay_status": "pass",
+  "request_id": "req-aex-trust-01-1",
+  "run_id": "run-3aa340309dc47d84",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-aex-trust-01-1"
+}

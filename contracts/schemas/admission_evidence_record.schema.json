@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/admission_evidence_record.schema.json",
+  "title": "Admission Evidence Record",
+  "description": "AEX-emitted evidence bundle that downstream owners (LIN for lineage issuance, OBS for observability, GOV for readiness, REP for replay, SEL/ENF for compliance signals) consume. AEX is observer-only — it produces evidence and downstream inputs; it never owns final outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "evidence_id",
+    "request_id",
+    "trace_id",
+    "run_id",
+    "created_at",
+    "produced_by",
+    "producer_authority",
+    "admission_outcome",
+    "input_refs",
+    "output_refs",
+    "lineage_refs",
+    "observability_refs",
+    "replay_refs",
+    "downstream_refs",
+    "evidence_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "admission_evidence_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^aer-[0-9a-f]{16}$"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "produced_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "producer_authority": {
+      "type": "string",
+      "const": "AEX"
+    },
+    "admission_outcome": {
+      "type": "string",
+      "enum": [
+        "admitted",
+        "rejected",
+        "indeterminate"
+      ]
+    },
+    "input_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "output_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "lineage_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lineage_token_id",
+        "lineage_owner",
+        "source_request_ref",
+        "admission_artifact_ref",
+        "normalized_execution_request_ref"
+      ],
+      "properties": {
+        "lineage_token_id": {
+          "type": "string",
+          "pattern": "^lin-[0-9a-f]{24}$"
+        },
+        "lineage_owner": {
+          "type": "string",
+          "const": "LIN"
+        },
+        "source_request_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "admission_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_execution_request_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "observability_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "run_id",
+        "span_id",
+        "observability_owner"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "span_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observability_owner": {
+          "type": "string",
+          "const": "OBS"
+        }
+      }
+    },
+    "replay_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_hash",
+        "output_hash",
+        "replay_command_ref",
+        "replay_owner"
+      ],
+      "properties": {
+        "input_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "output_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "replay_command_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replay_owner": {
+          "type": "string",
+          "const": "REP"
+        }
+      }
+    },
+    "downstream_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "PQX",
+          "CTX",
+          "PRM",
+          "TPA",
+          "CDE",
+          "SEL",
+          "GOV",
+          "EVL",
+          "OBS",
+          "REP",
+          "LIN"
+        ]
+      }
+    },
+    "evidence_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

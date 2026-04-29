@@ -74,6 +74,61 @@ def _normalize_keys(payload: dict[str, Any]) -> set[str]:
     return {str(key).strip().lower() for key in payload.keys()}
 
 
+_GOVERNED_SUBSTANTIVE_SCHEMA_CACHE: dict[str, dict[str, Any] | None] = {}
+
+
+def _load_contract_schema(artifact_type: str) -> dict[str, Any] | None:
+    """Load contracts/schemas/{artifact_type}.schema.json (cached)."""
+    if artifact_type in _GOVERNED_SUBSTANTIVE_SCHEMA_CACHE:
+        return _GOVERNED_SUBSTANTIVE_SCHEMA_CACHE[artifact_type]
+    schema_path = REPO_ROOT / "contracts" / "schemas" / f"{artifact_type}.schema.json"
+    schema: dict[str, Any] | None = None
+    if schema_path.is_file():
+        try:
+            payload = json.loads(schema_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            payload = None
+        if isinstance(payload, dict):
+            schema = payload
+    _GOVERNED_SUBSTANTIVE_SCHEMA_CACHE[artifact_type] = schema
+    return schema
+
+
+def _is_governed_substantive_artifact(obj: dict[str, Any]) -> bool:
+    """Return True only when the inspected object is a contract-registered
+    substantive governed artifact.
+
+    All four conditions must hold:
+      1. ``producer_authority`` is a non-empty string.
+      2. ``artifact_type`` is a non-empty string.
+      3. A schema exists at ``contracts/schemas/{artifact_type}.schema.json``.
+      4. That schema constrains ``producer_authority`` to a ``const`` value
+         that matches the inspected object's ``producer_authority``.
+
+    A non-owner cannot bypass the preparatory_only rules merely by setting
+    ``producer_authority`` — they must also register a contract schema that
+    binds the producer_authority value, which is itself reviewed governance.
+    """
+    artifact_type = obj.get("artifact_type")
+    producer_authority = obj.get("producer_authority")
+    if not isinstance(artifact_type, str) or not artifact_type.strip():
+        return False
+    if not isinstance(producer_authority, str) or not producer_authority.strip():
+        return False
+    schema = _load_contract_schema(artifact_type.strip())
+    if schema is None:
+        return False
+    properties = schema.get("properties")
+    if not isinstance(properties, dict):
+        return False
+    producer_authority_schema = properties.get("producer_authority")
+    if not isinstance(producer_authority_schema, dict):
+        return False
+    if "const" not in producer_authority_schema:
+        return False
+    return producer_authority_schema.get("const") == producer_authority
+
+
 def detect_authority_shapes(path: Path, registry: dict[str, Any]) -> list[dict[str, Any]]:
     rel_path = str(path).replace("\\", "/")
     repo_prefix = str(REPO_ROOT).replace("\\", "/") + "/"
@@ -153,30 +208,41 @@ def detect_authority_shapes(path: Path, registry: dict[str, Any]) -> list[dict[s
 
         assertions = obj.get("non_authority_assertions")
         if isinstance(assertions, list):
+            # Substantive governed artifacts are contract-registered: they
+            # carry an ``artifact_type`` whose schema in
+            # ``contracts/schemas/`` constrains ``producer_authority`` to a
+            # const value that matches the inspected object. Setting
+            # ``producer_authority`` alone is not sufficient — the schema
+            # must exist and bind the value, which is itself reviewed
+            # governance. Substantive artifacts skip the preparatory-only
+            # subtree (which is meant for un-owned placeholder blobs) but
+            # still flag at the identifier and forbidden-field levels.
+            is_substantive = _is_governed_substantive_artifact(obj)
             assertion_set = {str(item).strip().lower() for item in assertions}
-            if required_assertions and not required_assertions.issubset(assertion_set):
-                violations.append(
-                    {
-                        "rule": "preparatory_assertions_missing",
-                        "path": rel_path,
-                        "object_index": index,
-                        "expected": sorted(required_assertions),
-                        "actual": sorted(assertion_set),
-                        "message": "preparatory artifact missing required non_authority_assertions",
-                    }
-                )
-            undeclared_fields = sorted(key for key in keys if key not in allowed_preparatory_fields)
-            if undeclared_fields:
-                violations.append(
-                    {
-                        "rule": "preparatory_fields_not_allowlisted",
-                        "path": rel_path,
-                        "object_index": index,
-                        "allowed_fields": sorted(allowed_preparatory_fields),
-                        "undeclared_fields": undeclared_fields,
-                        "message": "preparatory-only artifact contains fields outside preparatory_only.allowed_fields",
-                    }
-                )
+            if not is_substantive:
+                if required_assertions and not required_assertions.issubset(assertion_set):
+                    violations.append(
+                        {
+                            "rule": "preparatory_assertions_missing",
+                            "path": rel_path,
+                            "object_index": index,
+                            "expected": sorted(required_assertions),
+                            "actual": sorted(assertion_set),
+                            "message": "preparatory artifact missing required non_authority_assertions",
+                        }
+                    )
+                undeclared_fields = sorted(key for key in keys if key not in allowed_preparatory_fields)
+                if undeclared_fields:
+                    violations.append(
+                        {
+                            "rule": "preparatory_fields_not_allowlisted",
+                            "path": rel_path,
+                            "object_index": index,
+                            "allowed_fields": sorted(allowed_preparatory_fields),
+                            "undeclared_fields": undeclared_fields,
+                            "message": "preparatory-only artifact contains fields outside preparatory_only.allowed_fields",
+                        }
+                    )
 
             forbidden_found = sorted(
                 key for key in keys if key in set(FORBIDDEN_FIELDS)

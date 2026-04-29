@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/aex/aex_admission_replay_record.schema.json",
+  "title": "AEX Admission Replay Record (supplemental)",
+  "description": "Supplemental structural schema for the deterministic-replay record produced by spectrum_systems/aex/admission_replay.py and scripts/replay_aex_admission.py. AEX produces the replay observation; REP retains replay authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "replay_id",
+    "request_id",
+    "trace_id",
+    "run_id",
+    "fixture_path",
+    "replay_command",
+    "input_hash",
+    "output_hash",
+    "replay_status",
+    "deterministic",
+    "produced_by",
+    "producer_authority",
+    "replay_owner_ref",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "admission_replay_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "replay_id": {
+      "type": "string",
+      "pattern": "^arr-[0-9a-f]{16}$"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fixture_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_command": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "output_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "replay_status": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "deterministic": {
+      "type": "boolean"
+    },
+    "produced_by": {
+      "type": "string"
+    },
+    "producer_authority": {
+      "const": "AEX"
+    },
+    "replay_owner_ref": {
+      "const": "REP"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

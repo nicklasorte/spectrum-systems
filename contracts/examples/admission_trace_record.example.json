@@ -1,0 +1,23 @@
+{
+  "artifact_type": "admission_trace_record",
+  "schema_version": "1.0.0",
+  "trace_record_id": "atr-0a1b2c3d4e5f6789",
+  "request_id": "req-aex-trust-01-1",
+  "trace_id": "trace-aex-trust-01-1",
+  "run_id": "run-aex-trust-01-1",
+  "span_id": "span-0a1b2c3d4e5f6789",
+  "parent_span_id": null,
+  "started_at": "2026-04-29T12:00:00Z",
+  "finished_at": "2026-04-29T12:00:01Z",
+  "produced_by": "AEXObservabilityEmitter",
+  "producer_authority": "AEX",
+  "admission_outcome": "admitted",
+  "admission_artifact_ref": "build_admission_record:adm-aex-trust-01-1",
+  "normalized_execution_request_ref": "normalized_execution_request:req-aex-trust-01-1",
+  "downstream_refs": [
+    "PQX",
+    "SEL",
+    "OBS"
+  ],
+  "observability_owner_ref": "OBS"
+}

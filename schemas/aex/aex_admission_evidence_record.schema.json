@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/aex/aex_admission_evidence_record.schema.json",
+  "title": "AEX Admission Evidence Record (supplemental)",
+  "description": "Supplemental structural schema for the AEX admission evidence record. Mirrors contracts/schemas/admission_evidence_record.schema.json. Used as TLS-bucket evidence for AEX and as a stable internal contract for tests/aex/.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "evidence_id",
+    "request_id",
+    "trace_id",
+    "run_id",
+    "created_at",
+    "produced_by",
+    "producer_authority",
+    "admission_outcome",
+    "input_refs",
+    "output_refs",
+    "lineage_refs",
+    "observability_refs",
+    "replay_refs",
+    "downstream_refs",
+    "evidence_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "admission_evidence_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^aer-[0-9a-f]{16}$"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "produced_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "producer_authority": {
+      "const": "AEX"
+    },
+    "admission_outcome": {
+      "enum": [
+        "admitted",
+        "rejected",
+        "indeterminate"
+      ]
+    },
+    "input_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "output_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "lineage_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lineage_token_id",
+        "lineage_owner",
+        "source_request_ref",
+        "admission_artifact_ref",
+        "normalized_execution_request_ref"
+      ],
+      "properties": {
+        "lineage_token_id": {
+          "type": "string",
+          "pattern": "^lin-[0-9a-f]{24}$"
+        },
+        "lineage_owner": {
+          "const": "LIN"
+        },
+        "source_request_ref": {
+          "type": "string"
+        },
+        "admission_artifact_ref": {
+          "type": "string"
+        },
+        "normalized_execution_request_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "observability_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "run_id",
+        "span_id",
+        "observability_owner"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "span_id": {
+          "type": "string"
+        },
+        "observability_owner": {
+          "const": "OBS"
+        }
+      }
+    },
+    "replay_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_hash",
+        "output_hash",
+        "replay_command_ref",
+        "replay_owner"
+      ],
+      "properties": {
+        "input_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "output_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "replay_command_ref": {
+          "type": "string"
+        },
+        "replay_owner": {
+          "const": "REP"
+        }
+      }
+    },
+    "downstream_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

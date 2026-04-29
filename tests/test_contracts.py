@@ -94,6 +94,27 @@ class ContractSchemaTests(unittest.TestCase):
         for name in CONTRACTS:
             self.assertIn(name, discovered)
 
+    def test_aex_admission_observation_contracts_validate(self) -> None:
+        """AEX admission contract surfaces (admission_policy_observation,
+        admission_evidence_record, admission_trace_record) must load and
+        their canonical examples must validate. AEX is admission-only — these
+        artifacts are observer-only inputs to downstream owners and must
+        remain schema-strict (additionalProperties:false) so missing
+        boundary fields fail closed.
+        """
+        admission_observation_contracts = (
+            "admission_policy_observation",
+            "admission_evidence_record",
+            "admission_trace_record",
+        )
+        discovered = set(list_supported_contracts())
+        for name in admission_observation_contracts:
+            self.assertIn(name, discovered, f"{name} missing from contract registry")
+            schema = load_schema(name)
+            self.assertIs(schema.get("additionalProperties"), False, f"{name} must be additionalProperties:false")
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_spreadsheet_contract_has_canonical_headers_and_mapping(self) -> None:
         instance = load_example("comment_resolution_matrix_spreadsheet_contract")
         self.assertEqual(instance["ordered_headers"], CRM_SPREADSHEET_HEADERS)

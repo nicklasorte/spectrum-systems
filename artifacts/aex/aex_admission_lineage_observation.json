@@ -1,0 +1,47 @@
+{
+  "artifact_type": "aex_admission_lineage_observation",
+  "schema_version": "1.0.0",
+  "observation_id": "alo-aex-trust-01-1",
+  "observed_at": "2026-04-29T12:00:00Z",
+  "produced_by": "AEXObservabilityEmitter",
+  "producer_authority": "AEX",
+  "lineage_authority": "LIN",
+  "lineage_authority_owner_ref": "LIN",
+  "purpose": "AEX-emitted observation that downstream LIN authority can issue / verify lineage for. AEX participates in lineage by emitting the admission lineage chain; LIN owns lineage issuance authority.",
+  "request_id": "req-aex-trust-01-1",
+  "trace_id": "trace-aex-trust-01-1",
+  "run_id": "run-aex-trust-01-1",
+  "lineage_chain": [
+    {
+      "step": 1,
+      "node": "codex_build_request:req-aex-trust-01-1",
+      "produced_by": "codex"
+    },
+    {
+      "step": 2,
+      "node": "normalized_execution_request:req-aex-trust-01-1",
+      "produced_by": "AEXEngine"
+    },
+    {
+      "step": 3,
+      "node": "build_admission_record:adm-aex-trust-01-1",
+      "produced_by": "AEXEngine"
+    },
+    {
+      "step": 4,
+      "node": "admission_evidence_record:aer-aex-trust-01-1",
+      "produced_by": "AEXObservabilityEmitter"
+    },
+    {
+      "step": 5,
+      "node": "downstream_input:PQX",
+      "produced_by": "AEXEngine",
+      "handoff_owner": "TLC"
+    }
+  ],
+  "non_authority_assertions": [
+    "aex_emits_lineage_observation_only",
+    "aex_emits_promotion_input_only",
+    "aex_emits_certification_input_only"
+  ]
+}
