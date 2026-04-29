@@ -59,7 +59,8 @@ def _compute_item_compliance(item: dict) -> str:
         pqx = _leg_status(legs, "PQX")
         if _is_missing(aex) or _is_missing(pqx):
             return "BLOCK"
-    return item.get("compliance_status", "BLOCK")
+    status = item.get("compliance_status", "BLOCK")
+    return status if status in VALID_COMPLIANCE else "BLOCK"
 
 
 def _aggregate_leg_status(statuses: list[str]) -> str:
@@ -131,7 +132,7 @@ def build_rollup(fail_closed: bool = False) -> int:
     # Per-leg counts across all items.
     per_leg: dict[str, dict[str, int]] = {}
     for leg in CORE_LEGS:
-        counts: dict[str, int] = {"present": 0, "partial": 0, "missing": 0, "unknown": 0}
+        counts: dict[str, int] = {"present": 0, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0}
         for item in items:
             s = _leg_status(item.get("legs", {}), leg)
             if s in counts:
