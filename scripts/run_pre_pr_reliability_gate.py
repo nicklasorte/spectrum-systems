@@ -125,6 +125,8 @@ def _build_gate_result(
         "run_id": run_id,
         "gate_recommendation": gate_recommendation,
         "failure_count": len(failure_packet_refs),
+        "failure_classes_sorted": sorted(set(failure_classes)),
+        "failure_packet_refs_sorted": sorted(failure_packet_refs),
     }
     artifact_id = deterministic_id(
         prefix="prl-gate",
