@@ -36,7 +36,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
     (
         "system_registry_mismatch",
         re.compile(
-            r"system.registry.guard|registry.mismatch|system_registry_mismatch"
+            r"registry[\._\s]mismatch|system_registry_mismatch"
             r"|validate_system_registry.*FAIL|registry.*not.*registered"
             r"|canonical.*owner.*missing",
             re.IGNORECASE,

@@ -375,6 +375,34 @@
     },
     {
       "artifacts_owned": [
+        "pr_failure_capture_record",
+        "pre_pr_failure_packet",
+        "repair_candidate",
+        "eval_case_candidate",
+        "prl_eval_case",
+        "prl_eval_generation_record",
+        "prl_gate_result"
+      ],
+      "downstream": [
+        "FRE",
+        "EVL",
+        "CDE"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/prl/failure_parser.py",
+        "spectrum_systems/modules/prl/failure_classifier.py",
+        "spectrum_systems/modules/prl/artifact_builder.py",
+        "spectrum_systems/modules/prl/repair_generator.py",
+        "spectrum_systems/modules/prl/eval_generator.py",
+        "scripts/run_pre_pr_reliability_gate.py"
+      ],
+      "purpose": "PR reliability loop \u2014 converts PR/CI failures into structured failure artifacts, bounded repair candidates, and regression-preventing eval cases. Pre-PR gate enforces fail-closed checks before any branch update.",
+      "status": "active",
+      "system_id": "PRL",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
         "task_registry_record",
         "prompt_admission_record"
       ],
