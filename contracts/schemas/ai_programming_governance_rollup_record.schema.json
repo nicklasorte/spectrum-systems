@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/ai_programming_governance_rollup_record.schema.json",
+  "title": "AI Programming Governance Rollup Record",
+  "description": "Aggregate rollup of AI programming governance evidence across all known work items. Produced by the rollup builder from source ai_programming_work_item_record files. MET observation only; does not claim AEX, PQX, EVL, TPA, CDE, or SEL authority. Fail-closed: missing AEX or PQX for any repo_mutating work item forces compliance_status=BLOCK. Unknown does not count as present.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "created_at",
+    "owner_system",
+    "data_source",
+    "compliance_status",
+    "total_ai_programming_items",
+    "repo_mutating_count",
+    "per_leg_counts",
+    "score",
+    "total_required_legs",
+    "core_loop_complete",
+    "source_artifacts_used",
+    "work_item_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "ai_programming_governance_rollup_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "owner_system": {"type": "string", "const": "MET"},
+    "data_source": {"type": "string"},
+    "compliance_status": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "BLOCK"]
+    },
+    "total_ai_programming_items": {"type": "integer", "minimum": 0},
+    "codex_work_count": {"type": "integer", "minimum": 0},
+    "claude_work_count": {"type": "integer", "minimum": 0},
+    "unknown_tool_count": {"type": "integer", "minimum": 0},
+    "repo_mutating_count": {"type": "integer", "minimum": 0},
+    "with_aex_evidence": {"type": "integer", "minimum": 0},
+    "with_pqx_evidence": {"type": "integer", "minimum": 0},
+    "with_evl_evidence": {"type": "integer", "minimum": 0},
+    "full_loop_complete_count": {"type": "integer", "minimum": 0},
+    "bypass_risk_count": {"type": "integer", "minimum": 0},
+    "unknown_path_count": {"type": "integer", "minimum": 0},
+    "per_leg_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"],
+      "properties": {
+        "AEX": {"$ref": "#/$defs/leg_counts"},
+        "PQX": {"$ref": "#/$defs/leg_counts"},
+        "EVL": {"$ref": "#/$defs/leg_counts"},
+        "TPA": {"$ref": "#/$defs/leg_counts"},
+        "CDE": {"$ref": "#/$defs/leg_counts"},
+        "SEL": {"$ref": "#/$defs/leg_counts"}
+      }
+    },
+    "score": {
+      "type": "number",
+      "description": "complete_required_legs / total_required_legs (0.0–1.0)"
+    },
+    "total_required_legs": {"type": "integer", "minimum": 0},
+    "core_loop_complete": {"type": "boolean"},
+    "first_missing_leg": {"type": ["string", "null"]},
+    "weakest_leg": {"type": ["string", "null"]},
+    "next_recommended_input": {"type": ["string", "null"]},
+    "violation_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["work_item_id", "missing_leg", "reason_codes"],
+        "properties": {
+          "work_item_id": {"type": "string"},
+          "missing_leg": {"type": "string"},
+          "reason_codes": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "sma_artifact_refs": {
+      "type": "array",
+      "description": "References to 3ls_loop_run_record and related SMA artifacts.",
+      "items": {"type": "string"}
+    },
+    "source_artifacts_used": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string"}
+    },
+    "work_item_refs": {
+      "type": "array",
+      "description": "Paths to ai_programming_work_item_record source artifacts.",
+      "items": {"type": "string"}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "leg_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "partial", "missing", "unknown"],
+      "properties": {
+        "present": {"type": "integer", "minimum": 0},
+        "partial": {"type": "integer", "minimum": 0},
+        "missing": {"type": "integer", "minimum": 0},
+        "unknown": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

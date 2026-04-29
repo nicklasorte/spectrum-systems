@@ -67,15 +67,15 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_lineage",
         "missing_replay"
       ],
-      "gap_count": 2,
+      "gap_count": 1,
       "gaps_evaluated": 9,
       "passing_signals": [
         "missing_control",
         "missing_enforcement_signal",
         "missing_eval",
+        "missing_lineage",
         "missing_observability",
         "missing_readiness_evidence",
         "missing_tests",

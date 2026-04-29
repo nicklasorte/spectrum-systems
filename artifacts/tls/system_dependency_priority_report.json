@@ -1,19 +1,6 @@
 {
-  "ambiguous_requested_candidates": [
-    {
-      "ambiguity_reason": "repo_only_candidate_no_registry_record",
-      "system_id": "RFX"
-    },
-    {
-      "ambiguity_reason": "spec_override:MET_unknown_unless_proven",
-      "system_id": "MET"
-    },
-    {
-      "ambiguity_reason": "spec_override:MET_unknown_unless_proven",
-      "system_id": "METS"
-    }
-  ],
-  "generated_at": "2026-04-29T13:37:08Z",
+  "ambiguous_requested_candidates": [],
+  "generated_at": "2026-04-29T17:27:40Z",
   "global_ranked_systems": [
     {
       "action": "finish_hardening",
@@ -76,23 +63,22 @@
           "REP"
         ]
       },
-      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(missing_replay)",
-      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_lineage', 'missing_replay'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "finish_definition": "all of: resolve signal(missing_replay)",
+      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_replay'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "penalties": [],
       "rank": 2,
-      "score": 220,
+      "score": 210,
       "score_components": {
         "boundary_score": 80,
-        "gap_score": 16,
+        "gap_score": 8,
         "partial_score": 0,
-        "risk_score": 4,
+        "risk_score": 2,
         "spine_weight": 100,
         "unlock_score": 20
       },
       "spine_position_index": 4,
       "system_id": "CDE",
       "trust_gap_signals": [
-        "missing_lineage",
         "missing_replay"
       ],
       "trust_state": "warn",
@@ -103,7 +89,7 @@
         "REP",
         "SEL"
       ],
-      "why_now": "on canonical loop; trust-boundary authority; 2 trust-gap signals: missing_lineage, missing_replay; unlocks 5 downstream system(s)"
+      "why_now": "on canonical loop; trust-boundary authority; 1 trust-gap signals: missing_replay; unlocks 5 downstream system(s)"
     },
     {
       "action": "harden_authority",
@@ -1863,23 +1849,22 @@
           "REP"
         ]
       },
-      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(missing_replay)",
-      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_lineage', 'missing_replay'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "finish_definition": "all of: resolve signal(missing_replay)",
+      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_replay'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "penalties": [],
       "rank": 2,
-      "score": 220,
+      "score": 210,
       "score_components": {
         "boundary_score": 80,
-        "gap_score": 16,
+        "gap_score": 8,
         "partial_score": 0,
-        "risk_score": 4,
+        "risk_score": 2,
         "spine_weight": 100,
         "unlock_score": 20
       },
       "spine_position_index": 4,
       "system_id": "CDE",
       "trust_gap_signals": [
-        "missing_lineage",
         "missing_replay"
       ],
       "trust_state": "warn",
@@ -1890,7 +1875,7 @@
         "REP",
         "SEL"
       ],
-      "why_now": "on canonical loop; trust-boundary authority; 2 trust-gap signals: missing_lineage, missing_replay; unlocks 5 downstream system(s)"
+      "why_now": "on canonical loop; trust-boundary authority; 1 trust-gap signals: missing_replay; unlocks 5 downstream system(s)"
     },
     {
       "action": "harden_authority",
@@ -3578,35 +3563,207 @@
   "requested_candidate_ranking": [
     {
       "build_now_assessment": "caution_signal",
-      "classification": "h_slice",
+      "classification": "active_system",
       "dependency_warning_level": "caution_signal",
-      "evidence_summary": "observation: classification=h_slice; reason=spec_override:H01_is_h_slice; trust_signals=missing_control, missing_enforcement_signal, missing_eval, missing_lineage, missing_observability, missing_readiness_evidence, missing_replay, missing_tests, schema_weakness; canonical_loop_member=no; gap_score=72.",
-      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_eval), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(missing_tests), resolve signal(schema_weakness)",
-      "global_rank": 14,
-      "minimum_safe_prompt_scope": "recommendation: single-system hardening for H01 trust-gap signals.",
+      "evidence_summary": "observation: classification=active_system; reason=active_in_registry_with_repo_evidence; trust_signals=missing_enforcement_signal, missing_replay, schema_weakness; canonical_loop_member=yes; gap_score=24.",
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "global_rank": 1,
+      "minimum_safe_prompt_scope": "recommendation: single-system hardening for EVL trust-gap signals.",
       "prerequisite_explanation": "ready_signal: no higher-ranked active upstream prerequisites detected.",
       "prerequisite_systems": [],
-      "rank_explanation": "prioritization: H01 has global_rank=14 in deterministic TLS ranking. observation: H01 is h_slice; canonical dependencies include none.",
-      "recommended_action": "harden_authority",
+      "rank_explanation": "prioritization: EVL has global_rank=1 in deterministic TLS ranking.",
+      "recommended_action": "finish_hardening",
       "requested_rank": 1,
       "risk_if_built_before_prerequisites": "no higher-priority upstream trust prerequisite detected in TLS ranking",
-      "safe_next_action": "recommendation: build H01 now with recommendation: single-system hardening for H01 trust-gap signals.",
-      "score": 87,
-      "system_id": "H01",
+      "safe_next_action": "recommendation: build EVL now with recommendation: single-system hardening for EVL trust-gap signals.",
+      "score": 242,
+      "system_id": "EVL",
       "trust_gap_signals": [
-        "missing_control",
         "missing_enforcement_signal",
-        "missing_eval",
-        "missing_lineage",
-        "missing_observability",
-        "missing_readiness_evidence",
         "missing_replay",
-        "missing_tests",
         "schema_weakness"
       ],
       "why_not_higher": "observation: no stronger upstream score signal identified",
       "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
-      "why_now": "9 trust-gap signals: missing_control, missing_enforcement_signal, missing_eval"
+      "why_now": "on canonical loop; trust-boundary authority; 3 trust-gap signals: missing_enforcement_signal, missing_replay, schema_weakness; unlocks 7 downstream system(s)"
+    },
+    {
+      "build_now_assessment": "prerequisite_signal",
+      "classification": "active_system",
+      "dependency_warning_level": "prerequisite_signal",
+      "evidence_summary": "observation: classification=active_system; reason=active_in_registry_with_repo_evidence; trust_signals=missing_control, missing_enforcement_signal, missing_lineage; canonical_loop_member=no; gap_score=24.",
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage)",
+      "global_rank": 5,
+      "minimum_safe_prompt_scope": "prerequisite_signal: harden prerequisite systems only (EVL, CDE, SEL).",
+      "prerequisite_explanation": "prerequisite_signal: finish EVL, CDE, SEL first.",
+      "prerequisite_systems": [
+        "EVL",
+        "CDE",
+        "SEL"
+      ],
+      "rank_explanation": "prioritization: OBS has global_rank=5 in deterministic TLS ranking. prerequisite_signal: higher-ranked prerequisites detected (EVL, CDE, SEL).",
+      "recommended_action": "harden_authority",
+      "requested_rank": 2,
+      "risk_if_built_before_prerequisites": "higher risk: upstream trust systems are ranked ahead and should be finished first",
+      "safe_next_action": "recommendation: harden EVL, CDE, SEL before build scope on OBS.",
+      "score": 162,
+      "system_id": "OBS",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage"
+      ],
+      "why_not_higher": "prerequisite_signal: ranked behind prerequisites EVL, CDE, SEL",
+      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
+      "why_now": "canonical overlay; trust supporting authority; 3 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
+    },
+    {
+      "build_now_assessment": "prerequisite_signal",
+      "classification": "active_system",
+      "dependency_warning_level": "prerequisite_signal",
+      "evidence_summary": "observation: classification=active_system; reason=active_in_registry_with_repo_evidence; trust_signals=missing_lineage, schema_weakness; canonical_loop_member=no; gap_score=16.",
+      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(schema_weakness)",
+      "global_rank": 9,
+      "minimum_safe_prompt_scope": "prerequisite_signal: harden prerequisite systems only (OBS).",
+      "prerequisite_explanation": "prerequisite_signal: finish OBS first.",
+      "prerequisite_systems": [
+        "OBS"
+      ],
+      "rank_explanation": "prioritization: SLO has global_rank=9 in deterministic TLS ranking. prerequisite_signal: higher-ranked prerequisites detected (OBS).",
+      "recommended_action": "finish_hardening",
+      "requested_rank": 3,
+      "risk_if_built_before_prerequisites": "higher risk: upstream trust systems are ranked ahead and should be finished first",
+      "safe_next_action": "recommendation: harden OBS before build scope on SLO.",
+      "score": 133,
+      "system_id": "SLO",
+      "trust_gap_signals": [
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "why_not_higher": "prerequisite_signal: ranked behind prerequisites OBS",
+      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
+      "why_now": "canonical overlay; trust supporting authority; 2 trust-gap signals: missing_lineage, schema_weakness"
+    },
+    {
+      "build_now_assessment": "caution_signal",
+      "classification": "active_system",
+      "dependency_warning_level": "caution_signal",
+      "evidence_summary": "observation: classification=active_system; reason=active_in_registry_with_repo_evidence; trust_signals=missing_control, missing_lineage, missing_observability, missing_readiness_evidence, missing_replay; canonical_loop_member=no; gap_score=40.",
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay)",
+      "global_rank": 13,
+      "minimum_safe_prompt_scope": "recommendation: single-system hardening for SEC trust-gap signals.",
+      "prerequisite_explanation": "ready_signal: no higher-ranked active upstream prerequisites detected.",
+      "prerequisite_systems": [],
+      "rank_explanation": "prioritization: SEC has global_rank=13 in deterministic TLS ranking.",
+      "recommended_action": "harden_authority",
+      "requested_rank": 4,
+      "risk_if_built_before_prerequisites": "no higher-priority upstream trust prerequisite detected in TLS ranking",
+      "safe_next_action": "recommendation: build SEC now with recommendation: single-system hardening for SEC trust-gap signals.",
+      "score": 99,
+      "system_id": "SEC",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "why_not_higher": "observation: no stronger upstream score signal identified",
+      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
+      "why_now": "trust supporting authority; 5 trust-gap signals: missing_control, missing_lineage, missing_observability"
+    },
+    {
+      "build_now_assessment": "caution_signal",
+      "classification": "active_system",
+      "dependency_warning_level": "caution_signal",
+      "evidence_summary": "observation: classification=active_system; reason=active_in_registry_with_repo_evidence; trust_signals=missing_control, missing_enforcement_signal, missing_lineage, missing_observability, missing_readiness_evidence, missing_replay, schema_weakness; canonical_loop_member=no; gap_score=56.",
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "global_rank": 16,
+      "minimum_safe_prompt_scope": "recommendation: single-system hardening for RAX trust-gap signals.",
+      "prerequisite_explanation": "ready_signal: no higher-ranked active upstream prerequisites detected.",
+      "prerequisite_systems": [],
+      "rank_explanation": "prioritization: RAX has global_rank=16 in deterministic TLS ranking.",
+      "recommended_action": "finish_hardening",
+      "requested_rank": 5,
+      "risk_if_built_before_prerequisites": "no higher-priority upstream trust prerequisite detected in TLS ranking",
+      "safe_next_action": "recommendation: build RAX now with recommendation: single-system hardening for RAX trust-gap signals.",
+      "score": 73,
+      "system_id": "RAX",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "why_not_higher": "observation: no stronger upstream score signal identified",
+      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
+      "why_now": "7 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage"
+    },
+    {
+      "build_now_assessment": "prerequisite_signal",
+      "classification": "active_system",
+      "dependency_warning_level": "prerequisite_signal",
+      "evidence_summary": "observation: classification=active_system; reason=active_in_registry_with_repo_evidence; trust_signals=missing_control, missing_enforcement_signal, missing_lineage, missing_readiness_evidence, missing_replay, schema_weakness; canonical_loop_member=no; gap_score=48.",
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "global_rank": 17,
+      "minimum_safe_prompt_scope": "prerequisite_signal: harden prerequisite systems only (OBS).",
+      "prerequisite_explanation": "prerequisite_signal: finish OBS first.",
+      "prerequisite_systems": [
+        "OBS"
+      ],
+      "rank_explanation": "prioritization: CAP has global_rank=17 in deterministic TLS ranking. prerequisite_signal: higher-ranked prerequisites detected (OBS).",
+      "recommended_action": "finish_hardening",
+      "requested_rank": 6,
+      "risk_if_built_before_prerequisites": "higher risk: upstream trust systems are ranked ahead and should be finished first",
+      "safe_next_action": "recommendation: harden OBS before build scope on CAP.",
+      "score": 64,
+      "system_id": "CAP",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "why_not_higher": "prerequisite_signal: ranked behind prerequisites OBS",
+      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
+      "why_now": "6 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage"
+    },
+    {
+      "build_now_assessment": "prerequisite_signal",
+      "classification": "active_system",
+      "dependency_warning_level": "prerequisite_signal",
+      "evidence_summary": "observation: classification=active_system; reason=active_in_registry_with_repo_evidence; trust_signals=missing_enforcement_signal, missing_lineage, missing_observability, missing_readiness_evidence, missing_replay, schema_weakness; canonical_loop_member=no; gap_score=48.",
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "global_rank": 18,
+      "minimum_safe_prompt_scope": "prerequisite_signal: harden prerequisite systems only (OBS, REP).",
+      "prerequisite_explanation": "prerequisite_signal: finish OBS, REP first.",
+      "prerequisite_systems": [
+        "OBS",
+        "REP"
+      ],
+      "rank_explanation": "prioritization: RSM has global_rank=18 in deterministic TLS ranking. prerequisite_signal: higher-ranked prerequisites detected (OBS, REP).",
+      "recommended_action": "finish_hardening",
+      "requested_rank": 7,
+      "risk_if_built_before_prerequisites": "higher risk: upstream trust systems are ranked ahead and should be finished first",
+      "safe_next_action": "recommendation: harden OBS, REP before build scope on RSM.",
+      "score": 62,
+      "system_id": "RSM",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "why_not_higher": "prerequisite_signal: ranked behind prerequisites OBS, REP",
+      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
+      "why_now": "6 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
     },
     {
       "build_now_assessment": "prerequisite_signal",
@@ -3622,7 +3779,7 @@
       ],
       "rank_explanation": "prioritization: HOP has global_rank=22 in deterministic TLS ranking. prerequisite_signal: higher-ranked prerequisites detected (EVL). caution_signal: HOP cannot bypass EVL/TPA/CDE/SEL trust pathways.",
       "recommended_action": "finish_hardening",
-      "requested_rank": 2,
+      "requested_rank": 8,
       "risk_if_built_before_prerequisites": "higher risk: upstream trust systems are ranked ahead and should be finished first",
       "safe_next_action": "recommendation: harden EVL before build scope on HOP.",
       "score": 53,
@@ -3637,92 +3794,17 @@
       "why_not_higher": "prerequisite_signal: ranked behind prerequisites EVL",
       "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
       "why_now": "5 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
-    },
-    {
-      "ambiguity_reason": "spec_override:MET_unknown_unless_proven",
-      "build_now_assessment": "blocked_signal",
-      "classification": "unknown",
-      "dependency_warning_level": "unknown_signal",
-      "evidence_summary": "observation: classification=unknown; reason=spec_override:MET_unknown_unless_proven; trust_signals=missing_tests, schema_weakness; canonical_loop_member=no; gap_score=0.",
-      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
-      "global_rank": 42,
-      "minimum_safe_prompt_scope": "finding: retrieve registry/evidence only.",
-      "prerequisite_explanation": "ready_signal: no higher-ranked active upstream prerequisites detected. unknown_signal: ambiguous candidate state must be hardened first.",
-      "prerequisite_systems": [],
-      "rank_explanation": "prioritization: MET has global_rank=42 in deterministic TLS ranking. unknown_signal: registry/evidence is insufficient for active classification. unknown_signal: MET/METS remains ambiguous unless proven active.",
-      "recommended_action": "investigate:classify_or_reject",
-      "requested_rank": 3,
-      "risk_if_built_before_prerequisites": "no higher-priority upstream trust prerequisite detected in TLS ranking",
-      "safe_next_action": "recommendation: harden registry/evidence classification before build scope on MET.",
-      "score": -150,
-      "system_id": "MET",
-      "trust_gap_signals": [
-        "missing_tests",
-        "schema_weakness"
-      ],
-      "why_not_higher": "unknown_signal: candidate lacks proven registry/evidence activity; observation: MET/METS ambiguity penalty applies",
-      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
-      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
-    },
-    {
-      "ambiguity_reason": "spec_override:MET_unknown_unless_proven",
-      "build_now_assessment": "blocked_signal",
-      "classification": "unknown",
-      "dependency_warning_level": "unknown_signal",
-      "evidence_summary": "observation: classification=unknown; reason=spec_override:MET_unknown_unless_proven; trust_signals=missing_tests, schema_weakness; canonical_loop_member=no; gap_score=0.",
-      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
-      "global_rank": 43,
-      "minimum_safe_prompt_scope": "finding: retrieve registry/evidence only.",
-      "prerequisite_explanation": "ready_signal: no higher-ranked active upstream prerequisites detected. unknown_signal: ambiguous candidate state must be hardened first.",
-      "prerequisite_systems": [],
-      "rank_explanation": "prioritization: METS has global_rank=43 in deterministic TLS ranking. unknown_signal: registry/evidence is insufficient for active classification. unknown_signal: MET/METS remains ambiguous unless proven active.",
-      "recommended_action": "investigate:classify_or_reject",
-      "requested_rank": 4,
-      "risk_if_built_before_prerequisites": "no higher-priority upstream trust prerequisite detected in TLS ranking",
-      "safe_next_action": "recommendation: harden registry/evidence classification before build scope on METS.",
-      "score": -150,
-      "system_id": "METS",
-      "trust_gap_signals": [
-        "missing_tests",
-        "schema_weakness"
-      ],
-      "why_not_higher": "unknown_signal: candidate lacks proven registry/evidence activity; observation: MET/METS ambiguity penalty applies",
-      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
-      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
-    },
-    {
-      "ambiguity_reason": "repo_only_candidate_no_registry_record",
-      "build_now_assessment": "blocked_signal",
-      "classification": "unknown",
-      "dependency_warning_level": "unknown_signal",
-      "evidence_summary": "observation: classification=unknown; reason=repo_only_candidate_no_registry_record; trust_signals=missing_tests, schema_weakness; canonical_loop_member=no; gap_score=0.",
-      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
-      "global_rank": 44,
-      "minimum_safe_prompt_scope": "finding: retrieve registry/evidence only.",
-      "prerequisite_explanation": "ready_signal: no higher-ranked active upstream prerequisites detected.",
-      "prerequisite_systems": [],
-      "rank_explanation": "prioritization: RFX has global_rank=44 in deterministic TLS ranking. unknown_signal: registry/evidence is insufficient for active classification. observation: RFX is repo-detected-only.",
-      "recommended_action": "investigate:classify_or_reject",
-      "requested_rank": 5,
-      "risk_if_built_before_prerequisites": "no higher-priority upstream trust prerequisite detected in TLS ranking",
-      "safe_next_action": "recommendation: harden registry/evidence classification before build scope on RFX.",
-      "score": -150,
-      "system_id": "RFX",
-      "trust_gap_signals": [
-        "missing_tests",
-        "schema_weakness"
-      ],
-      "why_not_higher": "unknown_signal: candidate lacks proven registry/evidence activity; observation: repo-detected-only candidate carries uncertainty",
-      "why_not_lower": "prioritization: requested candidate remains in ranked set with explicit signals.",
-      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     }
   ],
   "requested_candidate_set": [
-    "H01",
-    "RFX",
     "HOP",
-    "MET",
-    "METS"
+    "RAX",
+    "RSM",
+    "CAP",
+    "SEC",
+    "EVL",
+    "OBS",
+    "SLO"
   ],
   "schema_version": "tls-04.v1",
   "top_5": [
@@ -3787,23 +3869,22 @@
           "REP"
         ]
       },
-      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(missing_replay)",
-      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_lineage', 'missing_replay'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "finish_definition": "all of: resolve signal(missing_replay)",
+      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_replay'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "penalties": [],
       "rank": 2,
-      "score": 220,
+      "score": 210,
       "score_components": {
         "boundary_score": 80,
-        "gap_score": 16,
+        "gap_score": 8,
         "partial_score": 0,
-        "risk_score": 4,
+        "risk_score": 2,
         "spine_weight": 100,
         "unlock_score": 20
       },
       "spine_position_index": 4,
       "system_id": "CDE",
       "trust_gap_signals": [
-        "missing_lineage",
         "missing_replay"
       ],
       "trust_state": "warn",
@@ -3814,7 +3895,7 @@
         "REP",
         "SEL"
       ],
-      "why_now": "on canonical loop; trust-boundary authority; 2 trust-gap signals: missing_lineage, missing_replay; unlocks 5 downstream system(s)"
+      "why_now": "on canonical loop; trust-boundary authority; 1 trust-gap signals: missing_replay; unlocks 5 downstream system(s)"
     },
     {
       "action": "harden_authority",

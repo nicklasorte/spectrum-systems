@@ -12,6 +12,15 @@
           "artifacts/aex/aex_admission_trace_record.json",
           "artifacts/aex/aex_gov_readiness_observation.json",
           "artifacts/aex/aex_sel_enforcement_input.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_loop_run_record.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_loop_run_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -21,18 +30,10 @@
           "artifacts/authenticity_hardgate_24_01/umbrella_1/attested_normalized_execution_request.json",
           "artifacts/authenticity_hardgate_24_01/umbrella_1/attested_tlc_handoff_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_ingress_allowlist_record.json",
-          "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_ingress_manifest.json",
-          "artifacts/authenticity_hardgate_24_01/umbrella_3/fix_reentry_lineage_forwarding_record.json",
-          "artifacts/auto_kernel_24_01/auto_kernel_24_01_execution_package.json",
-          "artifacts/auto_kernel_24_01/canonical_delivery_report.json",
-          "artifacts/certification_judgment_40_explicit/certification_risk_admission_record.json",
-          "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
-          "artifacts/dashboard_metrics/bottleneck_record.json",
-          "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
-          "artifacts/dashboard_metrics/failure_feedback_record.json",
-          "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+          "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_ingress_manifest.json"
         ],
         "docs": [
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/foundation_pqx_eval_control.md",
           "docs/architecture/pr_autofix_review_artifact_validation.md",
           "docs/architecture/runtime_spine.md",
@@ -56,8 +57,7 @@
           "docs/review-actions/PLAN-BATCH-AEX-FIX-04-2026-04-09.md",
           "docs/review-actions/PLAN-BATCH-AEX-FIX-05-2026-04-09.md",
           "docs/review-actions/PLAN-BATCH-AEX-FIX-06-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-07-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-08-2026-04-09.md"
+          "docs/review-actions/PLAN-BATCH-AEX-FIX-07-2026-04-09.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -95,6 +95,7 @@
           "schemas/aex/aex_admission_trace_record.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/pqx_runner.py",
@@ -121,6 +122,8 @@
           "tests/fixtures/roadmaps/aut_reg_05a/aex_codex_request_repo_write.json",
           "tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json",
           "tests/helpers_repo_write_lineage.py",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
+          "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/test_3ls_phase1_foundation.py",
           "tests/test_3ls_phase4_observability.py",
@@ -132,12 +135,10 @@
           "tests/test_aex_hardening.py",
           "tests/test_aex_repo_write_boundary_structural.py",
           "tests/test_aex_schema_validation.py",
-          "tests/test_aex_trust_hardening.py",
-          "tests/test_authenticity_hardgate_24_01.py",
-          "tests/test_authority_shape_preflight.py"
+          "tests/test_aex_trust_hardening.py"
         ]
       },
-      "evidence_count": 117,
+      "evidence_count": 118,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -243,6 +244,11 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -262,15 +268,11 @@
           "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
           "artifacts/dashboard_metrics/debug_explanation_index_record.json",
           "artifacts/dashboard_metrics/eval_candidate_record.json",
-          "artifacts/dashboard_metrics/failure_explanation_packets.json",
-          "artifacts/dashboard_metrics/failure_feedback_record.json",
-          "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
-          "artifacts/dashboard_metrics/feedback_loop_snapshot.json",
-          "artifacts/dashboard_metrics/leverage_queue_record.json",
-          "artifacts/dashboard_metrics/materialization_observation_mapper_record.json"
+          "artifacts/dashboard_metrics/failure_explanation_packets.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/pr_autofix_review_artifact_validation.md",
           "docs/architecture/runtime_spine.md",
           "docs/architecture/system_inventory_audit.md",
@@ -293,8 +295,7 @@
           "docs/phase-2/PHASE_2_ESCALATION_PROTOCOL.md",
           "docs/phase-2/PHASE_2_ROLLBACK_STRATEGY.md",
           "docs/rca_guide.md",
-          "docs/review-actions/2026-04-12-cde-001-build-plan.md",
-          "docs/review-actions/2026-04-12-sel-001-build-plan.md"
+          "docs/review-actions/2026-04-12-cde-001-build-plan.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -331,6 +332,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_rank_maturity_alignment.py",
           "scripts/build_system_registry_artifact.py",
@@ -352,6 +354,8 @@
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/hop/test_control_integration.py",
           "tests/hop/test_promotion_readiness.py",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
+          "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/test_3ls_phase1_foundation.py",
           "tests/test_3ls_phase4_observability.py",
@@ -370,12 +374,10 @@
           "tests/test_control_responses.py",
           "tests/test_cycle_runner.py",
           "tests/test_cycle_runner_judgment_handoff.py",
-          "tests/test_d3l_maturity_report.py",
-          "tests/test_d3l_mvp_graph.py",
-          "tests/test_d3l_priority_freshness_gate.py"
+          "tests/test_d3l_maturity_report.py"
         ]
       },
-      "evidence_count": 117,
+      "evidence_count": 118,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -384,8 +386,6 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
-          "artifacts/policy-engine-report.json",
-          "artifacts/policy-engine-summary.md",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_mvp_graph.json",
@@ -485,6 +485,7 @@
           "tests/mvp-6/extraction-eval-gate.test.ts",
           "tests/mvp-8/paper-draft-generation.test.ts",
           "tests/replay/replay-infrastructure.test.ts",
+          "tests/test_3ls_measurement_layer.py",
           "tests/test_3ls_phase2_context_eval.py",
           "tests/test_3ls_simplification_phases_6_9.py",
           "tests/test_aex_hardening.py",
@@ -496,11 +497,10 @@
           "tests/test_context_bundle_v2.py",
           "tests/test_context_governed_foundation.py",
           "tests/test_context_injection.py",
-          "tests/test_context_selector.py",
-          "tests/test_control_loop_gates.py"
+          "tests/test_context_selector.py"
         ]
       },
-      "evidence_count": 103,
+      "evidence_count": 101,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CTX"
@@ -508,6 +508,12 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/dashboard_cases/case_cert_incomplete_001.json",
           "artifacts/dashboard_cases/case_eval_gap_001.json",
           "artifacts/dashboard_cases/case_replay_gap_001.json",
@@ -524,19 +530,14 @@
           "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
           "artifacts/dashboard_metrics/feedback_loop_snapshot.json",
           "artifacts/dashboard_metrics/fold_candidate_proof_check_record.json",
+          "artifacts/dashboard_metrics/governance_violation_record.json",
           "artifacts/dashboard_metrics/leverage_queue_record.json",
-          "artifacts/dashboard_metrics/materialization_observation_mapper_record.json",
-          "artifacts/dashboard_metrics/met_artifact_dependency_index_record.json",
-          "artifacts/dashboard_metrics/met_generated_artifact_classification_record.json",
-          "artifacts/dashboard_metrics/operator_debuggability_drill_record.json",
-          "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
-          "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
-          "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
-          "artifacts/dashboard_metrics/risk_summary_record.json"
+          "artifacts/dashboard_metrics/materialization_observation_mapper_record.json"
         ],
         "docs": [
           "docs/2026-03-22-baf-enforcement-wiring-audit.md",
           "docs/2026-03-22-control-loop-enforcement-review.md",
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/review_judgment_bridge_design.md",
           "docs/architecture/review_system_flow.md",
           "docs/architecture/runtime_spine.md",
@@ -558,8 +559,7 @@
           "docs/review-actions/PLAN-BBA-2026-03-21.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
           "docs/review-actions/PLAN-CDX-02-3LS-roadmap-build.md",
-          "docs/review-actions/PLAN-CL-REVIEW-FIXES-2026-03-22.md",
-          "docs/review-actions/PLAN-CONVERGENCE-024-TRUST-SPINE-HARDENING-2026-04-01.md"
+          "docs/review-actions/PLAN-CL-REVIEW-FIXES-2026-03-22.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -592,6 +592,7 @@
         "reviews": [],
         "schemas": [],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
@@ -611,6 +612,8 @@
           "tests/fixtures/roadmaps/aut_reg_05a/sva_recovery_checkpoint.json",
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/integration/e2e-pipeline.test.ts",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
+          "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/metrics/test_met_19_33_contract_selection.py",
           "tests/mvp-3/ingestion-eval-gate.test.ts",
@@ -625,12 +628,10 @@
           "tests/test_control_executor.py",
           "tests/test_control_integration.py",
           "tests/test_control_loop.py",
-          "tests/test_control_loop_chaos.py",
-          "tests/test_cross_run_intelligence.py",
-          "tests/test_ctrl_loop_closure.py"
+          "tests/test_control_loop_chaos.py"
         ]
       },
-      "evidence_count": 109,
+      "evidence_count": 110,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -782,8 +783,6 @@
           "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
           "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
           "artifacts/dashboard_seed/minimal_loop_snapshot.json",
-          "artifacts/policy-engine-report.json",
-          "artifacts/policy-engine-summary.md",
           "artifacts/pqx_runs/pqx_003/admitted_slices_20.json",
           "artifacts/pqx_runs/pqx_003/run_a/cli_output.json",
           "artifacts/pqx_runs/pqx_003/run_a/sequence.state.json",
@@ -792,7 +791,9 @@
           "artifacts/rfx_04_loop_07_08/delivery_report.json",
           "artifacts/rfx_super_01_delivery_report.json",
           "artifacts/system_dependency_priority_report.json",
-          "artifacts/tls/d3l_maturity_report.json"
+          "artifacts/tls/d3l_maturity_report.json",
+          "artifacts/tls/d3l_ranking_report.json",
+          "artifacts/tls/d3l_registry_contract.json"
         ],
         "docs": [
           "docs/adr/ADR-006-governance-manifest-policy-engine.md",
@@ -1028,8 +1029,6 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
-          "artifacts/policy-engine-report.json",
-          "artifacts/policy-engine-summary.md",
           "artifacts/rfx_super_01_delivery_report.json",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
@@ -1074,7 +1073,7 @@
           "docs/reviews/NX_ALL_01_delivery_report.md",
           "docs/reviews/OPR-TRN-01A_authority_failclosed.md",
           "docs/reviews/RFX-SUPER-01-red-team-review.md",
-          "docs/reviews/autonomous-loop-judgment-eval-slice-status-2026-03-30.md"
+          "docs/reviews/SMA-01_measurement_layer_report.md"
         ],
         "modules": [
           "spectrum_systems/governance/authority_shape_early_gate.py",
@@ -1110,6 +1109,7 @@
           "scripts/validate_system_registry_boundaries.py"
         ],
         "tests": [
+          "tests/test_3ls_measurement_layer.py",
           "tests/test_3ls_phase3_judgment_policy.py",
           "tests/test_artifact_intelligence.py",
           "tests/test_authority_shape_preflight.py",
@@ -1133,11 +1133,10 @@
           "tests/test_wpg_judgment_eval.py",
           "tests/test_wpg_judgment_persistence.py",
           "tests/test_wpg_judgment_records.py",
-          "tests/test_wpg_precedent.py",
-          "tests/unit/judgment/test_judgment_system.ts"
+          "tests/test_wpg_precedent.py"
         ]
       },
-      "evidence_count": 97,
+      "evidence_count": 95,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JDX"
@@ -1146,8 +1145,6 @@
       "evidence": {
         "artifacts": [
           "artifacts/dependency-graph-summary.md",
-          "artifacts/policy-engine-report.json",
-          "artifacts/policy-engine-summary.md",
           "artifacts/rfx_super_01_delivery_report.json",
           "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
@@ -1220,7 +1217,7 @@
           "tests/tls_dependency_graph/conftest.py"
         ]
       },
-      "evidence_count": 62,
+      "evidence_count": 60,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JSX"
@@ -1255,6 +1252,7 @@
           "artifacts/tls/system_candidate_classification.json"
         ],
         "docs": [
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/artifact-bus.md",
           "docs/architecture/runtime_spine.md",
           "docs/architecture/system_inventory_audit.md",
@@ -1277,9 +1275,8 @@
           "docs/review-actions/PLAN-RWA-001-2026-04-16.md",
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
           "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md",
-          "docs/reviews/AEX-TRUST-01_final_report.md",
-          "docs/reviews/AEX-TRUST-01_root_cause.md",
-          "docs/reviews/DSH-11-visual-dashboard.md"
+          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
+          "docs/reviews/AEX-TRUST-01_final_report.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -1530,6 +1527,7 @@
           "artifacts/tls/d3l_priority_freshness_fix_log.json"
         ],
         "docs": [
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/runtime_spine.md",
           "docs/architecture/system_inventory_audit.md",
           "docs/architecture/system_registry.md",
@@ -1553,8 +1551,7 @@
           "docs/review-actions/PLAN-RWA-001-2026-04-16.md",
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
           "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md",
-          "docs/reviews/2026-04-12-next24-foundation-build-delivery-report.md",
-          "docs/reviews/AEX-TRUST-01_final_report.md"
+          "docs/reviews/2026-04-12-next24-foundation-build-delivery-report.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -1757,6 +1754,15 @@
           "artifacts/aex/aex_admission_evidence_record.json",
           "artifacts/aex/aex_admission_lineage_observation.json",
           "artifacts/aex/aex_admission_trace_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_loop_run_record.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_loop_run_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -1769,19 +1775,11 @@
           "artifacts/auto_kernel_24_01/canonical_delivery_report.json",
           "artifacts/blf_01_baseline_failure_fix/delivery_report.json",
           "artifacts/blf_01_baseline_failure_fix/failure_classification.json",
-          "artifacts/blf_01_baseline_failure_fix/failure_inventory.json",
-          "artifacts/blf_01_baseline_failure_fix/fix_recommendations.json",
-          "artifacts/blf_01_baseline_failure_fix/root_cause_analysis.json",
-          "artifacts/certification_judgment_40_explicit/certification_probe_execution_bundle.json",
-          "artifacts/certification_judgment_40_explicit/certification_regression_replay_bundle.json",
-          "artifacts/certification_judgment_40_explicit/observability_probe_execution_bundle.json",
-          "artifacts/dashboard/repo_snapshot.json",
-          "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
-          "artifacts/dashboard_metrics/bottleneck_record.json",
-          "artifacts/dashboard_metrics/failure_feedback_record.json"
+          "artifacts/blf_01_baseline_failure_fix/failure_inventory.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/autonomous_execution_loop.md",
           "docs/architecture/control_surfaces_and_pre_pr_governance.md",
           "docs/architecture/foundation_pqx_eval_control.md",
@@ -1804,8 +1802,7 @@
           "docs/governance/execution-change-impact-gate.md",
           "docs/governance/governance-enforcement-step-11-activation.md",
           "docs/governance/manifest-completeness-gate.md",
-          "docs/governance/parallel_pqx_observability.md",
-          "docs/governance/parallel_pqx_pairing_rules.md"
+          "docs/governance/parallel_pqx_observability.md"
         ],
         "modules": [
           "spectrum_systems/aex/classifier.py",
@@ -1843,6 +1840,7 @@
           "schemas/artifacts/pqx_execution_record.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_preflight_pqx_wrapper.py",
           "scripts/build_system_registry_artifact.py",
@@ -1866,8 +1864,7 @@
           "scripts/run_prompt_queue_sequence.py",
           "scripts/run_rax_redteam_arch_01.py",
           "scripts/run_rax_redteam_harness_01.py",
-          "scripts/run_repair_latency_24_01.py",
-          "scripts/run_repair_standardization_24_01.py"
+          "scripts/run_repair_latency_24_01.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -1880,8 +1877,11 @@
           "tests/fixtures/roadmaps/pqx_propagation_sequence.json",
           "tests/fixtures/roadmaps/pqx_verification_sequence.json",
           "tests/governance/test_3ls_authority_preflight.py",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
+          "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/mvp-2/context-bundle-assembler.test.ts",
+          "tests/test_3ls_measurement_layer.py",
           "tests/test_3ls_phase1_foundation.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_3ls_simplification.py",
@@ -1891,10 +1891,7 @@
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_build_preflight_pqx_wrapper.py",
-          "tests/test_certification_judgment_40_explicit.py",
-          "tests/test_codex_to_pqx_wrapper.py",
-          "tests/test_context_governed_foundation.py",
-          "tests/test_context_injection.py"
+          "tests/test_certification_judgment_40_explicit.py"
         ]
       },
       "evidence_count": 128,
@@ -2127,6 +2124,7 @@
         ],
         "tests": [
           "tests/fixtures/rax_adversarial_eval_pack.json",
+          "tests/test_3ls_measurement_layer.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_oc_bottleneck_classifier.py",
           "tests/test_rax_eval_runner.py",
@@ -2135,7 +2133,7 @@
           "tests/test_run_rax_operational_gate_cli.py"
         ]
       },
-      "evidence_count": 68,
+      "evidence_count": 69,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "RAX"
@@ -2170,6 +2168,7 @@
           "artifacts/rfx_super_01_delivery_report.json"
         ],
         "docs": [
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/runtime_spine.md",
           "docs/architecture/system_inventory_audit.md",
           "docs/architecture/system_registry.md",
@@ -2190,11 +2189,10 @@
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
           "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md",
           "docs/review-actions/batch-sys-enf-02_registry_to_impl_conformance_scan.md",
+          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
           "docs/reviews/AEX-TRUST-01_final_report.md",
           "docs/reviews/AEX-TRUST-01_root_cause.md",
-          "docs/reviews/DSH-11-visual-dashboard.md",
-          "docs/reviews/MET-01-02-dashboard-seed-loop.md",
-          "docs/reviews/MET-03-measurement-layer.md"
+          "docs/reviews/DSH-11-visual-dashboard.md"
         ],
         "modules": [
           "spectrum_systems/aex/admission_replay.py",
@@ -2554,6 +2552,11 @@
           "artifacts/aex/aex_admission_evidence_record.json",
           "artifacts/aex/aex_admission_trace_record.json",
           "artifacts/aex/aex_sel_enforcement_input.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -2570,15 +2573,11 @@
           "artifacts/certification_judgment_40_explicit/observability_completeness_guard_result.json",
           "artifacts/certification_judgment_40_explicit/promotion_proof_guard_result.json",
           "artifacts/certification_judgment_40_explicit/stale_proof_operator_guard_result.json",
-          "artifacts/dashboard_cases/case_cert_incomplete_001.json",
-          "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
-          "artifacts/dashboard_metrics/bottleneck_record.json",
-          "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
-          "artifacts/dashboard_metrics/debug_explanation_index_record.json",
-          "artifacts/dashboard_metrics/eval_candidate_record.json"
+          "artifacts/dashboard_cases/case_cert_incomplete_001.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/pr_autofix_review_artifact_validation.md",
           "docs/architecture/runtime_spine.md",
           "docs/architecture/system_inventory_audit.md",
@@ -2601,8 +2600,7 @@
           "docs/review-actions/BATCH-GOV-B-DELIVERY-REPORT-2026-04-09.md",
           "docs/review-actions/CPL-02_fix_plan.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
-          "docs/review-actions/PLAN-BATCH-AUT-REG-01-2026-04-10.md",
-          "docs/review-actions/PLAN-BATCH-CDE-01-2026-04-06.md"
+          "docs/review-actions/PLAN-BATCH-AUT-REG-01-2026-04-10.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -2639,6 +2637,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_control_surface_gap_packet.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_system_registry_artifact.py",
@@ -2666,6 +2665,8 @@
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
           "tests/fixtures/failure_diagnosis/invariant_violation.json",
           "tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
+          "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/test_3ls_phase5_release_budget.py",
           "tests/test_aex_authority_shape_regression.py",
@@ -2685,12 +2686,10 @@
           "tests/test_d3l_mvp_graph.py",
           "tests/test_d3l_rank_maturity_alignment.py",
           "tests/test_d3l_ranking_report.py",
-          "tests/test_done_certification.py",
-          "tests/test_end_to_end_governed_scenarios.py",
-          "tests/test_enforcement_gate.py"
+          "tests/test_done_certification.py"
         ]
       },
-      "evidence_count": 124,
+      "evidence_count": 125,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "SEL"
@@ -2730,6 +2729,7 @@
           "docs/PRODUCTION_CHECKLIST.md",
           "docs/RUNBOOKS.md",
           "docs/SLO_DEFINITIONS.md",
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/system_inventory_audit.md",
           "docs/architecture/system_registry.md",
           "docs/architecture/system_registry_reduction_decision.md",
@@ -2748,8 +2748,7 @@
           "docs/review-actions/PLAN-BAS-POLICY-VERSIONING-FOLLOWUP-FIX-2026-03-22.md",
           "docs/review-actions/PLAN-BN.6-2026-03-20.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
-          "docs/review-actions/PLAN-FAE-001-2026-04-16.md",
-          "docs/review-actions/PLAN-IFB-001-2026-04-15.md"
+          "docs/review-actions/PLAN-FAE-001-2026-04-16.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/checkpoint_certification_L.json",
@@ -2848,15 +2847,15 @@
           "artifacts/governed_kernel_24_01/registry_cross_check.json",
           "artifacts/governed_kernel_24_01/run_contract.json",
           "artifacts/ops_master_01/pre_pqx_contract_readiness_artifact.json",
-          "artifacts/policy-engine-report.json",
-          "artifacts/policy-engine-summary.md",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/control_prep_readiness_record.CONTROL-05.json",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.CONTROL_PREP_LAYER.json",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.DRIFT_LAYER.json",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.EVALUATION_LAYER.json",
           "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/umbrella_decision_artifact.SLICE_IMPROVEMENT_LAYER.json",
           "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-01-artifact-trace.json",
-          "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-02-artifact-trace.json"
+          "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-02-artifact-trace.json",
+          "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+          "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/adaptive_safety_record.ADAPT-02.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
@@ -2936,6 +2935,7 @@
           "tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json",
           "tests/governance/test_3ls_authority_preflight.py",
           "tests/helpers_repo_write_lineage.py",
+          "tests/test_3ls_measurement_layer.py",
           "tests/test_3ls_phase1_foundation.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_3ls_registry_guard.py",
@@ -2955,8 +2955,7 @@
           "tests/test_governed_repair_foundation.py",
           "tests/test_governed_repair_loop_delegation.py",
           "tests/test_governed_repair_loop_execution.py",
-          "tests/test_hnx_hardening.py",
-          "tests/test_integration_fabric_ifb.py"
+          "tests/test_hnx_hardening.py"
         ]
       },
       "evidence_count": 113,
@@ -2967,6 +2966,11 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -2986,15 +2990,11 @@
           "artifacts/dashboard_metrics/failure_feedback_record.json",
           "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
           "artifacts/dashboard_metrics/feedback_loop_snapshot.json",
-          "artifacts/dashboard_metrics/leverage_queue_record.json",
-          "artifacts/dashboard_metrics/materialization_observation_mapper_record.json",
-          "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
-          "artifacts/dashboard_metrics/risk_summary_record.json",
-          "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
-          "artifacts/dashboard_seed/lineage_record.json"
+          "artifacts/dashboard_metrics/governance_violation_record.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
+          "docs/architecture/3ls_measurement_layer.md",
           "docs/architecture/autonomous_execution_loop.md",
           "docs/architecture/foundation_pqx_eval_control.md",
           "docs/architecture/pr_autofix_review_artifact_validation.md",
@@ -3017,8 +3017,7 @@
           "docs/review-actions/2026-04-05-tpa-trust-boundary-verification-actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-AUTHENTICITY-HARDGATE-24-01-2026-04-11.md",
-          "docs/review-actions/PLAN-AUTO-KERNEL-24-01-2026-04-11.md",
-          "docs/review-actions/PLAN-BATCH-AEX-2026-04-08.md"
+          "docs/review-actions/PLAN-AUTO-KERNEL-24-01-2026-04-11.md"
         ],
         "modules": [
           "spectrum_systems/aex/classifier.py",
@@ -3053,6 +3052,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/refresh_tpa_source_authority_digests.py",
           "scripts/run_authenticity_hardgate_24_01.py",
@@ -3075,6 +3075,7 @@
           "tests/fixtures/chaos_fail_closed_cases.json",
           "tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json",
           "tests/governance/test_3ls_authority_repair_suggestions.py",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/test_3ls_registry_guard.py",
           "tests/test_3ls_simplification.py",
@@ -3094,11 +3095,10 @@
           "tests/test_failure_learning_artifacts.py",
           "tests/test_governed_execution_kernel.py",
           "tests/test_governed_preflight_remediation_loop.py",
-          "tests/test_governed_repair_foundation.py",
-          "tests/test_governed_repair_loop_delegation.py"
+          "tests/test_governed_repair_foundation.py"
         ]
       },
-      "evidence_count": 117,
+      "evidence_count": 118,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"
