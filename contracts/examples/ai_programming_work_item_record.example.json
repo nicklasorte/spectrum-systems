@@ -1,0 +1,65 @@
+{
+  "artifact_type": "ai_programming_work_item_record",
+  "schema_version": "1.0.0",
+  "record_id": "AIPG-WI-EXAMPLE-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "work_item_id": "AIPG-EXAMPLE-001",
+  "tool_source": "codex",
+  "repo_mutating": true,
+  "pr_ref": "unknown",
+  "branch_ref": "unknown",
+  "legs": {
+    "AEX": {
+      "status": "present",
+      "artifact_refs": ["artifacts/aex/aex_admission_evidence_record.json"],
+      "source_artifacts_used": ["artifacts/aex/aex_admission_evidence_record.json"],
+      "confidence": "high"
+    },
+    "PQX": {
+      "status": "present",
+      "artifact_refs": ["artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"],
+      "source_artifacts_used": ["artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"],
+      "confidence": "high"
+    },
+    "EVL": {
+      "status": "partial",
+      "artifact_refs": ["outputs/contract_preflight/preflight.pqx_execution_eval_result.json"],
+      "reason_codes": ["eval_from_preflight_slice_not_work_item_specific"],
+      "source_artifacts_used": ["artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"],
+      "confidence": "medium"
+    },
+    "TPA": {
+      "status": "unknown",
+      "reason_codes": ["no_tpa_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    },
+    "CDE": {
+      "status": "unknown",
+      "reason_codes": ["no_cde_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    },
+    "SEL": {
+      "status": "unknown",
+      "reason_codes": ["no_sel_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    }
+  },
+  "lineage_status": "missing",
+  "lineage_artifact_refs": [],
+  "lineage_reason_codes": ["no_lineage_chain_for_this_work_item"],
+  "compliance_status": "BLOCK",
+  "bypass_risk": "none",
+  "backfill_allowed": true,
+  "human_review_required": false,
+  "next_recommended_input": "Attach TPA, CDE, and SEL evidence records for this work item.",
+  "source_artifacts_used": [
+    "artifacts/aex/aex_admission_evidence_record.json",
+    "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
+  ],
+  "reason_codes": [],
+  "warnings": [
+    "MET observation only. Authority boundary assignments are canonical in docs/architecture/system_registry.md."
+  ],
+  "sma_loop_run_ref": null
+}

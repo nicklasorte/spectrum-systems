@@ -1,0 +1,19 @@
+{
+  "artifact_type": "ai_programming_loop_violation_record",
+  "schema_version": "1.0.0",
+  "record_id": "AIPG-VIO-EXAMPLE-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "violation_id": "GVL-AEX-MISSING-EXAMPLE-001",
+  "work_item_id": "AIPG-EXAMPLE-001",
+  "tool_source": "claude",
+  "violation_type": "aex_missing",
+  "missing_leg": "AEX",
+  "repo_mutating": true,
+  "why_it_matters": "AEX is the admission/intake leg. Without a governed AEX record for this Claude-driven repo mutation, downstream legs cannot be lineage-bound to a structured input.",
+  "next_recommended_input": "Produce an AEX intake record naming work_item_id=AIPG-EXAMPLE-001 and link it as an upstream source for the PQX execution record.",
+  "reason_codes": ["no_aex_intake_record_for_work_item"],
+  "source_artifacts_used": ["artifacts/dashboard_metrics/ai_programming_governed_path_record.json"],
+  "backfill_allowed": false,
+  "human_review_required": true
+}

@@ -1,0 +1,31 @@
+{
+  "artifact_type": "3ls_loop_run_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-aex-pqx-dash-02-2026-04-29",
+  "created_at": "2026-04-29T00:00:00Z",
+  "provenance": {
+    "source_system": "MET",
+    "inputs": [
+      "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+      "artifacts/dashboard_metrics/governance_violation_record.json"
+    ],
+    "simulated": false
+  },
+  "record_id": "3ls-loop-aex-pqx-dash-02-2026-04-29",
+  "loop_id": "loop-aex-pqx-dash-02",
+  "admission_ref": null,
+  "execution_ref": null,
+  "eval_ref": null,
+  "policy_ref": null,
+  "decision_input_ref": null,
+  "enforcement_signal_ref": null,
+  "loop_status": "blocked",
+  "first_failure_system": "AEX",
+  "completion_time_ms": null,
+  "trace_refs": [
+    "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json"
+  ],
+  "replay_refs": [],
+  "authority_scope": "observation_only",
+  "notes": "AEX-PQX-01: AEX-PQX-DASH-02 loop run. Loop is blocked at AEX: neither AEX admission nor PQX execution records exist for this work item (bootstrap gap). All downstream refs are null. Human review required before this loop can be closed."
+}

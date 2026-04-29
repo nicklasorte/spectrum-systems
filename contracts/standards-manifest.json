@@ -16768,7 +16768,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-A",
       "last_updated_in": "RGE-A",
       "example_path": "contracts/examples/phase_justification_record.json",
@@ -16779,7 +16781,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-B",
       "last_updated_in": "RGE-B",
       "example_path": "contracts/examples/loop_contribution_record.json",
@@ -16790,7 +16794,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-C",
       "last_updated_in": "RGE-C",
       "example_path": "contracts/examples/debuggability_assessment_record.json",
@@ -16801,7 +16807,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-E",
       "last_updated_in": "RGE-E",
       "example_path": "contracts/examples/rge_analysis_record.json",
@@ -16812,7 +16820,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-F",
       "last_updated_in": "RGE-F",
       "example_path": "contracts/examples/rge_roadmap_record.json",
@@ -16823,7 +16833,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-G",
       "last_updated_in": "RGE-G",
       "example_path": "contracts/examples/rge_redteam_record.json",
@@ -16834,7 +16846,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-H",
       "last_updated_in": "RGE-H",
       "example_path": "contracts/examples/rge_amendment_record.json",
@@ -16845,7 +16859,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-I",
       "last_updated_in": "RGE-I",
       "example_path": "contracts/examples/rge_trust_record.json",
@@ -16856,7 +16872,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-J",
       "last_updated_in": "RGE-J",
       "example_path": "contracts/examples/rge_recursion_record.json",
@@ -16867,7 +16885,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "RGE-K",
       "last_updated_in": "RGE-K",
       "example_path": "contracts/examples/rge_run_record.json",
@@ -16878,7 +16898,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_system_measurement_record.example.json",
@@ -16889,7 +16911,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_loop_run_record.example.json",
@@ -16900,7 +16924,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_handoff_record.example.json",
@@ -16911,7 +16937,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_surface_coverage_record.example.json",
@@ -16922,7 +16950,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_failure_recurrence_record.example.json",
@@ -16933,7 +16963,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_trust_gap_closure_record.example.json",
@@ -16944,7 +16976,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_replayability_record.example.json",
@@ -16955,7 +16989,9 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_scope_risk_record.example.json",
@@ -16966,11 +17002,52 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
       "introduced_in": "SMA-01-V2",
       "last_updated_in": "SMA-01-V2",
       "example_path": "contracts/examples/3ls_operator_debuggability_record.example.json",
       "notes": "SMA-01 v2: operator debuggability measurement. Are failures understandable from a single artifact?"
+    },
+    {
+      "artifact_type": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_work_item_record.example.json",
+      "notes": "AEX-PQX-01: per-work-item evidence record for AI programming contributions (Codex, Claude). MET observation only. Fail-closed: repo_mutating=true requires AEX and PQX. present requires artifact_refs. partial/missing/unknown requires reason_codes."
+    },
+    {
+      "artifact_type": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_governance_rollup_record.example.json",
+      "notes": "AEX-PQX-01: aggregate rollup of AI programming governance evidence. Produced by build_ai_programming_governance_rollup.py. Dashboard reads this artifact; does not compute compliance client-side."
+    },
+    {
+      "artifact_type": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_loop_violation_record.example.json",
+      "notes": "AEX-PQX-01: records a specific governance loop violation for a repo-mutating AI programming work item. MET observation only; does not claim enforcement (SEL) or decision (CDE) authority."
     }
   ]
 }

@@ -1,39 +1,50 @@
 {
   "schema_version": "1.0.0",
   "artifact_type": "ai_programming_governed_path_record",
-  "record_id": "AIPG-DASH-AEX-PQX-DASH-01",
+  "record_id": "AIPG-DASH-AEX-PQX-DASH-01-V2",
   "created_at": "2026-04-29T00:00:00Z",
   "owner_system": "MET",
   "case_id": "ai-programming-governed-path-001",
   "data_source": "artifact_store",
   "source_artifacts_used": [
+    "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
+    "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+    "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+    "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
     "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
     "artifacts/pqx_runs/pqx_003/admitted_slices_20.json",
     "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+    "artifacts/aex/aex_admission_evidence_record.json",
     "artifacts/dashboard_seed/control_decision_record.json",
     "artifacts/dashboard_seed/enforcement_action_record.json",
     "artifacts/dashboard_seed/lineage_record.json",
-    "docs/architecture/system_registry.md"
+    "docs/architecture/system_registry.md",
+    "docs/reviews/AEX-PQX-01_ai_programming_loop_root_cause.md"
   ],
   "reason_codes": [
     "ai_programming_governed_path_observation_only",
     "no_authority_claim_by_MET",
     "owner_recommendations_route_to_AEX_and_PQX",
     "missing_aex_admission_observation_for_codex_work",
-    "missing_pqx_execution_observation_for_claude_work"
+    "missing_pqx_execution_observation_for_claude_work",
+    "aex_pqx_dash_02_added_with_both_legs_missing",
+    "aex_pqx_dash_02_codex_precursor_added_with_partial_evidence_and_missing_lineage",
+    "core_loop_compliance_corrected_from_v1_aex_present_was_not_supported_by_per_item_evidence"
   ],
   "warnings": [
     "This record is a MET observation of AI programming work items routed through AEX and PQX. It does not claim AEX admitted, PQX executed, EVL evaluated, CDE decided, or SEL enforced.",
     "AEX is the canonical admission authority for repo-mutating execution. PQX is the canonical execution authority. EVL owns eval. CDE owns control. SEL owns enforcement.",
-    "Source signals are seeded from preflight PQX slice execution evidence and the dashboard_seed loop. Coverage is partial; unknowns remain visible by design."
+    "Source signals are derived from per-work-item evidence records in artifacts/ai_programming/. Coverage is partial; unknowns remain visible by design.",
+    "AEX-PQX-DASH-02 is a bootstrap gap: the dashboard implementation itself lacks AEX and PQX evidence. This record explicitly surfaces that gap rather than hiding it.",
+    "core_loop_compliance.AEX was previously marked 'present' in record AIPG-DASH-AEX-PQX-DASH-01 (v1). This was not supported by per-item evidence: no work item had AEX=present. This record corrects that to 'missing'."
   ],
-  "failure_prevented": "AI programming changes (Codex, Claude) entering the repo without observable AEX admission or PQX execution evidence being read as governed when they are not.",
-  "signal_improved": "Dashboard exposes whether each AI programming work item carries AEX admission evidence and PQX execution evidence, with bypass risk surfaced when proof is absent.",
+  "failure_prevented": "AI programming changes (Codex, Claude) entering the repo without observable AEX admission or PQX execution evidence being read as governed when they are not. This record also prevents the bootstrap gap for AEX-PQX-DASH-02 (the dashboard itself) from being silently hidden.",
+  "signal_improved": "Dashboard now surfaces all four known AI programming work items including AEX-PQX-DASH-02 (AEX+PQX both missing) and AEX-PQX-DASH-02-CODEX-PRECURSOR (lineage missing). Each item carries honest per-leg evidence status with artifact refs and reason codes.",
   "ai_programming_work_items": [
     {
       "work_item_id": "AIPG-CODEX-001",
       "agent_type": "codex",
-      "source_ref": "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+      "source_ref": "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
       "pr_ref": "unknown",
       "branch_ref": "unknown",
       "changed_files_count": "unknown",
@@ -41,12 +52,13 @@
       "aex_admission_observation": "missing",
       "pqx_execution_observation": "present",
       "eval_observation": "partial",
-      "control_signal_observation": "partial",
-      "enforcement_or_readiness_signal_observation": "partial",
-      "lineage_observation": "partial",
+      "control_signal_observation": "unknown",
+      "enforcement_or_readiness_signal_observation": "unknown",
+      "lineage_observation": "missing",
       "bypass_risk": "aex_missing",
-      "next_recommended_input": "Attach AEX admission evidence (admitted_slices reference, admission decision, source_artifacts_used) for Codex work item AIPG-CODEX-001 so the governed path through AEX can be observed end-to-end.",
+      "next_recommended_input": "Attach AEX admission evidence (admitted_slices reference, admission decision, source_artifacts_used) for Codex work item AIPG-CODEX-001 so the governed path through AEX can be observed end-to-end. Human review required to confirm retroactive AEX evidence is permissible.",
       "source_artifacts_used": [
+        "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
         "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
         "artifacts/pqx_runs/pqx_003/admitted_slices_20.json"
       ]
@@ -54,7 +66,7 @@
     {
       "work_item_id": "AIPG-CLAUDE-001",
       "agent_type": "claude",
-      "source_ref": "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+      "source_ref": "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
       "pr_ref": "unknown",
       "branch_ref": "claude/ai-governed-path-dashboard-ypm4c",
       "changed_files_count": "unknown",
@@ -62,13 +74,58 @@
       "aex_admission_observation": "partial",
       "pqx_execution_observation": "missing",
       "eval_observation": "partial",
-      "control_signal_observation": "partial",
-      "enforcement_or_readiness_signal_observation": "partial",
+      "control_signal_observation": "unknown",
+      "enforcement_or_readiness_signal_observation": "unknown",
       "lineage_observation": "partial",
       "bypass_risk": "pqx_missing",
-      "next_recommended_input": "Attach PQX execution evidence (pqx_slice_execution_record reference, execution_status, source_artifacts_used) for Claude work item AIPG-CLAUDE-001 so the governed path through PQX can be observed end-to-end.",
+      "next_recommended_input": "Attach PQX execution evidence (pqx_slice_execution_record reference, execution_status, source_artifacts_used) for Claude work item AIPG-CLAUDE-001 so the governed path through PQX can be observed end-to-end. Human review required to confirm PQX evidence can be produced retroactively.",
       "source_artifacts_used": [
+        "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
         "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+        "artifacts/dashboard_seed/lineage_record.json"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02",
+      "agent_type": "claude",
+      "source_ref": "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+      "pr_ref": "unknown",
+      "branch_ref": "unknown",
+      "changed_files_count": "unknown",
+      "repo_mutating": true,
+      "aex_admission_observation": "missing",
+      "pqx_execution_observation": "missing",
+      "eval_observation": "unknown",
+      "control_signal_observation": "unknown",
+      "enforcement_or_readiness_signal_observation": "unknown",
+      "lineage_observation": "missing",
+      "bypass_risk": "aex_missing",
+      "next_recommended_input": "Human review required. AEX-PQX-DASH-02 is the dashboard implementation itself — a Claude-driven repo-mutating work item with neither AEX admission nor PQX execution evidence (bootstrap gap). A human must confirm whether retroactive evidence can be produced or whether this work item permanently carries missing legs.",
+      "source_artifacts_used": [
+        "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+        "artifacts/dashboard_metrics/governance_violation_record.json"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02-CODEX-PRECURSOR",
+      "agent_type": "codex",
+      "source_ref": "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+      "pr_ref": "unknown",
+      "branch_ref": "unknown",
+      "changed_files_count": "unknown",
+      "repo_mutating": true,
+      "aex_admission_observation": "partial",
+      "pqx_execution_observation": "partial",
+      "eval_observation": "partial",
+      "control_signal_observation": "unknown",
+      "enforcement_or_readiness_signal_observation": "unknown",
+      "lineage_observation": "missing",
+      "bypass_risk": "lineage_missing",
+      "next_recommended_input": "Backfill a lineage record entry linking AEX admission evidence to PQX preflight slice to EVL eval result, explicitly naming AEX-PQX-DASH-02-CODEX-PRECURSOR as the work item. All legs are partial; upgrading to present requires work-item-specific AEX and PQX artifacts.",
+      "source_artifacts_used": [
+        "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+        "artifacts/aex/aex_admission_evidence_record.json",
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
         "artifacts/dashboard_seed/lineage_record.json"
       ]
     },
@@ -95,20 +152,21 @@
   ],
   "status": "block",
   "core_loop_compliance": {
-    "AEX": "present",
+    "AEX": "missing",
     "PQX": "missing",
-    "EVL": "unknown",
-    "TPA": "missing",
+    "EVL": "partial",
+    "TPA": "unknown",
     "CDE": "unknown",
-    "SEL": "missing"
+    "SEL": "unknown"
   },
   "core_loop_complete": false,
-  "first_missing_leg": "PQX",
-  "weakest_leg": "PQX",
-  "compliance_score": 1,
+  "first_missing_leg": "AEX",
+  "weakest_leg": "AEX",
+  "compliance_score": 0,
   "total_legs": 6,
   "repo_mutating": true,
-  "missing_legs": ["PQX", "TPA", "SEL"],
-  "partial_legs": [],
-  "next_recommended_input": "Aggregate roll-up across ai_programming_work_items: AEX is present in all items, but PQX, TPA, and SEL are missing in at least one repo-mutating item. Emit PQX execution records, TPA trust/policy signals, and SEL enforcement signals before any work item can be promoted."
+  "missing_legs": ["AEX", "PQX"],
+  "partial_legs": ["EVL"],
+  "unknown_legs": ["TPA", "CDE", "SEL"],
+  "next_recommended_input": "All five repo-mutating AI programming work items are BLOCK. Two have AEX missing (AIPG-CODEX-001, AEX-PQX-DASH-02) and two have PQX missing (AIPG-CLAUDE-001, AEX-PQX-DASH-02) and two have lineage missing. Emit work-item-specific AEX admission records and PQX execution records before any work item can be promoted. Human review required for AEX-PQX-DASH-02 bootstrap gap."
 }
