@@ -11,7 +11,7 @@ Constraints (hard):
   - CDE must authorize before PQX applies any patch.
   - Guard scripts and canonical-owner files are excluded from patching.
 
-This module is FRE-bounded: it emits repair candidates, not decisions.
+This module is FRE-bounded: it produces repair candidates, not decisions.
 """
 
 from __future__ import annotations

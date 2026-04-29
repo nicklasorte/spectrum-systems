@@ -25,7 +25,7 @@ _BUILTIN_CORPUS: list[dict[str, Any]] = [
         "case_id": "hist-authority-shape-001",
         "failure_class": "authority_shape_violation",
         "expected_classification": "authority_shape_violation",
-        "description": "HOP file uses promotion_decision outside canonical owner path",
+        "description": "HOP file uses promotion_decision outside the declared owner path",
         "replay_input": {
             "violation_type": "vocabulary_violation",
             "cluster": "promotion",

@@ -10,7 +10,7 @@ Gate logic (exact):
   - primary_reason_present == True
   - trace_continuity == True
 
-Emits BLOCK if any gate fails. Non-decisioning: consumed by CDE.
+Gate result is block when any condition fails. Non-decisioning: the result artifact is consumed by CDE.
 """
 
 from __future__ import annotations
