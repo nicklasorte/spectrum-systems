@@ -186,19 +186,25 @@ jobs:
           echo "base_ref=${base_ref}" >> "$GITHUB_OUTPUT"
           echo "head_ref=${head_ref}" >> "$GITHUB_OUTPUT"
 
-      - name: Regenerate and check derived registry artifacts (PQX freshness gate)
+      - name: Build derived registry artifacts (PQX freshness gate — build phase)
         run: |
           set -euo pipefail
-          echo "=== diagnostic: python version ==="
-          python --version
-          echo "=== diagnostic: building TLS artifacts ==="
+          mkdir -p outputs/freshness_gate_debug
+          python --version 2>&1 | tee outputs/freshness_gate_debug/trace.txt
+          echo "build_start" | tee -a outputs/freshness_gate_debug/trace.txt
           python scripts/build_tls_dependency_priority.py \
             --out artifacts/tls \
             --top-level-out artifacts \
-            --candidates ""
-          echo "=== diagnostic: TLS build complete, running ecosystem health ==="
-          python scripts/generate_ecosystem_health_report.py
-          echo "=== diagnostic: running freshness comparison ==="
+            --candidates "" \
+            2>&1 | tee -a outputs/freshness_gate_debug/trace.txt
+          echo "build_complete" | tee -a outputs/freshness_gate_debug/trace.txt
+          python scripts/generate_ecosystem_health_report.py \
+            2>&1 | tee -a outputs/freshness_gate_debug/trace.txt
+          echo "health_complete" | tee -a outputs/freshness_gate_debug/trace.txt
+
+      - name: Verify derived registry artifacts are structurally current (PQX freshness gate — compare phase)
+        run: |
+          set -euo pipefail
           # Compare structure only — strip volatile timestamp fields before diffing
           # so the check is stable across reruns on identical source inputs.
           python - <<'PYCODE'
@@ -245,31 +251,41 @@ jobs:
                   return f"{path}: committed={av!r} current={bv!r}"
               return None
 
+          debug_dir = Path("outputs/freshness_gate_debug")
+          debug_dir.mkdir(parents=True, exist_ok=True)
+          lines = []
           mismatches = []
           for rel in JSON_FILES:
               path = Path(rel)
               if not path.is_file():
-                  print(f"SKIP (missing on disk): {rel}")
+                  lines.append(f"SKIP (missing on disk): {rel}")
+                  print(lines[-1])
                   continue
               result = subprocess.run(
                   ["git", "show", f"HEAD:{rel}"],
                   capture_output=True, text=True,
               )
               if result.returncode != 0:
-                  print(f"SKIP (not in HEAD): {rel}")
+                  lines.append(f"SKIP (not in HEAD, rc={result.returncode}): {rel}")
+                  print(lines[-1])
                   continue  # new file on this branch — skip
               try:
                   committed = normalize(json.loads(result.stdout))
                   current   = normalize(json.loads(path.read_text()))
               except Exception as e:
-                  print(f"SKIP (parse error {e}): {rel}")
+                  lines.append(f"SKIP (parse error {e}): {rel}")
+                  print(lines[-1])
                   continue
               if committed != current:
                   diff_hint = first_diff(committed, current)
-                  print(f"MISMATCH: {rel} — first diff: {diff_hint}")
+                  lines.append(f"MISMATCH: {rel} — first diff: {diff_hint}")
+                  print(lines[-1])
                   mismatches.append(rel)
               else:
-                  print(f"OK: {rel}")
+                  lines.append(f"OK: {rel}")
+                  print(lines[-1])
+
+          (debug_dir / "comparison_result.txt").write_text("\n".join(lines) + "\n")
 
           if mismatches:
               print("ERROR: derived registry artifacts have structural differences from HEAD.")
@@ -282,6 +298,14 @@ jobs:
 
           print("Derived registry artifacts are structurally up-to-date.")
           PYCODE
+
+      - name: Upload freshness gate debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: freshness-gate-debug
+          if-no-files-found: warn
+          path: outputs/freshness_gate_debug/
 
       - name: Run authoritative governed preflight gate
         env:
