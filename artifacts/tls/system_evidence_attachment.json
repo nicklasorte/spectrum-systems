@@ -932,7 +932,6 @@
         "docs": [
           "docs/architecture/system_registry.md",
           "docs/governance/authority_shape_preflight.md",
-          "docs/governance/pytest_pr_selection_integrity_policy.json",
           "docs/hop/batch2_followups.md",
           "docs/hop/golden_workflow.md",
           "docs/hop/hop006_issue_extraction_design.md",
@@ -954,7 +953,8 @@
           "docs/reviews/TLS-GUARD-01-DELIVERY-REPORT.md",
           "docs/reviews/hop005_authority_eval_hardening_review.md",
           "docs/reviews/hop006a_current_state_review.md",
-          "docs/reviews/hop006a_design_redteam.md"
+          "docs/reviews/hop006a_design_redteam.md",
+          "docs/reviews/hop_batch1_review.md"
         ],
         "modules": [
           "spectrum_systems/cli/hop_cli.py",
