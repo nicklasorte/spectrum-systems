@@ -1387,23 +1387,31 @@ export async function GET() {
   // AEX-PQX-DASH-02 — governance violations block. Fail-closed: missing
   // artifact degrades to unknown rather than 0; warning explicitly names the
   // missing file. MET observes only — no authority claim.
-  const filteredViolations = (governanceViolation?.violations ?? []).filter(
+  const rawViolations = Array.isArray(governanceViolation?.violations)
+    ? governanceViolation!.violations!
+    : [];
+  const filteredViolations = rawViolations.filter(
     (v) =>
       typeof v.violation_id === 'string' &&
       typeof v.work_item_id === 'string' &&
       typeof v.missing_leg === 'string' &&
       typeof v.violation_type === 'string',
   );
+  const malformedViolationCount = rawViolations.length - filteredViolations.length;
   const declaredViolationCount = governanceViolation?.violation_count;
-  const observedViolationCount = filteredViolations.length;
+  // Fail-closed against data-shape drift: count BOTH well-formed and malformed
+  // rows. A malformed violation entry is still concrete evidence of a
+  // violation; dropping it from the count would let a stale
+  // `violation_count: 0` paired with a malformed row fall through to PASS.
+  const rawViolationsTotal = rawViolations.length;
   // Fail-closed: a stale or under-counted declared `violation_count` (e.g.
   // declared 0 with non-empty violations[]) must NOT cause the panel to fall
-  // through to PASS. Use max(declared, observed) so any concrete violation
-  // entry surfaces as BLOCK regardless of the declared scalar.
+  // through to PASS. Use max(declared, observed_raw) so any concrete violation
+  // entry surfaces as BLOCK regardless of the declared scalar OR row shape.
   const violationCountValue: number | 'unknown' = governanceViolation
     ? typeof declaredViolationCount === 'number'
-      ? Math.max(declaredViolationCount, observedViolationCount)
-      : observedViolationCount
+      ? Math.max(declaredViolationCount, rawViolationsTotal)
+      : rawViolationsTotal
     : 'unknown';
   // Fail-closed: violation_count > 0 forces BLOCK regardless of the declared
   // status. A stale `status: 'pass'` with non-empty violations cannot
@@ -1434,7 +1442,14 @@ export async function GET() {
         signal_improved: governanceViolation.signal_improved ?? null,
         data_source: governanceViolation.data_source ?? 'unknown',
         source_artifacts_used: governanceViolation.source_artifacts_used ?? [],
-        warnings: governanceViolation.warnings ?? [],
+        warnings: [
+          ...(governanceViolation.warnings ?? []),
+          ...(malformedViolationCount > 0
+            ? [
+                `${malformedViolationCount} violation row(s) dropped from the rendered list due to missing required string field(s); they still count toward violation_count and the BLOCK status (fail-closed against data-shape drift).`,
+              ]
+            : []),
+        ],
       }
     : {
         status: 'unknown' as const,
@@ -1490,8 +1505,13 @@ export async function GET() {
       : computedComplianceScore
     : 'unknown';
 
+  // Fail-closed: repo_mutating must be a true boolean. Any non-boolean
+  // token (e.g. the string "true", "yes", or undefined) collapses to
+  // 'unknown' so the missing-leg block rule cannot be skipped by
+  // data-shape drift.
+  const rawRepoMutating: unknown = aiProgrammingGovernedPath?.repo_mutating;
   const repoMutating: boolean | 'unknown' =
-    aiProgrammingGovernedPath?.repo_mutating ?? 'unknown';
+    typeof rawRepoMutating === 'boolean' ? rawRepoMutating : 'unknown';
 
   const computedFirstMissingLeg = legArray.find((l) => l.state === 'missing')?.leg ?? null;
   const declaredFirstMissingLeg = aiProgrammingGovernedPath?.first_missing_leg;
@@ -1537,7 +1557,11 @@ export async function GET() {
     coreLoopStatus = 'unknown';
   } else if (aexOrPqxMissing) {
     coreLoopStatus = 'block';
-  } else if (requiredLegMissing && repoMutating === true) {
+  } else if (requiredLegMissing && repoMutating !== false) {
+    // Fail-closed: BLOCK when a required leg is missing and repo_mutating
+    // is true OR unknown. Treating 'unknown' as non-blocking would let
+    // malformed runtime artifacts (e.g. repo_mutating: "true" as a string)
+    // downgrade to WARN and under-report blocked work items.
     coreLoopStatus = 'block';
   } else if (allPresent) {
     coreLoopStatus = 'pass';

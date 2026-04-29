@@ -203,9 +203,12 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
   it('fail-closed: violation_count = max(declared, observed)', () => {
     // A stale declared violation_count must not under-report observed
     // violations. The route must derive the panel's count as the larger of
-    // the two so a non-empty violations[] always surfaces.
-    expect(intelligenceSrc).toContain(
-      'Math.max(declaredViolationCount, observedViolationCount)',
+    // the two so a non-empty violations[] always surfaces. The "observed"
+    // term uses the raw violations array length (not the well-formed-only
+    // subset) so malformed-row drift cannot fall through to PASS — that
+    // behavior is pinned by the dedicated raw-vs-filtered test below.
+    expect(intelligenceSrc).toMatch(
+      /Math\.max\(declaredViolationCount,\s*(rawViolationsTotal|observedViolationCount)\)/,
     );
   });
 
@@ -278,6 +281,40 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
     expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.AEX');
     expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.PQX');
     expect(intelligenceSrc).toContain('perItemSummary.missing_by_leg.SEL');
+  });
+
+  it('fail-closed: violation_count uses raw violations[] not just filtered set', () => {
+    // Malformed violation rows (missing required string fields) must still
+    // count toward violation_count. Filtering them only for rendering would
+    // let a stale `violation_count: 0` paired with a malformed row fall
+    // through to PASS.
+    expect(intelligenceSrc).toContain('rawViolations');
+    expect(intelligenceSrc).toContain('rawViolationsTotal');
+    expect(intelligenceSrc).toContain(
+      'Math.max(declaredViolationCount, rawViolationsTotal)',
+    );
+    // Surface a warning when malformed rows are dropped from rendering, so
+    // the data-shape drift never disappears silently.
+    expect(intelligenceSrc).toContain('malformedViolationCount');
+    expect(intelligenceSrc).toContain('dropped from the rendered list');
+  });
+
+  it('fail-closed: repo_mutating is normalized to boolean | unknown', () => {
+    // String tokens ("true") or other non-boolean values must collapse to
+    // 'unknown' so the missing-leg block rule cannot be skipped by
+    // data-shape drift.
+    expect(intelligenceSrc).toContain(
+      "typeof rawRepoMutating === 'boolean' ? rawRepoMutating : 'unknown'",
+    );
+  });
+
+  it('fail-closed: missing-leg block treats repoMutating unknown as blocking', () => {
+    // Previously the rule was `repoMutating === true` — that skipped BLOCK
+    // when the artifact had a non-boolean repo_mutating, downgrading to WARN.
+    // The corrected rule blocks unless we *prove* it is non-mutating
+    // (`repoMutating === false`).
+    expect(intelligenceSrc).toContain('requiredLegMissing && repoMutating !== false');
+    expect(intelligenceSrc).not.toContain('requiredLegMissing && repoMutating === true');
   });
 
   it('summary block exposes the required surface fields', () => {
