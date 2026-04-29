@@ -149,6 +149,40 @@ describe('MET-FULL-ROADMAP — dashboard MET Cockpit', () => {
   });
 });
 
+describe('MET-FULL-ROADMAP — cockpit summary preserves unknown', () => {
+  it('top_next_input_count and owner_handoff_queue_count surface unknown when source artifact is missing', () => {
+    // Both counts are guarded with a presence check on the underlying source
+    // artifact (nextBestSliceRecommendation / ownerReadObservationLedger);
+    // when null they degrade to 'unknown' rather than 0.
+    expect(intelligenceSrc).toMatch(
+      /topNextInputCount[\s\S]*?nextBestSliceRecommendation[\s\S]*?'unknown'/,
+    );
+    expect(intelligenceSrc).toMatch(
+      /ownerHandoffQueueCount[\s\S]*?ownerReadObservationLedger[\s\S]*?'unknown'/,
+    );
+    expect(intelligenceSrc).toContain('top_next_input_count: topNextInputCount');
+    expect(intelligenceSrc).toContain('owner_handoff_queue_count: ownerHandoffQueueCount');
+  });
+
+  it('confidence_calibration_state is derived from calibration_buckets content, not file presence', () => {
+    // The state must aggregate over actual bucket drift_states so it advances
+    // with artifact content. A boolean file-presence ternary is forbidden.
+    expect(intelligenceSrc).toContain('calibrationBucketStates');
+    expect(intelligenceSrc).toMatch(/calibrationDrift\?\.calibration_buckets/);
+    expect(intelligenceSrc).not.toMatch(
+      /confidence_calibration_state:\s*calibrationDrift\s*\?\s*'insufficient_cases'/,
+    );
+  });
+
+  it('recurrence_state is derived from clusters content, not file presence', () => {
+    expect(intelligenceSrc).toContain('recurrenceClusterStates');
+    expect(intelligenceSrc).toMatch(/recurringFailureCluster\?\.clusters/);
+    expect(intelligenceSrc).not.toMatch(
+      /recurrence_state:\s*recurringFailureCluster\s*\?\s*'insufficient_cases'/,
+    );
+  });
+});
+
 describe('MET-FULL-ROADMAP — anti-gaming and integrity', () => {
   it('signal_integrity_check_record aggregates flagged observations', () => {
     const data = JSON.parse(

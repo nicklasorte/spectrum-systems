@@ -286,8 +286,8 @@ type MetRegistryStatusBlock = {
 type MetCockpitBlock = IntelligenceBlockEnvelope & {
   trust_observation?: string;
   weakest_loop_leg?: string;
-  top_next_input_count?: number;
-  owner_handoff_queue_count?: number;
+  top_next_input_count?: number | 'unknown';
+  owner_handoff_queue_count?: number | 'unknown';
   stale_candidate_pressure_state?: number | string;
   trend_readiness_state?: string;
   debug_readiness_state?: string;
@@ -652,7 +652,7 @@ export default function DashboardPage() {
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-xs">
                     <li>weakest loop leg: <strong>{cockpit?.weakest_loop_leg ?? 'unknown'}</strong></li>
                     <li>stale candidate pressure: <strong>{String(cockpit?.stale_candidate_pressure_state ?? 'unknown')}</strong></li>
-                    <li>owner handoff queue: <strong>{cockpit?.owner_handoff_queue_count ?? 0}</strong></li>
+                    <li>owner handoff queue: <strong>{String(cockpit?.owner_handoff_queue_count ?? 'unknown')}</strong></li>
                     <li>trend readiness: <strong>{cockpit?.trend_readiness_state ?? 'unknown'}</strong></li>
                     <li>debug readiness: <strong>{cockpit?.debug_readiness_state ?? 'unknown'}</strong></li>
                     <li>artifact integrity: <strong>{integrityState}</strong></li>

@@ -1602,27 +1602,117 @@ export async function GET() {
   };
 
   // MET-FULL-ROADMAP — overall MET cockpit summary card.
+  // Counts and aggregate states are derived from artifact content; missing
+  // artifacts surface as 'unknown' rather than 0 / 'insufficient_cases'.
+  const topNextInputCount: number | 'unknown' = nextBestSliceRecommendation
+    ? topNextInputsBlock.items.length
+    : 'unknown';
+  const ownerHandoffQueueCount: number | 'unknown' = ownerReadObservationLedger
+    ? ownerHandoffQueueBlock.items.length
+    : 'unknown';
+
+  // Aggregate calibration drift across buckets. Surface the strongest observed
+  // state (drifting > stable > insufficient_cases > unknown) so the cockpit
+  // moves with artifact content, not file presence.
+  function aggregateState(
+    states: Array<string | undefined>,
+    rank: Record<string, number>,
+    fallback: string,
+  ): string {
+    let best: string | null = null;
+    let bestRank = -Infinity;
+    for (const raw of states) {
+      const s = (raw ?? '').toString();
+      if (!(s in rank)) continue;
+      if (rank[s] > bestRank) {
+        bestRank = rank[s];
+        best = s;
+      }
+    }
+    return best ?? fallback;
+  }
+
+  const calibrationBucketStates = (
+    (calibrationDrift?.calibration_buckets as Array<Record<string, unknown>> | undefined) ?? []
+  ).map((b) => (b.drift_state as string | undefined));
+  const confidenceCalibrationState: string = calibrationDrift
+    ? aggregateState(
+        calibrationBucketStates,
+        {
+          unknown: 0,
+          insufficient_cases: 1,
+          stable: 2,
+          drifting: 3,
+        },
+        'unknown',
+      )
+    : 'unknown';
+
+  const recurrenceClusterStates = (
+    (recurringFailureCluster?.clusters as Array<Record<string, unknown>> | undefined) ?? []
+  ).map((c) => (c.recurrence_state as string | undefined));
+  const recurrenceState: string = recurringFailureCluster
+    ? aggregateState(
+        recurrenceClusterStates,
+        {
+          unknown: 0,
+          insufficient_cases: 1,
+          observed: 2,
+          recurring: 3,
+        },
+        'unknown',
+      )
+    : 'unknown';
+
+  // Outcome attribution aggregate: surface the strongest observed status.
+  const outcomeStatuses = (
+    (outcomeAttributionBlock.outcome_entries as Array<Record<string, unknown>>) ?? []
+  ).map((e) => (e.status as string | undefined));
+  const outcomeAttributionState: string = outcomeAttribution
+    ? aggregateState(
+        outcomeStatuses,
+        {
+          unknown: 0,
+          insufficient_evidence: 1,
+          partial: 2,
+          observed: 3,
+        },
+        'unknown',
+      )
+    : 'unknown';
+
+  // Debug readiness aggregate: surface the strongest observed readiness.
+  const debugReadinessStates = (
+    (debugReadinessSlaBlock.readiness_entries as Array<Record<string, unknown>>) ?? []
+  ).map((e) => (e.readiness_state as string | undefined));
+  const debugReadinessState: string = debugReadinessSla
+    ? aggregateState(
+        debugReadinessStates,
+        {
+          unknown: 0,
+          insufficient: 1,
+          partial: 2,
+          sufficient: 3,
+        },
+        'unknown',
+      )
+    : 'unknown';
+
   const metCockpitBlock = {
     trust_observation: 'see_trust_pulse',
     weakest_loop_leg: bottleneck?.payload?.constrained_loop_leg ?? 'unknown',
-    top_next_input_count: topNextInputsBlock.items.length,
-    owner_handoff_queue_count: ownerHandoffQueueBlock.items.length,
+    top_next_input_count: topNextInputCount,
+    owner_handoff_queue_count: ownerHandoffQueueCount,
     stale_candidate_pressure_state:
       (staleCandidatePressureBlock as { pressure_summary?: Record<string, unknown> }).pressure_summary?.stale_count ?? 'unknown',
     trend_readiness_state:
       trendFrequencyHonestyGate?.trend_state ?? 'unknown',
-    debug_readiness_state:
-      (debugReadinessSlaBlock.readiness_entries as Array<Record<string, unknown>>).length > 0
-        ? 'partial'
-        : 'unknown',
+    debug_readiness_state: debugReadinessState,
     artifact_integrity_state:
       (signalIntegrityCheckBlock as { integrity_summary?: { overall_integrity_state?: string } }).integrity_summary?.overall_integrity_state ?? 'unknown',
-    outcome_attribution_state:
-      (outcomeAttributionBlock.outcome_entries as Array<Record<string, unknown>>).length > 0
-        ? 'partial'
-        : 'unknown',
-    confidence_calibration_state: calibrationDrift ? 'insufficient_cases' : 'unknown',
-    recurrence_state: recurringFailureCluster ? 'insufficient_cases' : 'unknown',
+    outcome_attribution_state: outcomeAttributionState,
+    confidence_calibration_state: confidenceCalibrationState,
+    recurrence_state: recurrenceState,
     anti_gaming_state:
       (signalIntegrityCheckBlock as { integrity_summary?: { overall_integrity_state?: string } }).integrity_summary?.overall_integrity_state ?? 'unknown',
     data_source: 'artifact_store',
