@@ -156,7 +156,14 @@
       "spectrum_systems/modules/runtime/roadmap_signal_steering.py": ["block", "freeze"],
       "spectrum_systems/modules/runtime/github_pr_autofix_contract_preflight.py": ["allow", "block"],
       "contracts/examples/preflight_block_diagnosis_record.json": ["allow", "block"],
-      "contracts/examples/ai_programming_work_item_record.example.json": ["block"]
+      "contracts/examples/ai_programming_work_item_record.example.json": ["block"],
+      "spectrum_systems/modules/runtime/pr_test_selection.py": ["block"],
+      "scripts/select_pr_test_shard.py": ["block"],
+      "scripts/run_pr_gate.py": ["block"],
+      "scripts/run_ci_drift_detector.py": ["block"],
+      "contracts/schemas/pr_test_shard_result.schema.json": ["block"],
+      "tests/test_pr_gate_parallel.py": ["block"],
+      "tests/test_pr_test_selection_engine.py": ["block"]
     }
   },
   "preparatory_only": {
