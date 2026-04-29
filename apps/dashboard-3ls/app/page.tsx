@@ -266,6 +266,56 @@ type OperatorDebuggabilityDrillBlock = IntelligenceBlockEnvelope & {
   drill_items?: Array<Record<string, unknown>>;
 };
 
+// AEX-PQX-DASH-01-REFINE — AI Programming Governance core-loop proof types.
+// MET observes only. AEX admits, PQX runs bounded work, EVL evaluates, TPA
+// reports trust/policy signal, CDE reports control signal, SEL reports
+// enforcement/readiness signal. The dashboard does not claim any authority.
+type CoreLoopLegName = 'AEX' | 'PQX' | 'EVL' | 'TPA' | 'CDE' | 'SEL';
+type LegObservationState = 'present' | 'partial' | 'missing' | 'unknown';
+
+type CoreLoopLegSummary = {
+  leg: CoreLoopLegName;
+  observation: LegObservationState;
+  source_artifacts_used: string[];
+  reason_codes: string[];
+};
+
+type CoreLoopWorkItemSummary = {
+  work_item_id: string;
+  agent: string;
+  title: string;
+  status: 'PASS' | 'WARN' | 'BLOCK' | 'UNKNOWN';
+  first_missing_leg: CoreLoopLegName | null;
+  weakest_leg: CoreLoopLegName | null;
+  core_loop_complete: boolean;
+  hard_block_reason: string | null;
+  next_recommended_input: string | null;
+  legs: CoreLoopLegSummary[];
+};
+
+type AiProgrammingGovernedPathBlock = IntelligenceBlockEnvelope & {
+  overall_status?: 'PASS' | 'WARN' | 'BLOCK' | 'UNKNOWN';
+  aex_present_count?: number;
+  pqx_present_count?: number;
+  evl_present_count?: number;
+  tpa_present_count?: number;
+  cde_present_count?: number;
+  sel_present_count?: number;
+  missing_by_leg?: Record<CoreLoopLegName, number>;
+  blocked_work_items?: CoreLoopWorkItemSummary[];
+  weakest_leg?: CoreLoopLegName | null;
+  codex_count?: number;
+  claude_count?: number;
+  core_loop_complete_count?: number;
+  work_items?: CoreLoopWorkItemSummary[];
+  core_loop_summary?: {
+    total_work_item_count?: number;
+    pass_count?: number;
+    warn_count?: number;
+    block_count?: number;
+  };
+};
+
 type IntelligencePayload = {
   feedback_loop?: FeedbackLoopBlock;
   feedback_loop_status?: string;
@@ -287,6 +337,7 @@ type IntelligencePayload = {
   trend_ready_case_pack?: TrendReadyCasePackBlock;
   fold_candidate_proof_check?: FoldCandidateProofCheckBlock;
   operator_debuggability_drill?: OperatorDebuggabilityDrillBlock;
+  ai_programming_governed_path?: AiProgrammingGovernedPathBlock;
 };
 
 // MET-19-33 — operator complexity budget for compact MET sections.
@@ -934,6 +985,168 @@ export default function DashboardPage() {
           </Panel>
           <Panel title="Artifact Integrity (override + classification)" testId="artifact-integrity-section">
             <p className="text-sm">classified paths: <strong>{String(intelligence?.met_generated_artifact_classification?.classified_path_count ?? 'unknown')}</strong></p>
+          </Panel>
+
+          {/* AEX-PQX-DASH-01-REFINE — AI Programming Governance core-loop proof.
+              MET observes only. The dashboard reports whether each Codex/Claude
+              work item carries an artifact-backed signal for every leg of the
+              core loop: AEX → PQX → EVL → TPA → CDE → SEL. The dashboard does
+              not claim any authority outcome and does not own any leg. */}
+          <Panel title="AI Programming Governance" testId="ai-programming-governance-section">
+            {(() => {
+              const block = intelligence?.ai_programming_governed_path;
+              if (!block) {
+                return (
+                  <p className="text-sm text-amber-700 dark:text-amber-300" data-testid="ai-prog-unavailable">
+                    AI programming core-loop proof unavailable.
+                  </p>
+                );
+              }
+              const overall = block.overall_status ?? 'UNKNOWN';
+              const codexCount = block.codex_count ?? 0;
+              const claudeCount = block.claude_count ?? 0;
+              const completeCount = block.core_loop_complete_count ?? 0;
+              const weakest = block.weakest_leg ?? 'unknown';
+              const missingByLeg = block.missing_by_leg ?? {
+                AEX: 0,
+                PQX: 0,
+                EVL: 0,
+                TPA: 0,
+                CDE: 0,
+                SEL: 0,
+              };
+              const blockedItems = block.blocked_work_items ?? [];
+              const topBlocked = blockedItems.slice(0, 3);
+              const legOrder: CoreLoopLegName[] = ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'];
+              const legBadgeClass = (state: LegObservationState): string => {
+                switch (state) {
+                  case 'present':
+                    return 'bg-green-100 text-green-800 border-green-300 dark:bg-green-950 dark:text-green-200 dark:border-green-800';
+                  case 'partial':
+                    return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800';
+                  case 'missing':
+                    return 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950 dark:text-red-200 dark:border-red-800';
+                  default:
+                    return 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700';
+                }
+              };
+              const overallBadgeClass = (() => {
+                switch (overall) {
+                  case 'PASS':
+                    return 'bg-green-100 text-green-800 border-green-300 dark:bg-green-950 dark:text-green-200 dark:border-green-800';
+                  case 'WARN':
+                    return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800';
+                  case 'BLOCK':
+                    return 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950 dark:text-red-200 dark:border-red-800';
+                  default:
+                    return 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700';
+                }
+              })();
+              return (
+                <div className="space-y-2 text-sm">
+                  <p className="text-xs text-gray-600 dark:text-slate-300">
+                    Core loop legs observed: AEX admits → PQX runs bounded work → EVL evaluates → TPA reports trust/policy signal → CDE reports control signal → SEL reports enforcement/readiness signal. Dashboard observes only.
+                  </p>
+                  <p>
+                    Overall status:{' '}
+                    <span
+                      data-testid="ai-prog-overall-status"
+                      className={`text-xs px-2 py-0.5 rounded border ${overallBadgeClass}`}
+                    >
+                      {overall}
+                    </span>
+                  </p>
+                  <ul className="text-xs grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
+                    <li>Codex: <strong data-testid="ai-prog-codex-count">{codexCount}</strong></li>
+                    <li>Claude: <strong data-testid="ai-prog-claude-count">{claudeCount}</strong></li>
+                    <li>Core loop complete: <strong data-testid="ai-prog-complete-count">{completeCount}</strong></li>
+                    <li>Weakest leg: <strong data-testid="ai-prog-weakest-leg">{weakest ?? 'unknown'}</strong></li>
+                  </ul>
+                  <div data-testid="ai-prog-missing-by-leg" className="text-xs">
+                    <span className="font-semibold">Missing by leg:</span>{' '}
+                    {legOrder.map((leg) => (
+                      <span
+                        key={leg}
+                        data-testid={`ai-prog-missing-${leg}`}
+                        className="inline-block mr-2"
+                      >
+                        {leg}=<strong>{missingByLeg[leg] ?? 0}</strong>
+                      </span>
+                    ))}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold mt-2">Top 3 halted work items</p>
+                    {topBlocked.length === 0 ? (
+                      <p
+                        className="text-xs text-gray-600 dark:text-slate-300"
+                        data-testid="ai-prog-no-blocked"
+                      >
+                        No halted Codex/Claude work items observed.
+                      </p>
+                    ) : (
+                      <ul className="space-y-2 mt-1" data-testid="ai-prog-blocked-list">
+                        {topBlocked.map((item) => (
+                          <li
+                            key={item.work_item_id}
+                            data-testid="ai-prog-blocked-item"
+                            className="border rounded p-2"
+                          >
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                              <strong>{item.work_item_id}</strong>
+                              <span className="text-gray-600 dark:text-slate-300">{item.agent}</span>
+                              <span>— {item.title}</span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded border ${overallBadgeClass}`}>
+                                {item.status}
+                              </span>
+                            </div>
+                            <div
+                              className="flex flex-wrap gap-1 mt-1"
+                              data-testid="ai-prog-leg-row"
+                            >
+                              {legOrder.map((legName) => {
+                                const leg =
+                                  item.legs.find((l) => l.leg === legName) ?? null;
+                                const state: LegObservationState =
+                                  leg?.observation ?? 'unknown';
+                                return (
+                                  <span
+                                    key={legName}
+                                    data-testid={`ai-prog-leg-${legName}`}
+                                    data-state={state}
+                                    className={`text-[10px] px-1.5 py-0.5 rounded border font-mono ${legBadgeClass(state)}`}
+                                  >
+                                    {legName}:{state}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                            {item.first_missing_leg && (
+                              <p className="text-[11px] mt-1 text-gray-700 dark:text-slate-300">
+                                first missing leg:{' '}
+                                <strong data-testid="ai-prog-first-missing">{item.first_missing_leg}</strong>
+                              </p>
+                            )}
+                            {item.hard_block_reason && (
+                              <p className="text-[11px] text-red-700 dark:text-red-300">
+                                halt reason: <strong>{item.hard_block_reason}</strong>
+                              </p>
+                            )}
+                            {item.next_recommended_input && (
+                              <p className="text-[11px] text-gray-700 dark:text-slate-300">
+                                next recommended input: {item.next_recommended_input}
+                              </p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-600 dark:text-slate-300">
+                    sources: {(block.source_artifacts_used ?? []).slice(0, 3).join(', ') || 'unknown'}
+                  </p>
+                </div>
+              );
+            })()}
           </Panel>
 
           {/* D3L-DATA-REGISTRY-01 Phase 7: Compact OC bottleneck card. Renders only
