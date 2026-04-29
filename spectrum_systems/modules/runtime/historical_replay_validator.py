@@ -117,7 +117,9 @@ def _replay_case(
     case_id = str(case.get("case_id") or "")
     failure_class = str(case.get("failure_class") or "")
     expected = str(case.get("expected_classification") or "")
-    replay_input = case.get("replay_input") or {}
+    replay_input = case.get("replay_input")
+    if not isinstance(replay_input, dict):
+        replay_input = {}
 
     if not case_id or not expected:
         return {

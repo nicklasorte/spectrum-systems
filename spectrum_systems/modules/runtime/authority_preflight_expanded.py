@@ -338,7 +338,11 @@ def run_authority_preflight_expanded(
         if not abs_path.is_file():
             continue
 
-        if not rel.endswith(".py"):
+        # Scan Python and shell scripts for authority-shape vocabulary violations.
+        # Data/schema formats (.json, .yaml, .yml) and docs (.md) legitimately
+        # contain authority-shaped terms as field names/values; a text scan
+        # produces false positives there. Those require a structure-aware checker.
+        if not (rel.endswith(".py") or rel.endswith(".sh")):
             continue
 
         scanned.append(rel)
