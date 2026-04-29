@@ -233,6 +233,31 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
     );
   });
 
+  it('fail-closed: invalid governance status falls through to unknown not pass', () => {
+    // When the artifact's status is an unexpected string and observed
+    // violations are 0, the API must surface 'unknown' (data-quality
+    // signal preserved) rather than 'pass' (fail-open).
+    const tail = intelligenceSrc.slice(
+      intelligenceSrc.indexOf('const governanceViolationStatus'),
+      intelligenceSrc.indexOf('const governanceViolationsBlock'),
+    );
+    expect(tail).toContain("? (governanceViolation.status as 'pass' | 'warn' | 'block' | 'unknown')");
+    expect(tail).toMatch(/:\s*'unknown';\s*$/);
+    expect(tail).not.toMatch(/:\s*'pass';\s*$/);
+  });
+
+  it('fail-closed: core_loop_complete derives from observed leg states', () => {
+    // Trusting declared core_loop_complete: true against missing legs would
+    // make compliant_work_items=1 and blocked_work_items=1 simultaneously.
+    // The API must derive core_loop_complete from `allPresent` (observed)
+    // and surface a mismatch warning when the declared boolean disagrees.
+    expect(intelligenceSrc).toContain(
+      "const coreLoopComplete: boolean | 'unknown' = aiProgrammingGovernedPath\n    ? allPresent\n    : 'unknown'",
+    );
+    expect(intelligenceSrc).toContain('coreLoopCompleteDeclaredMismatch');
+    expect(intelligenceSrc).toContain('disagrees with observed leg states');
+  });
+
   it('summary block exposes the required surface fields', () => {
     const block = intelligenceSrc.slice(
       intelligenceSrc.indexOf('const coreLoopComplianceSummaryBlock'),

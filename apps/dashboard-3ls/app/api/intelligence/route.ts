@@ -1376,13 +1376,16 @@ export async function GET() {
     governanceViolation?.status === 'warn' ||
     governanceViolation?.status === 'pass' ||
     governanceViolation?.status === 'unknown';
+  // Fail-closed: an unexpected `status` string with violation_count = 0 must
+  // NOT fall through to 'pass'. A malformed status is itself a data-quality
+  // signal that the panel should surface, not hide behind a clean state.
   const governanceViolationStatus: 'pass' | 'warn' | 'block' | 'unknown' = !governanceViolation
     ? 'unknown'
     : observedViolationsForce
       ? 'block'
       : declaredStatusValid
         ? (governanceViolation.status as 'pass' | 'warn' | 'block' | 'unknown')
-        : 'pass';
+        : 'unknown';
   const governanceViolationsBlock = governanceViolation
     ? {
         status: governanceViolationStatus,
@@ -1477,12 +1480,19 @@ export async function GET() {
   const allPresent = computedComplianceScore === CORE_LOOP_LEGS.length;
   const anyPartial = partialLegs.length > 0;
   const anyUnknown = unknownLegs.length > 0;
+  // Fail-closed: derive core_loop_complete from normalized leg states rather
+  // than trusting the artifact's declared boolean. A stale or inconsistent
+  // record could otherwise mark a work item compliant while observed legs
+  // still show missing — yielding contradictory compliant_work_items vs
+  // blocked_work_items counts. Observed evidence wins.
   const declaredCoreLoopComplete = aiProgrammingGovernedPath?.core_loop_complete;
   const coreLoopComplete: boolean | 'unknown' = aiProgrammingGovernedPath
-    ? typeof declaredCoreLoopComplete === 'boolean'
-      ? declaredCoreLoopComplete
-      : allPresent
+    ? allPresent
     : 'unknown';
+  const coreLoopCompleteDeclaredMismatch =
+    aiProgrammingGovernedPath !== null &&
+    typeof declaredCoreLoopComplete === 'boolean' &&
+    declaredCoreLoopComplete !== allPresent;
 
   let coreLoopStatus: 'pass' | 'warn' | 'block' | 'unknown';
   if (!aiProgrammingGovernedPath) {
@@ -1551,7 +1561,14 @@ export async function GET() {
         signal_improved: aiProgrammingGovernedPath.signal_improved ?? null,
         data_source: aiProgrammingGovernedPath.data_source ?? 'unknown',
         source_artifacts_used: aiProgrammingGovernedPath.source_artifacts_used ?? [],
-        warnings: aiProgrammingGovernedPath.warnings ?? [],
+        warnings: [
+          ...(aiProgrammingGovernedPath.warnings ?? []),
+          ...(coreLoopCompleteDeclaredMismatch
+            ? [
+                `Declared core_loop_complete=${String(declaredCoreLoopComplete)} disagrees with observed leg states (allPresent=${String(allPresent)}); observed evidence wins.`,
+              ]
+            : []),
+        ],
       }
     : {
         status: 'unknown' as const,
