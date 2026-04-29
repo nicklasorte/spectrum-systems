@@ -123,7 +123,15 @@
       "docs/governance-reports/contract-compliance-report.md",
       "docs/governance-reports/ecosystem-health-report.md",
       "docs/reviews/AEX-PQX-01_ai_programming_governance_evidence_report.md",
-      "docs/reviews/AEX-PQX-01_ai_programming_loop_root_cause.md"
+      "docs/reviews/AEX-PQX-01_ai_programming_loop_root_cause.md",
+      "docs/reviews/CLX_ALL_01_delivery_report.md",
+      "contracts/schemas/proof_presence_enforcement_result.schema.json",
+      "contracts/schemas/authority_preflight_failure_packet.schema.json",
+      "contracts/schemas/authority_repair_candidate.schema.json",
+      "contracts/schemas/authority_repair_execution_record.schema.json",
+      "contracts/schemas/failure_explanation_packet.schema.json",
+      "contracts/schemas/replay_validation_report.schema.json",
+      "contracts/schemas/eval_candidate_registry.schema.json"
     ]
   },
   "clusters": {

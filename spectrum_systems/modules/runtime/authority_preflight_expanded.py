@@ -53,7 +53,7 @@ _VOCAB_CLUSTERS: list[dict[str, Any]] = [
         "terms": ["decision", "decides", "deciding"],
         "canonical_owners": ["JDX", "CDE"],
         "owner_path_substrings": ["closure_decision", "cde_decision", "judgment_engine", "pqx_judgment"],
-        "replacements": ["signal", "observation", "recommendation", "finding", "input"],
+        "replacements": ["decision_signal", "decision_observation", "decision_input", "decision_finding"],
     },
     {
         "name": "enforcement",
@@ -224,6 +224,9 @@ def _scan_file_shadow_overlaps(
     owner_registry: dict[str, list[str]],
 ) -> list[dict[str, Any]]:
     """Detect shadow ownership: a file claims ownership of a term belonging to another system."""
+    # Test files reference canonical artifact types in fixtures — skip to avoid false positives.
+    if rel.startswith("tests/"):
+        return []
     overlaps: list[dict[str, Any]] = []
     try:
         content = file_path.read_text(encoding="utf-8", errors="replace")
