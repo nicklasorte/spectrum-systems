@@ -230,6 +230,14 @@ def check_ownership_manifest(repo_root: Path) -> list[DriftFinding]:
     return findings
 
 
+def _check_unmapped_test_files(repo_root: Path, shard_policy: dict) -> list[dict]:
+    findings = check_test_gate_mapping(repo_root)
+    return [
+        {"check": "unmapped_test_files", "severity": "warn", "path": f.path, "description": f.description}
+        for f in findings
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="CI Drift Detector")
     parser.add_argument("--repo-root", default=".")
@@ -250,9 +258,12 @@ def main() -> None:
     errors = [f for f in all_findings if f.severity == "error"]
     warnings = [f for f in all_findings if f.severity == "warn"]
 
+    status = "block" if errors else ("warn" if warnings else "pass")
     report = {
-        "artifact_type": "ci_drift_report",
+        "artifact_type": "ci_drift_detection_result",
         "schema_version": "1.0.0",
+        "authority_scope": "observation_only",
+        "status": status,
         "produced_at": datetime.now(timezone.utc).isoformat(),
         "producer_script": "scripts/run_ci_drift_detector.py",
         "total_findings": len(all_findings),
@@ -260,6 +271,7 @@ def main() -> None:
         "warning_count": len(warnings),
         "findings": [
             {
+                "check": f.category,
                 "category": f.category,
                 "description": f.description,
                 "path": f.path,

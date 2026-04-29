@@ -113,7 +113,7 @@ class TestDriftDetectorPassesOnValidRepo:
         report_path = tmp_path / "drift_report.json"
         assert report_path.is_file(), "Should produce drift_report.json"
         report = json.loads(report_path.read_text(encoding="utf-8"))
-        assert report.get("artifact_type") == "ci_drift_report"
+        assert report.get("artifact_type") == "ci_drift_detection_result"
         assert "artifact_hash" in report
 
 
