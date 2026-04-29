@@ -137,13 +137,13 @@ jobs:
           echo "base_ref=$(git rev-parse HEAD~1 2>/dev/null || echo origin/main)" >> "$GITHUB_OUTPUT"
           echo "head_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Run certification gate (deep mode)
+      - name: Run certification gate
         run: |
           python scripts/run_certification_gate.py \
             --base-ref "${{ steps.refs.outputs.base_ref }}" \
             --head-ref "${{ steps.refs.outputs.head_ref }}" \
             --output-dir outputs/gates \
-            --mode deep \
+            --mode "${{ inputs.mode || 'deep' }}" \
             --force
 
       - name: Upload certification gate result
