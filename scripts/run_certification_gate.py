@@ -32,6 +32,9 @@ _CERT_RELEVANT_PATHS = frozenset([
     "scripts/run_sel_",
     "scripts/run_eval_",
     "scripts/run_governed_failure",
+    "scripts/run_certification_gate.py",
+    "scripts/run_lineage_validation.py",
+    "scripts/run_done_certification.py",
     "contracts/examples/",
     "data/policy/eval_",
 ])
