@@ -1,0 +1,149 @@
+{
+  "$schema": "../../schemas/aex/aex_admission_replay_record.schema.json",
+  "schema_version": "1.0.0",
+  "registry_id": "aex-admission-eval-registry-v1",
+  "owner": "AEX",
+  "owner_authority": "admission_only",
+  "non_authority_assertions": [
+    "aex_emits_evaluation_input_only",
+    "aex_emits_enforcement_input_only",
+    "aex_emits_promotion_input_only",
+    "aex_emits_certification_input_only",
+    "aex_emits_control_input_only"
+  ],
+  "evaluator_authority": "EVL",
+  "description": "AEX admission eval case registry. EVL is the canonical evaluator authority; AEX provides the admission target artifacts and the cases. Each case is replayable through scripts/replay_aex_admission.py.",
+  "eval_cases": [
+    {
+      "id": "EVC-AEX-001",
+      "eval_name": "admission_schema_conformance",
+      "target_artifact_kind": "build_admission_record",
+      "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
+      "expected_outcome": "admitted",
+      "success_criteria": [
+        "build_admission_record is schema-valid",
+        "normalized_execution_request is schema-valid",
+        "admission_status == 'accepted'",
+        "reason_codes is non-empty"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-002",
+      "eval_name": "admission_missing_required_field_fails_closed",
+      "target_artifact_kind": "admission_rejection_record",
+      "fixture_path": "tests/aex/fixtures/admission_reject_missing_field.json",
+      "expected_outcome": "rejected",
+      "success_criteria": [
+        "admission_rejection_record is emitted",
+        "rejection_reason_codes contains 'missing_required_field'",
+        "no build_admission_record is emitted"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-003",
+      "eval_name": "admission_indeterminate_fails_closed",
+      "target_artifact_kind": "admission_rejection_record",
+      "fixture_path": "tests/aex/fixtures/admission_reject_indeterminate.json",
+      "expected_outcome": "rejected",
+      "success_criteria": [
+        "execution_type unknown with repo-sensitive paths is rejected",
+        "rejection_reason_codes contains 'unknown_execution_type'"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-004",
+      "eval_name": "admission_emits_normalized_execution_request_on_admit",
+      "target_artifact_kind": "normalized_execution_request",
+      "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
+      "expected_outcome": "admitted",
+      "success_criteria": [
+        "normalized_execution_request_ref is present on the admission record",
+        "trace_id matches across normalized_execution_request and build_admission_record",
+        "request_id matches across artifacts"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-005",
+      "eval_name": "admission_does_not_emit_downstream_request_on_reject",
+      "target_artifact_kind": "admission_rejection_record",
+      "fixture_path": "tests/aex/fixtures/admission_reject_missing_field.json",
+      "expected_outcome": "rejected",
+      "success_criteria": [
+        "build_admission_record is null on reject",
+        "no PQX handoff occurs",
+        "rejection record contains rejection_summary"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-006",
+      "eval_name": "admission_observability_trace_present",
+      "target_artifact_kind": "admission_trace_record",
+      "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
+      "expected_outcome": "admitted",
+      "success_criteria": [
+        "admission_trace_record is emitted with trace_id, run_id, span_id",
+        "observability_owner_ref == 'OBS'",
+        "producer_authority == 'AEX'"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-007",
+      "eval_name": "admission_evidence_record_contains_lineage_and_replay_refs",
+      "target_artifact_kind": "admission_evidence_record",
+      "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
+      "expected_outcome": "admitted",
+      "success_criteria": [
+        "lineage_refs.lineage_owner == 'LIN'",
+        "replay_refs.replay_owner == 'REP'",
+        "observability_refs.observability_owner == 'OBS'",
+        "downstream_refs contains PQX"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-008",
+      "eval_name": "admission_replay_is_deterministic",
+      "target_artifact_kind": "admission_replay_record",
+      "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
+      "expected_outcome": "admitted",
+      "success_criteria": [
+        "replaying the same fixture twice yields identical input_hash and output_hash",
+        "replay_status == 'pass'",
+        "replay_owner_ref == 'REP'"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-009",
+      "eval_name": "admission_policy_observation_is_consumable_by_sel",
+      "target_artifact_kind": "admission_policy_observation",
+      "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
+      "expected_outcome": "admitted",
+      "success_criteria": [
+        "downstream_refs.consumer_systems contains SEL",
+        "non_authority_assertions includes aex_emits_enforcement_input_only",
+        "producer_authority == 'AEX'"
+      ],
+      "expected_result": "PASS"
+    },
+    {
+      "id": "EVC-AEX-010",
+      "eval_name": "admission_does_not_claim_authority_outside_admission",
+      "target_artifact_kind": "admission_policy_observation",
+      "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
+      "expected_outcome": "admitted",
+      "success_criteria": [
+        "non_authority_assertions includes aex_emits_promotion_input_only",
+        "non_authority_assertions includes aex_emits_certification_input_only",
+        "non_authority_assertions includes aex_emits_control_input_only"
+      ],
+      "expected_result": "PASS"
+    }
+  ]
+}

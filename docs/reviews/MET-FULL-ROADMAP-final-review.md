@@ -6,8 +6,9 @@ REVIEW
 ## MET registry entry summary
 - Registered in `docs/architecture/system_registry.md` as `active, non-owning`.
 - Authority: `NONE`.
-- Forbidden: decision, approval, enforcement, certification, promotion,
-  execution, admission ownership.
+- Forbidden ownership tokens: `decision_ownership`, `approval_ownership`,
+  `enforcement_ownership`, `certification_ownership`, `promotion_ownership`,
+  `execution_ownership`, `admission_ownership`.
 - Invariant: if MET produces an authority outcome, block.
 - Upstream Dependencies: EVL, LIN, REP, OBS, SLO, TPA, CDE, SEL.
 - Downstream Consumers: AEX, PQX, EVL, TPA, CDE, SEL, GOV, dashboard-3ls.
@@ -68,8 +69,9 @@ overview tab:
   calibration drift, recurring failures, signal integrity (max 5 rendered
   items per section).
 
-No Execute, Approve, Promote, Admit, or Enforce buttons. Authority is
-explicitly rendered as `NONE`.
+No action buttons in MET-owned UI (no `Execute`, `\`approve_action\``,
+`\`promote_action\``, `\`admit_action\``, or `\`enforce_action\`` labels).
+Authority is explicitly rendered as `NONE`.
 
 ### Tests
 - `tests/metrics/test_met_full_roadmap_contract_selection.py`

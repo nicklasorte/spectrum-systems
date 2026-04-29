@@ -13,6 +13,19 @@ Overlay authorities required in the same loop:
 
 `REP + LIN + OBS + SLO`
 
+## Measurement and observability layer (non-authority)
+
+A non-owning measurement layer over the canonical loop and per-system
+behavior is documented in
+`docs/architecture/3ls_measurement_layer.md`. Its artifacts
+(`3ls_system_measurement_record`, `3ls_loop_run_record`,
+`3ls_handoff_record`, `3ls_surface_coverage_record`,
+`3ls_failure_recurrence_record`, `3ls_trust_gap_closure_record`,
+`3ls_replayability_record`, `3ls_scope_risk_record`,
+`3ls_operator_debuggability_record`) are observation only — they do not
+grant authority, replace control decisions, or perform enforcement, and
+they feed OBS / LIN / REP / SLO.
+
 ## Active executable systems
 
 ### AEX

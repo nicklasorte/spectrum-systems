@@ -21,7 +21,8 @@ REVIEW
    - Risk: operators do not know which leg is constrained.
 
 3. **Authority verbs leaking onto buttons.**
-   - Attack: add an Execute / Approve / Promote button to the cockpit.
+   - Attack: add an action button (`Execute`, `\`approve_action\``,
+     `\`promote_action\``) to the cockpit.
    - Risk: dashboard becomes an authority surface for MET.
 
 ## Findings

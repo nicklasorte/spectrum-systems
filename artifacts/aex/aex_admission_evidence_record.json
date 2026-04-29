@@ -1,0 +1,46 @@
+{
+  "admission_outcome": "admitted",
+  "artifact_type": "admission_evidence_record",
+  "created_at": "2026-04-29T11:33:56Z",
+  "downstream_refs": [
+    "PQX",
+    "SEL",
+    "OBS",
+    "REP",
+    "LIN"
+  ],
+  "evidence_hash": "sha256:7f1ba162a82becbaca5a7e4f4a82386056c13608793c9f3aa3c4399cbd337d5b",
+  "evidence_id": "aer-f63467087db12184",
+  "input_refs": [
+    "codex_build_request:req-aex-trust-01-1"
+  ],
+  "lineage_refs": {
+    "admission_artifact_ref": "build_admission_record:adm-f9779ebae3bd",
+    "lineage_owner": "LIN",
+    "lineage_token_id": "lin-50e846fa2395eaf46f932683",
+    "normalized_execution_request_ref": "normalized_execution_request:req-aex-trust-01-1",
+    "source_request_ref": "codex_build_request:req-aex-trust-01-1"
+  },
+  "observability_refs": {
+    "observability_owner": "OBS",
+    "run_id": "run-da7811487b481fda",
+    "span_id": "span-45e860c5c64787c0",
+    "trace_id": "trace-aex-trust-01-1"
+  },
+  "output_refs": [
+    "build_admission_record:adm-f9779ebae3bd",
+    "normalized_execution_request:req-aex-trust-01-1"
+  ],
+  "produced_by": "AEXObservabilityEmitter",
+  "producer_authority": "AEX",
+  "replay_refs": {
+    "input_hash": "sha256:dfae674afcbcd9bb5d1cde51ceff4dbdf424a175c3decf7778a440592d519820",
+    "output_hash": "sha256:cdf422750c6e37025a2e6fc40a3b473d25adefaf66523bb621b9a6457b26a8fd",
+    "replay_command_ref": "python scripts/replay_aex_admission.py --fixture tests/aex/fixtures/admission_admit_repo_write.json",
+    "replay_owner": "REP"
+  },
+  "request_id": "req-aex-trust-01-1",
+  "run_id": "run-da7811487b481fda",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-aex-trust-01-1"
+}

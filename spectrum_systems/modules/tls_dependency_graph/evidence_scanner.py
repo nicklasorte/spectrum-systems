@@ -54,7 +54,10 @@ def _iter_repo_files(buckets: Sequence[tuple[str, Sequence[str]]], root: Path) -
             base = root / prefix.rstrip("/")
             if not base.exists() or not base.is_dir():
                 continue
-            for p in base.rglob("*"):
+            # Sort rglob output so iteration order is deterministic across
+            # runs/filesystems. Without this, the per-bucket cap dropped
+            # different files on each run, flipping AEX trust signals.
+            for p in sorted(base.rglob("*")):
                 if not p.is_file():
                     continue
                 rel_parts = p.relative_to(root).parts

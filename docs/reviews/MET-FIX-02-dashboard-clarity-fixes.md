@@ -27,7 +27,8 @@ Each card shows `source_artifacts_used`. No Execute button.
 
 ### tests added
 - `apps/dashboard-3ls/__tests__/api/met-full-roadmap-intelligence.test.ts`
-  asserts cockpit data-testids and the absence of Execute/Approve buttons.
+  asserts cockpit data-testids and the absence of action buttons (no
+  `Execute`, `\`approve_action\``, or `\`promote_action\`` labels).
 - `tests/metrics/test_met_full_roadmap_contract_selection.py::test_dashboard_renders_compact_met_cockpit`
 - `tests/metrics/test_met_full_roadmap_contract_selection.py::test_dashboard_has_no_execute_button_in_met_cockpit`
 

@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/3ls_handoff_record.schema.json",
+  "title": "3LS Handoff Record",
+  "description": "Measurement of system-to-system handoff integrity. Observation only; does not grant authority or block work. Fail-closed: complete handoffs require a downstream_artifact_ref; blocked or failed handoffs require reason_codes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "created_at",
+    "provenance",
+    "from_system",
+    "to_system",
+    "handoff_status",
+    "upstream_artifact_ref",
+    "missing_refs",
+    "reason_codes",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "3ls_handoff_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_system", "inputs"],
+      "properties": {
+        "source_system": {"type": "string", "pattern": "^[A-Z0-9]{2,8}$"},
+        "inputs": {"type": "array", "items": {"type": "string"}},
+        "simulated": {"type": "boolean"}
+      }
+    },
+    "record_id": {"type": "string"},
+    "from_system": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{2,8}$"
+    },
+    "to_system": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{2,8}$"
+    },
+    "handoff_status": {
+      "type": "string",
+      "enum": ["complete", "blocked", "failed", "pending"]
+    },
+    "upstream_artifact_ref": {"type": "string", "minLength": 1},
+    "downstream_artifact_ref": {"type": ["string", "null"]},
+    "missing_refs": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "authority_scope": {"type": "string", "const": "observation_only"},
+    "notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "description": "Complete handoff requires a non-empty downstream_artifact_ref.",
+      "if": {
+        "properties": {"handoff_status": {"const": "complete"}},
+        "required": ["handoff_status"]
+      },
+      "then": {
+        "required": ["downstream_artifact_ref"],
+        "properties": {
+          "downstream_artifact_ref": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    {
+      "description": "Blocked handoff requires reason_codes with at least one entry.",
+      "if": {
+        "properties": {"handoff_status": {"const": "blocked"}},
+        "required": ["handoff_status"]
+      },
+      "then": {
+        "properties": {"reason_codes": {"type": "array", "minItems": 1}}
+      }
+    },
+    {
+      "description": "Failed handoff requires reason_codes with at least one entry.",
+      "if": {
+        "properties": {"handoff_status": {"const": "failed"}},
+        "required": ["handoff_status"]
+      },
+      "then": {
+        "properties": {"reason_codes": {"type": "array", "minItems": 1}}
+      }
+    }
+  ]
+}

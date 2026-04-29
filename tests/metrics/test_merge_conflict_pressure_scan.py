@@ -54,3 +54,25 @@ def test_scanner_writes_observation_only_artifact(tmp_path: Path):
     # HEAD-vs-HEAD has no parallel changes.
     assert data["overall_state"] == "no_pressure_observed"
     assert data["items"] == []
+
+
+def test_scanner_reports_unknown_when_git_ref_lookup_fails(tmp_path: Path):
+    m = _load_module()
+    out = tmp_path / "merge_conflict_pressure_record.json"
+    # An invalid ref that git cannot rev-parse must degrade to 'unknown'
+    # rather than silently report 'no_pressure_observed'. A clean state from
+    # a command failure is a false negative for operators.
+    m.main([
+        "--base-ref",
+        "DOES_NOT_EXIST_REF_FOR_MET_SCAN_TEST",
+        "--head-ref",
+        "HEAD",
+        "--output",
+        str(out),
+    ])
+    data = json.loads(out.read_text(encoding="utf-8"))
+    assert data["overall_state"] == "unknown"
+    assert data["status"] == "unknown"
+    assert "git_ref_lookup_failed" in data["reason_codes"]
+    # A warning must name the failure mode so dashboards surface it.
+    assert any("Git ref lookup failed" in w for w in data["warnings"])

@@ -113,8 +113,70 @@ const ARTIFACT_PATHS = {
     'artifacts/dashboard_metrics/signal_integrity_check_record.json',
   mergeConflictPressure:
     'artifacts/dashboard_metrics/merge_conflict_pressure_record.json',
+  // AEX-PQX-DASH-02 — governance violation panel + core-loop compliance.
+  governanceViolation: 'artifacts/dashboard_metrics/governance_violation_record.json',
+  // AEX-PQX-DASH-01 — AI programming governed path (per-work-item).
   aiProgrammingGovernedPath: AI_PROGRAMMING_GOVERNED_PATH_ARTIFACT_PATH,
 };
+
+// AEX-PQX-DASH-02 — fixed core-loop legs the dashboard reports compliance over.
+const CORE_LOOP_LEGS = ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'] as const;
+type CoreLoopLeg = (typeof CORE_LOOP_LEGS)[number];
+type LegState = 'present' | 'partial' | 'missing' | 'unknown';
+
+interface GovernanceViolationEntry {
+  violation_id?: string;
+  work_item_id?: string;
+  agent_type?: 'codex' | 'claude' | 'unknown_ai_agent' | string;
+  violation_type?: string;
+  missing_leg?: string;
+  repo_mutating?: boolean | 'unknown';
+  source_artifacts_used?: string[];
+  why_it_matters?: string;
+  next_recommended_input?: string;
+}
+
+interface GovernanceViolationRecord {
+  artifact_type?: string;
+  schema_version?: string;
+  record_id?: string;
+  created_at?: string;
+  owner_system?: string;
+  data_source?: string;
+  status?: 'pass' | 'warn' | 'block' | 'unknown' | string;
+  violation_count?: number;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+  reason_codes?: string[];
+  failure_prevented?: string;
+  signal_improved?: string;
+  violations?: GovernanceViolationEntry[];
+}
+
+interface AIProgrammingGovernedPathRecord {
+  artifact_type?: string;
+  schema_version?: string;
+  record_id?: string;
+  created_at?: string;
+  owner_system?: string;
+  data_source?: string;
+  status?: 'pass' | 'warn' | 'block' | 'unknown' | string;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+  reason_codes?: string[];
+  failure_prevented?: string;
+  signal_improved?: string;
+  core_loop_compliance?: Partial<Record<CoreLoopLeg, LegState>>;
+  core_loop_complete?: boolean;
+  first_missing_leg?: string | null;
+  weakest_leg?: string | null;
+  compliance_score?: number;
+  total_legs?: number;
+  repo_mutating?: boolean | 'unknown';
+  missing_legs?: string[];
+  partial_legs?: string[];
+  next_recommended_input?: string | null;
+}
 
 interface BottleneckRecord {
   data_source?: string;
@@ -425,9 +487,11 @@ export async function GET() {
   }>(ARTIFACT_PATHS.metGeneratedArtifactClassification);
 
   // AEX-PQX-DASH-01 — AI programming governed-path observation. MET reads only.
-  const aiProgrammingGovernedPath = loadArtifact<AiProgrammingGovernedPathRecord>(
-    ARTIFACT_PATHS.aiProgrammingGovernedPath,
-  );
+  // AEX-PQX-DASH-02 also reads the same artifact for its aggregate
+  // core_loop_compliance roll-up; cast to the intersection of both shapes.
+  const aiProgrammingGovernedPath = loadArtifact<
+    AiProgrammingGovernedPathRecord & AIProgrammingGovernedPathRecord
+  >(ARTIFACT_PATHS.aiProgrammingGovernedPath);
 
   const ownerReadObservationLedger = loadArtifact<{
     data_source?: string;
@@ -577,6 +641,11 @@ export async function GET() {
     items?: Array<Record<string, unknown>>;
   }>(ARTIFACT_PATHS.mergeConflictPressure);
 
+  // AEX-PQX-DASH-02 — governance violation panel.
+  const governanceViolation = loadArtifact<GovernanceViolationRecord>(
+    ARTIFACT_PATHS.governanceViolation,
+  );
+
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
     { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
@@ -647,6 +716,7 @@ export async function GET() {
     { path: ARTIFACT_PATHS.misleadingSignalDetection, loaded: misleadingSignalDetection !== null },
     { path: ARTIFACT_PATHS.signalIntegrityCheck, loaded: signalIntegrityCheck !== null },
     { path: ARTIFACT_PATHS.mergeConflictPressure, loaded: mergeConflictPressure !== null },
+    { path: ARTIFACT_PATHS.governanceViolation, loaded: governanceViolation !== null },
     { path: ARTIFACT_PATHS.aiProgrammingGovernedPath, loaded: aiProgrammingGovernedPath !== null },
   ];
 
@@ -707,6 +777,7 @@ export async function GET() {
       ...(misleadingSignalDetection?.warnings ?? []),
       ...(signalIntegrityCheck?.warnings ?? []),
       ...(mergeConflictPressure?.warnings ?? []),
+      ...(governanceViolation?.warnings ?? []),
       ...(Array.isArray(aiProgrammingGovernedPath?.warnings)
         ? (aiProgrammingGovernedPath?.warnings ?? []).filter(
             (w): w is string => typeof w === 'string',
@@ -1913,6 +1984,317 @@ export async function GET() {
     (failureFeedback ? feedbackItems.length : 'unknown');
   const feedbackLoopStatus = feedbackLoopSnapshot?.loop_status ?? 'unknown';
 
+  // AEX-PQX-DASH-02 — governance violations block. Fail-closed: missing
+  // artifact degrades to unknown rather than 0; warning explicitly names the
+  // missing file. MET observes only — no authority claim.
+  const violationsFieldPresent = Array.isArray(governanceViolation?.violations);
+  const rawViolations = violationsFieldPresent
+    ? governanceViolation!.violations!
+    : [];
+  const filteredViolations = rawViolations.filter(
+    (v) =>
+      typeof v.violation_id === 'string' &&
+      typeof v.work_item_id === 'string' &&
+      typeof v.missing_leg === 'string' &&
+      typeof v.violation_type === 'string',
+  );
+  const malformedViolationCount = rawViolations.length - filteredViolations.length;
+  const declaredViolationCount = governanceViolation?.violation_count;
+  const declaredViolationCountIsNumber = typeof declaredViolationCount === 'number';
+  // Fail-closed against data-shape drift: count BOTH well-formed and malformed
+  // rows. A malformed violation entry is still concrete evidence of a
+  // violation; dropping it from the count would let a stale
+  // `violation_count: 0` paired with a malformed row fall through to PASS.
+  const rawViolationsTotal = rawViolations.length;
+  // Fail-closed: a stale or under-counted declared `violation_count` (e.g.
+  // declared 0 with non-empty violations[]) must NOT cause the panel to fall
+  // through to PASS. Use max(declared, observed_raw) so any concrete violation
+  // entry surfaces as BLOCK regardless of the declared scalar OR row shape.
+  // If BOTH violation_count and violations are absent (partial write / schema
+  // drift), surface 'unknown' rather than 0 so the panel cannot be silently
+  // promoted to PASS by missing governance evidence.
+  const violationCountValue: number | 'unknown' = !governanceViolation
+    ? 'unknown'
+    : declaredViolationCountIsNumber
+      ? Math.max(declaredViolationCount as number, rawViolationsTotal)
+      : violationsFieldPresent
+        ? rawViolationsTotal
+        : 'unknown';
+  // Fail-closed: violation_count > 0 forces BLOCK regardless of the declared
+  // status. A stale `status: 'pass'` with non-empty violations cannot
+  // downgrade the panel.
+  const observedViolationsForce = typeof violationCountValue === 'number' && violationCountValue > 0;
+  const declaredStatusValid =
+    governanceViolation?.status === 'block' ||
+    governanceViolation?.status === 'warn' ||
+    governanceViolation?.status === 'pass' ||
+    governanceViolation?.status === 'unknown';
+  // Fail-closed: an unexpected `status` string with violation_count = 0 must
+  // NOT fall through to 'pass'. A malformed status is itself a data-quality
+  // signal that the panel should surface, not hide behind a clean state.
+  const governanceViolationStatus: 'pass' | 'warn' | 'block' | 'unknown' = !governanceViolation
+    ? 'unknown'
+    : observedViolationsForce
+      ? 'block'
+      : declaredStatusValid
+        ? (governanceViolation.status as 'pass' | 'warn' | 'block' | 'unknown')
+        : 'unknown';
+  const governanceViolationsBlock = governanceViolation
+    ? {
+        status: governanceViolationStatus,
+        violation_count: violationCountValue,
+        violations: filteredViolations,
+        reason_codes: governanceViolation.reason_codes ?? [],
+        failure_prevented: governanceViolation.failure_prevented ?? null,
+        signal_improved: governanceViolation.signal_improved ?? null,
+        data_source: governanceViolation.data_source ?? 'unknown',
+        source_artifacts_used: governanceViolation.source_artifacts_used ?? [],
+        warnings: [
+          ...(governanceViolation.warnings ?? []),
+          ...(malformedViolationCount > 0
+            ? [
+                `${malformedViolationCount} violation row(s) dropped from the rendered list due to missing required string field(s); they still count toward violation_count and the BLOCK status (fail-closed against data-shape drift).`,
+              ]
+            : []),
+        ],
+      }
+    : {
+        status: 'unknown' as const,
+        violation_count: 'unknown' as const,
+        violations: [] as GovernanceViolationEntry[],
+        reason_codes: ['governance_violation_record_missing'],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.governanceViolation} unavailable; violation_count reported as unknown rather than 0.`,
+        ],
+      };
+
+  // AEX-PQX-DASH-02 — core-loop compliance summary. Aggregates per-leg
+  // present/partial/missing/unknown for the AI programming governed path.
+  // BLOCK if AEX or PQX missing (unconditional — these legs prove admission
+  // and execution and are required for any governed path); BLOCK if any
+  // required leg missing AND repo_mutating === true; WARN on partial; UNKNOWN
+  // if insufficient evidence.
+  const compliance = aiProgrammingGovernedPath?.core_loop_compliance ?? {};
+  // Fail-closed: any leg value that is not exactly one of the four known
+  // LegState strings (case-sensitive) is normalized to 'unknown'. Casing
+  // variants, typos, or unexpected enum values must not bypass the
+  // missing/unknown checks downstream and accidentally promote a malformed
+  // record to PASS or WARN.
+  const normalizeLegState = (value: unknown): LegState =>
+    value === 'present' || value === 'partial' || value === 'missing' || value === 'unknown'
+      ? value
+      : 'unknown';
+  const legStates: Record<CoreLoopLeg, LegState> = {
+    AEX: normalizeLegState(compliance.AEX),
+    PQX: normalizeLegState(compliance.PQX),
+    EVL: normalizeLegState(compliance.EVL),
+    TPA: normalizeLegState(compliance.TPA),
+    CDE: normalizeLegState(compliance.CDE),
+    SEL: normalizeLegState(compliance.SEL),
+  };
+  const legArray: Array<{ leg: CoreLoopLeg; state: LegState }> = CORE_LOOP_LEGS.map(
+    (leg) => ({ leg, state: legStates[leg] }),
+  );
+  const presentLegs = legArray.filter((l) => l.state === 'present').map((l) => l.leg);
+  const partialLegs = legArray.filter((l) => l.state === 'partial').map((l) => l.leg);
+  const missingLegs = legArray.filter((l) => l.state === 'missing').map((l) => l.leg);
+  const unknownLegs = legArray.filter((l) => l.state === 'unknown').map((l) => l.leg);
+
+  const computedComplianceScore = presentLegs.length;
+  const declaredComplianceScore = aiProgrammingGovernedPath?.compliance_score;
+  const complianceScore: number | 'unknown' = aiProgrammingGovernedPath
+    ? typeof declaredComplianceScore === 'number'
+      ? declaredComplianceScore
+      : computedComplianceScore
+    : 'unknown';
+
+  // Fail-closed: repo_mutating must be a true boolean. Any non-boolean
+  // token (e.g. the string "true", "yes", or undefined) collapses to
+  // 'unknown' so the missing-leg block rule cannot be skipped by
+  // data-shape drift.
+  const rawRepoMutating: unknown = aiProgrammingGovernedPath?.repo_mutating;
+  const repoMutating: boolean | 'unknown' =
+    typeof rawRepoMutating === 'boolean' ? rawRepoMutating : 'unknown';
+
+  const computedFirstMissingLeg = legArray.find((l) => l.state === 'missing')?.leg ?? null;
+  const declaredFirstMissingLeg = aiProgrammingGovernedPath?.first_missing_leg;
+  const firstMissingLeg: string | null = aiProgrammingGovernedPath
+    ? typeof declaredFirstMissingLeg === 'string'
+      ? declaredFirstMissingLeg
+      : computedFirstMissingLeg
+    : null;
+
+  const computedWeakestLeg =
+    legArray.find((l) => l.state === 'missing')?.leg ??
+    legArray.find((l) => l.state === 'partial')?.leg ??
+    legArray.find((l) => l.state === 'unknown')?.leg ??
+    null;
+  const declaredWeakestLeg = aiProgrammingGovernedPath?.weakest_leg;
+  const weakestLeg: string | null = aiProgrammingGovernedPath
+    ? typeof declaredWeakestLeg === 'string'
+      ? declaredWeakestLeg
+      : computedWeakestLeg
+    : null;
+
+  const requiredLegMissing = missingLegs.length > 0;
+  const aexOrPqxMissing = legStates.AEX === 'missing' || legStates.PQX === 'missing';
+  const allPresent = computedComplianceScore === CORE_LOOP_LEGS.length;
+  const anyPartial = partialLegs.length > 0;
+  const anyUnknown = unknownLegs.length > 0;
+  // Fail-closed: derive core_loop_complete from normalized leg states rather
+  // than trusting the artifact's declared boolean. A stale or inconsistent
+  // record could otherwise mark a work item compliant while observed legs
+  // still show missing — yielding contradictory compliant_work_items vs
+  // blocked_work_items counts. Observed evidence wins.
+  const declaredCoreLoopComplete = aiProgrammingGovernedPath?.core_loop_complete;
+  const coreLoopComplete: boolean | 'unknown' = aiProgrammingGovernedPath
+    ? allPresent
+    : 'unknown';
+  const coreLoopCompleteDeclaredMismatch =
+    aiProgrammingGovernedPath !== null &&
+    typeof declaredCoreLoopComplete === 'boolean' &&
+    declaredCoreLoopComplete !== allPresent;
+
+  let coreLoopStatus: 'pass' | 'warn' | 'block' | 'unknown';
+  if (!aiProgrammingGovernedPath) {
+    coreLoopStatus = 'unknown';
+  } else if (aexOrPqxMissing) {
+    coreLoopStatus = 'block';
+  } else if (requiredLegMissing && repoMutating !== false) {
+    // Fail-closed: BLOCK when a required leg is missing and repo_mutating
+    // is true OR unknown. Treating 'unknown' as non-blocking would let
+    // malformed runtime artifacts (e.g. repo_mutating: "true" as a string)
+    // downgrade to WARN and under-report blocked work items.
+    coreLoopStatus = 'block';
+  } else if (allPresent) {
+    coreLoopStatus = 'pass';
+  } else if (anyPartial) {
+    coreLoopStatus = 'warn';
+  } else if (anyUnknown) {
+    coreLoopStatus = 'unknown';
+  } else {
+    coreLoopStatus = 'warn';
+  }
+
+  // Work-item counts: derive from `governedPathSummary` (main's
+  // computeGovernedPathSummary) which already counts items from
+  // ai_programming_work_items[]. Four cases, all fail-closed:
+  //   1. Artifact missing — `'unknown'`.
+  //   2. Artifact present, work_items[] FIELD ABSENT — `'unknown'` (missing
+  //      evidence is not the same as observed-zero; surface the data-quality
+  //      signal so downstream consumers don't read it as a clean zero).
+  //   3. Artifact present, work_items[] empty array — `0` (no observed
+  //      items, a real, distinct state).
+  //   4. Artifact present with N items — N.
+  const rawWorkItems = Array.isArray(aiProgrammingGovernedPath?.ai_programming_work_items)
+    ? aiProgrammingGovernedPath!.ai_programming_work_items!
+    : null;
+  const totalWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
+    ? 'unknown'
+    : rawWorkItems !== null
+      ? rawWorkItems.length
+      : 'unknown';
+  const compliantWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
+    ? 'unknown'
+    : rawWorkItems === null
+      ? 'unknown'
+      : rawWorkItems.length === 0
+        ? 0
+        : typeof governedPathSummary.governed_work_count === 'number'
+          ? governedPathSummary.governed_work_count
+          : 'unknown';
+  const blockedWorkItems: number | 'unknown' = !aiProgrammingGovernedPath
+    ? 'unknown'
+    : rawWorkItems === null
+      ? 'unknown'
+      : rawWorkItems.length === 0
+        ? 0
+        : typeof governedPathSummary.bypass_risk_count === 'number'
+          ? governedPathSummary.bypass_risk_count
+          : 'unknown';
+
+  // missing_by_leg: aggregate single-row indicator over the artifact's
+  // declared `core_loop_compliance` map (1 when leg is missing in
+  // aggregate, 0 otherwise). 'unknown' only when the entire artifact is
+  // absent.
+  const missingByLeg: Record<CoreLoopLeg, number | 'unknown'> = !aiProgrammingGovernedPath
+    ? { AEX: 'unknown', PQX: 'unknown', EVL: 'unknown', TPA: 'unknown', CDE: 'unknown', SEL: 'unknown' }
+    : {
+        AEX: legStates.AEX === 'missing' ? 1 : 0,
+        PQX: legStates.PQX === 'missing' ? 1 : 0,
+        EVL: legStates.EVL === 'missing' ? 1 : 0,
+        TPA: legStates.TPA === 'missing' ? 1 : 0,
+        CDE: legStates.CDE === 'missing' ? 1 : 0,
+        SEL: legStates.SEL === 'missing' ? 1 : 0,
+      };
+
+  const coreLoopComplianceSummaryBlock = aiProgrammingGovernedPath
+    ? {
+        status: coreLoopStatus,
+        core_loop_compliance: legStates,
+        core_loop_complete: coreLoopComplete,
+        compliance_score: complianceScore,
+        total_legs: aiProgrammingGovernedPath.total_legs ?? CORE_LOOP_LEGS.length,
+        first_missing_leg: firstMissingLeg,
+        weakest_leg: weakestLeg,
+        repo_mutating: repoMutating,
+        missing_legs: aiProgrammingGovernedPath.missing_legs ?? missingLegs,
+        partial_legs: aiProgrammingGovernedPath.partial_legs ?? partialLegs,
+        unknown_legs: unknownLegs,
+        violation_count: violationCountValue,
+        total_work_items: totalWorkItems,
+        compliant_work_items: compliantWorkItems,
+        blocked_work_items: blockedWorkItems,
+        weakest_leg_summary: weakestLeg,
+        missing_by_leg: missingByLeg,
+        next_recommended_input: aiProgrammingGovernedPath.next_recommended_input ?? null,
+        reason_codes: aiProgrammingGovernedPath.reason_codes ?? [],
+        failure_prevented: aiProgrammingGovernedPath.failure_prevented ?? null,
+        signal_improved: aiProgrammingGovernedPath.signal_improved ?? null,
+        data_source: aiProgrammingGovernedPath.data_source ?? 'unknown',
+        source_artifacts_used: aiProgrammingGovernedPath.source_artifacts_used ?? [],
+        warnings: [
+          ...(aiProgrammingGovernedPath.warnings ?? []),
+          ...(coreLoopCompleteDeclaredMismatch
+            ? [
+                `Declared core_loop_complete=${String(declaredCoreLoopComplete)} disagrees with observed leg states (allPresent=${String(allPresent)}); observed evidence wins.`,
+              ]
+            : []),
+        ],
+      }
+    : {
+        status: 'unknown' as const,
+        core_loop_compliance: legStates,
+        core_loop_complete: 'unknown' as const,
+        compliance_score: 'unknown' as const,
+        total_legs: CORE_LOOP_LEGS.length,
+        first_missing_leg: null,
+        weakest_leg: null,
+        repo_mutating: 'unknown' as const,
+        missing_legs: [] as string[],
+        partial_legs: [] as string[],
+        unknown_legs: [...CORE_LOOP_LEGS] as string[],
+        violation_count: violationCountValue,
+        total_work_items: 'unknown' as const,
+        compliant_work_items: 'unknown' as const,
+        blocked_work_items: 'unknown' as const,
+        weakest_leg_summary: null,
+        missing_by_leg: missingByLeg,
+        next_recommended_input: null,
+        reason_codes: ['ai_programming_governed_path_record_missing'],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.aiProgrammingGovernedPath} unavailable; core-loop compliance reported as unknown rather than PASS.`,
+        ],
+      };
+
   return NextResponse.json({
     ...envelope,
     seed_artifacts_present: minimalLoop !== null,
@@ -1991,6 +2373,8 @@ export async function GET() {
     misleading_signal_detection: misleadingSignalDetectionBlock,
     signal_integrity: signalIntegrityCheckBlock,
     merge_conflict_pressure: mergeConflictPressureBlock,
+    governance_violations: governanceViolationsBlock,
+    core_loop_compliance_summary: coreLoopComplianceSummaryBlock,
     ai_programming_governed_path: aiProgrammingGovernedPathBlock,
     source_artifacts_used: Array.from(
       new Set([
@@ -2047,6 +2431,7 @@ export async function GET() {
         ...(misleadingSignalDetection?.source_artifacts_used ?? []),
         ...(signalIntegrityCheck?.source_artifacts_used ?? []),
         ...(mergeConflictPressure?.source_artifacts_used ?? []),
+        ...(governanceViolation?.source_artifacts_used ?? []),
         ...(Array.isArray(aiProgrammingGovernedPath?.source_artifacts_used)
           ? (aiProgrammingGovernedPath?.source_artifacts_used ?? []).filter(
               (s): s is string => typeof s === 'string',

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/3ls_trust_gap_closure_record.schema.json",
+  "title": "3LS Trust Gap Closure Record",
+  "description": "Measurement of whether a system's trust gaps are improving over time. Integrates with existing artifacts/tls/* artifacts. Observation only; does not assert closure readiness or grant trust. Consistency: delta MUST equal current_gap_count - previous_gap_count, and status MUST agree with the sign of delta (improving=delta<0, unchanged=delta==0, regressing=delta>0). The delta-vs-counts arithmetic is checked by the producing test suite; the status-vs-delta sign relationship is locked by this schema's allOf clauses.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "created_at",
+    "provenance",
+    "system",
+    "trust_gap_type",
+    "previous_gap_count",
+    "current_gap_count",
+    "delta",
+    "status",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "3ls_trust_gap_closure_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_system", "inputs"],
+      "properties": {
+        "source_system": {"type": "string", "pattern": "^[A-Z0-9]{2,8}$"},
+        "inputs": {"type": "array", "items": {"type": "string"}},
+        "simulated": {"type": "boolean"}
+      }
+    },
+    "record_id": {"type": "string"},
+    "system": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{2,8}$"
+    },
+    "trust_gap_type": {
+      "type": "string",
+      "enum": [
+        "missing_eval",
+        "missing_tests",
+        "missing_handoff",
+        "missing_replay",
+        "missing_owner",
+        "missing_review",
+        "missing_observability"
+      ]
+    },
+    "previous_gap_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "current_gap_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "delta": {
+      "type": "integer"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["improving", "regressing", "unchanged"]
+    },
+    "tls_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "authority_scope": {"type": "string", "const": "observation_only"},
+    "notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "description": "delta < 0 implies status=improving (trust gap shrank).",
+      "if": {
+        "properties": {"delta": {"type": "integer", "exclusiveMaximum": 0}},
+        "required": ["delta"]
+      },
+      "then": {
+        "properties": {"status": {"const": "improving"}}
+      }
+    },
+    {
+      "description": "delta == 0 implies status=unchanged.",
+      "if": {
+        "properties": {"delta": {"type": "integer", "const": 0}},
+        "required": ["delta"]
+      },
+      "then": {
+        "properties": {"status": {"const": "unchanged"}}
+      }
+    },
+    {
+      "description": "delta > 0 implies status=regressing (trust gap grew).",
+      "if": {
+        "properties": {"delta": {"type": "integer", "exclusiveMinimum": 0}},
+        "required": ["delta"]
+      },
+      "then": {
+        "properties": {"status": {"const": "regressing"}}
+      }
+    }
+  ]
+}

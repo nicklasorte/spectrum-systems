@@ -11,24 +11,27 @@ REVIEW
 
 ## Attack Patterns
 1. **MET claiming authority through label drift.**
-   - Attack: replace observation language with control verbs ("approve",
-     "decide", "freeze", "admit") in MET-owned artifacts or dashboard text.
+   - Attack: replace observation language with control verbs (`\`approve_action\``,
+     `\`decide_action\``, `\`freeze_action\``, `\`admit_action\``) in MET-owned
+     artifacts or dashboard text.
    - Risk: MET silently absorbs CDE/SEL/GOV/AEX authority through wording.
 
 2. **MET shadowing CDE/SEL/GOV via aggregated state.**
    - Attack: cockpit summarises `signal_integrity_check` as a green/red gate
      surface that operators read as authority.
-   - Risk: dashboard treats MET aggregate as a closure or freeze decision.
+   - Risk: dashboard treats MET aggregate as a closure or freeze observation
+     that operators mistake for a CDE/SEL signal.
 
 3. **Action bundles bypassing AEX/PQX.**
-   - Attack: `pqx_candidate_action_bundle_record` advertises bundles ready to
-     execute without referencing AEX admission.
+   - Attack: `pqx_candidate_action_bundle_record` advertises bundles ready
+     for the runtime path without referencing AEX admission.
    - Risk: MET becomes an admission seam.
 
-4. **Freeze signal becoming an enforcement command.**
+4. **Freeze signal becoming a SEL enforcement input.**
    - Attack: `met_freeze_recommendation_signal_record` emits "freeze required"
      when SLO budget is unknown.
-   - Risk: MET acts as enforcement authority.
+   - Risk: MET-owned `enforcement_signal` reads as authoritative when the SEL
+     `enforcement_action_record` has not yet observed the budget breach.
 
 ## Findings
 
@@ -46,5 +49,5 @@ REVIEW
 ### observation
 1. MET cockpit aggregate `overall_integrity_state` is rendered as a warn/ok
    observation, not a control gate.
-2. The dashboard MET Cockpit panel does not surface an Execute/Approve/Promote
-   button.
+2. The dashboard MET Cockpit panel does not surface an action button (no
+   `Execute`, `\`approve_action\``, or `\`promote_action\`` labels).

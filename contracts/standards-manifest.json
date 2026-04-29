@@ -16872,6 +16872,105 @@
       "last_updated_in": "RGE-K",
       "example_path": "contracts/examples/rge_run_record.json",
       "notes": "RGE top-level end-to-end run record."
+    },
+    {
+      "artifact_type": "3ls_system_measurement_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_system_measurement_record.example.json",
+      "notes": "SMA-01 v2: per-system measurement and observability record. Observation only; does not grant authority or perform enforcement."
+    },
+    {
+      "artifact_type": "3ls_loop_run_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_loop_run_record.example.json",
+      "notes": "SMA-01 v2: canonical loop completion measurement (AEX -> PQX -> EVL -> TPA -> CDE -> SEL). Observation only."
+    },
+    {
+      "artifact_type": "3ls_handoff_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_handoff_record.example.json",
+      "notes": "SMA-01 v2: system-to-system handoff measurement. Observation only."
+    },
+    {
+      "artifact_type": "3ls_surface_coverage_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_surface_coverage_record.example.json",
+      "notes": "SMA-01 v2: changed-surface to test-target mapping coverage. Detects pytest_selection_missing class failures early."
+    },
+    {
+      "artifact_type": "3ls_failure_recurrence_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_failure_recurrence_record.example.json",
+      "notes": "SMA-01 v2: repeated CI/system failure measurement. Observation only."
+    },
+    {
+      "artifact_type": "3ls_trust_gap_closure_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_trust_gap_closure_record.example.json",
+      "notes": "SMA-01 v2: per-system trust gap closure measurement integrating with artifacts/tls/*."
+    },
+    {
+      "artifact_type": "3ls_replayability_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_replayability_record.example.json",
+      "notes": "SMA-01 v2: replayability and determinism measurement per system."
+    },
+    {
+      "artifact_type": "3ls_scope_risk_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_scope_risk_record.example.json",
+      "notes": "SMA-01 v2: change scope and blast-radius measurement. Observation only; does not gate or enforce."
+    },
+    {
+      "artifact_type": "3ls_operator_debuggability_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": ["spectrum-systems"],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_operator_debuggability_record.example.json",
+      "notes": "SMA-01 v2: operator debuggability measurement. Are failures understandable from a single artifact?"
     }
   ]
 }

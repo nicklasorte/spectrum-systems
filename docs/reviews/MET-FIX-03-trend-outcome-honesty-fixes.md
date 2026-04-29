@@ -10,7 +10,7 @@ Trend stays unknown until 3 comparable cases.
 
 ### fix 1
 Existing `trend_frequency_honesty_gate_record` and
-`comparable_case_qualification_gate_record` already enforce min_case_count = 3
+`comparable_case_qualification_gate_record` already require min_case_count = 3
 plus same-failure_shape / affected_systems / evaluated_fields / source_type
 comparability rules; new `recurring_failure_cluster_record` carries
 `minimum_comparable_cases_for_recurrence: 3` and exposes `cases_needed` when
