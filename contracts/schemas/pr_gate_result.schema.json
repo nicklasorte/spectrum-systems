@@ -29,7 +29,7 @@
     },
     "status": {
       "type": "string",
-      "enum": ["allow", "warn", "freeze", "block"]
+      "enum": ["pass", "allow", "warn", "freeze", "block"]
     },
     "produced_at": {
       "type": "string",

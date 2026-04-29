@@ -137,6 +137,20 @@ def main() -> None:
         "checks_run": checks_run,
     }
 
+    # Fast mode requires refs to determine cert-relevant paths; fail closed when absent.
+    if not args.force and args.mode != "deep":
+        if not args.base_ref or not args.head_ref:
+            _fail_closed(
+                "missing refs in fast mode — cannot determine cert-relevant paths",
+                "base_ref and head_ref are required in fast mode to detect cert-relevant changes",
+                "Provide --base-ref and --head-ref, or use --force to override",
+                [],
+                f"run_certification_gate.py --mode {args.mode}",
+                [],
+                output_dir,
+                extra_details=details,
+            )
+
     # Check if cert-relevant paths are touched
     changed_files: list[str] = []
     if args.base_ref and args.head_ref:
