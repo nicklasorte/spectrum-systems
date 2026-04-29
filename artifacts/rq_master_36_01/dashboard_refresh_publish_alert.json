@@ -1,7 +1,7 @@
 {
   "artifact_type": "dashboard_refresh_publish_alert",
-  "timestamp": "2026-04-29T13:47:42Z",
-  "trace_id": "trace-20260429T134742Z",
+  "timestamp": "2026-04-29T17:24:32Z",
+  "trace_id": "trace-20260429T172432Z",
   "status": "ok",
   "reason_codes": [
     "freshness_ok"

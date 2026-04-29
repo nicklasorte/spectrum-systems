@@ -1,0 +1,96 @@
+{
+  "artifact_type": "ai_programming_work_item_record",
+  "schema_version": "1.0.0",
+  "record_id": "AIPG-WI-CLAUDE-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "work_item_id": "AIPG-CLAUDE-001",
+  "tool_source": "claude",
+  "repo_mutating": true,
+  "pr_ref": "unknown",
+  "branch_ref": "claude/ai-governed-path-dashboard-ypm4c",
+  "legs": {
+    "AEX": {
+      "status": "partial",
+      "artifact_refs": [
+        "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json"
+      ],
+      "reason_codes": [
+        "aex_evidence_is_rdx_trace_not_admission_record",
+        "rdx_trace_shows_governed_step_but_is_not_aex_owned_artifact"
+      ],
+      "source_artifacts_used": [
+        "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json"
+      ],
+      "confidence": "low"
+    },
+    "PQX": {
+      "status": "missing",
+      "reason_codes": [
+        "no_pqx_execution_record_for_claude_branch",
+        "claude_branch_made_direct_repo_mutations_without_pqx_record"
+      ],
+      "source_artifacts_used": [
+        "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+        "artifacts/dashboard_seed/lineage_record.json"
+      ]
+    },
+    "EVL": {
+      "status": "partial",
+      "artifact_refs": [
+        "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json"
+      ],
+      "reason_codes": [
+        "eval_evidence_from_rdx_trace_not_evl_owned_record",
+        "evl_artifact_not_produced_by_evl_system_for_this_work_item"
+      ],
+      "source_artifacts_used": [
+        "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json"
+      ],
+      "confidence": "low"
+    },
+    "TPA": {
+      "status": "unknown",
+      "reason_codes": ["no_tpa_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    },
+    "CDE": {
+      "status": "unknown",
+      "reason_codes": ["no_cde_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    },
+    "SEL": {
+      "status": "unknown",
+      "reason_codes": ["no_sel_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    }
+  },
+  "lineage_status": "partial",
+  "lineage_artifact_refs": [
+    "artifacts/dashboard_seed/lineage_record.json"
+  ],
+  "lineage_reason_codes": [
+    "lineage_record_covers_seeded_chain_not_this_work_item_chain",
+    "branch_lineage_not_explicitly_recorded"
+  ],
+  "compliance_status": "BLOCK",
+  "bypass_risk": "pqx_missing",
+  "backfill_allowed": "partial",
+  "human_review_required": true,
+  "next_recommended_input": "Attach PQX execution evidence (pqx_slice_execution_record naming work_item_id=AIPG-CLAUDE-001) so the governed path through PQX can be observed. Human review required to confirm PQX evidence can be produced retroactively for this branch.",
+  "source_artifacts_used": [
+    "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+    "artifacts/dashboard_seed/lineage_record.json",
+    "artifacts/dashboard_metrics/ai_programming_governed_path_record.json"
+  ],
+  "reason_codes": [
+    "no_pqx_execution_record_for_claude_branch",
+    "aex_evidence_from_rdx_trace_only"
+  ],
+  "warnings": [
+    "MET observation only. AEX owns admission. PQX owns execution. EVL owns eval. CDE owns control. SEL owns enforcement.",
+    "AEX evidence is partial: an RDX trace shows a governed step but is not an AEX-owned admission_evidence_record.",
+    "PQX is missing: no pqx_slice_execution_record exists for this Claude branch."
+  ],
+  "sma_loop_run_ref": "artifacts/ai_programming/aipg_claude_001_loop_run_record.json"
+}

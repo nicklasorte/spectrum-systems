@@ -12,6 +12,15 @@
           "artifacts/aex/aex_admission_trace_record.json",
           "artifacts/aex/aex_gov_readiness_observation.json",
           "artifacts/aex/aex_sel_enforcement_input.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_loop_run_record.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_loop_run_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -21,16 +30,7 @@
           "artifacts/authenticity_hardgate_24_01/umbrella_1/attested_normalized_execution_request.json",
           "artifacts/authenticity_hardgate_24_01/umbrella_1/attested_tlc_handoff_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_ingress_allowlist_record.json",
-          "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_ingress_manifest.json",
-          "artifacts/authenticity_hardgate_24_01/umbrella_3/fix_reentry_lineage_forwarding_record.json",
-          "artifacts/auto_kernel_24_01/auto_kernel_24_01_execution_package.json",
-          "artifacts/auto_kernel_24_01/canonical_delivery_report.json",
-          "artifacts/certification_judgment_40_explicit/certification_risk_admission_record.json",
-          "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
-          "artifacts/dashboard_metrics/bottleneck_record.json",
-          "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
-          "artifacts/dashboard_metrics/counterfactual_reconstruction_record.json",
-          "artifacts/dashboard_metrics/failure_feedback_record.json"
+          "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_ingress_manifest.json"
         ],
         "docs": [
           "docs/architecture/3ls_measurement_layer.md",
@@ -95,6 +95,7 @@
           "schemas/aex/aex_admission_trace_record.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/pqx_runner.py",
@@ -122,6 +123,7 @@
           "tests/fixtures/roadmaps/aut_reg_05a/aex_codex_request_repo_write.json",
           "tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json",
           "tests/helpers_repo_write_lineage.py",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/metrics/test_met_full_roadmap_contract_selection.py",
@@ -134,11 +136,10 @@
           "tests/test_aex_fail_closed.py",
           "tests/test_aex_hardening.py",
           "tests/test_aex_repo_write_boundary_structural.py",
-          "tests/test_aex_schema_validation.py",
-          "tests/test_aex_trust_hardening.py"
+          "tests/test_aex_schema_validation.py"
         ]
       },
-      "evidence_count": 118,
+      "evidence_count": 119,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -244,6 +245,11 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -263,12 +269,7 @@
           "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
           "artifacts/dashboard_metrics/counterfactual_reconstruction_record.json",
           "artifacts/dashboard_metrics/debug_explanation_index_record.json",
-          "artifacts/dashboard_metrics/debug_readiness_sla_record.json",
-          "artifacts/dashboard_metrics/earlier_intervention_signal_record.json",
-          "artifacts/dashboard_metrics/eval_candidate_record.json",
-          "artifacts/dashboard_metrics/failure_explanation_packets.json",
-          "artifacts/dashboard_metrics/failure_feedback_record.json",
-          "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+          "artifacts/dashboard_metrics/debug_readiness_sla_record.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
@@ -332,6 +333,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_rank_maturity_alignment.py",
           "scripts/build_system_registry_artifact.py",
@@ -354,6 +356,7 @@
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/hop/test_control_integration.py",
           "tests/hop/test_promotion_readiness.py",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/metrics/test_met_full_roadmap_contract_selection.py",
@@ -373,11 +376,10 @@
           "tests/test_closure_decision_engine.py",
           "tests/test_control_responses.py",
           "tests/test_cycle_runner.py",
-          "tests/test_cycle_runner_judgment_handoff.py",
-          "tests/test_d3l_maturity_report.py"
+          "tests/test_cycle_runner_judgment_handoff.py"
         ]
       },
-      "evidence_count": 118,
+      "evidence_count": 119,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -508,6 +510,12 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/dashboard_cases/case_cert_incomplete_001.json",
           "artifacts/dashboard_cases/case_eval_gap_001.json",
           "artifacts/dashboard_cases/case_replay_gap_001.json",
@@ -526,13 +534,7 @@
           "artifacts/dashboard_metrics/evl_handoff_observation_tracker_record.json",
           "artifacts/dashboard_metrics/failure_explanation_packets.json",
           "artifacts/dashboard_metrics/failure_feedback_record.json",
-          "artifacts/dashboard_metrics/failure_reduction_signal_record.json",
-          "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
-          "artifacts/dashboard_metrics/feedback_loop_snapshot.json",
-          "artifacts/dashboard_metrics/fold_candidate_proof_check_record.json",
-          "artifacts/dashboard_metrics/governance_violation_record.json",
-          "artifacts/dashboard_metrics/leverage_queue_record.json",
-          "artifacts/dashboard_metrics/materialization_observation_mapper_record.json"
+          "artifacts/dashboard_metrics/failure_reduction_signal_record.json"
         ],
         "docs": [
           "docs/2026-03-22-baf-enforcement-wiring-audit.md",
@@ -592,6 +594,7 @@
         "reviews": [],
         "schemas": [],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
@@ -611,6 +614,7 @@
           "tests/fixtures/roadmaps/aut_reg_05a/sva_recovery_checkpoint.json",
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/integration/e2e-pipeline.test.ts",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/metrics/test_met_19_33_contract_selection.py",
@@ -626,11 +630,10 @@
           "tests/test_control_executor.py",
           "tests/test_control_integration.py",
           "tests/test_control_loop.py",
-          "tests/test_control_loop_chaos.py",
-          "tests/test_cross_run_intelligence.py"
+          "tests/test_control_loop_chaos.py"
         ]
       },
-      "evidence_count": 109,
+      "evidence_count": 110,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -1753,6 +1756,15 @@
           "artifacts/aex/aex_admission_evidence_record.json",
           "artifacts/aex/aex_admission_lineage_observation.json",
           "artifacts/aex/aex_admission_trace_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_loop_run_record.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_loop_run_record.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_loop_run_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -1765,16 +1777,7 @@
           "artifacts/auto_kernel_24_01/canonical_delivery_report.json",
           "artifacts/blf_01_baseline_failure_fix/delivery_report.json",
           "artifacts/blf_01_baseline_failure_fix/failure_classification.json",
-          "artifacts/blf_01_baseline_failure_fix/failure_inventory.json",
-          "artifacts/blf_01_baseline_failure_fix/fix_recommendations.json",
-          "artifacts/blf_01_baseline_failure_fix/root_cause_analysis.json",
-          "artifacts/certification_judgment_40_explicit/certification_probe_execution_bundle.json",
-          "artifacts/certification_judgment_40_explicit/certification_regression_replay_bundle.json",
-          "artifacts/certification_judgment_40_explicit/observability_probe_execution_bundle.json",
-          "artifacts/dashboard/repo_snapshot.json",
-          "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
-          "artifacts/dashboard_metrics/bottleneck_record.json",
-          "artifacts/dashboard_metrics/counterfactual_reconstruction_record.json"
+          "artifacts/blf_01_baseline_failure_fix/failure_inventory.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
@@ -1839,6 +1842,7 @@
           "schemas/artifacts/pqx_execution_record.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_preflight_pqx_wrapper.py",
           "scripts/build_system_registry_artifact.py",
@@ -1862,8 +1866,7 @@
           "scripts/run_pqx_sequence.py",
           "scripts/run_prompt_queue_sequence.py",
           "scripts/run_rax_redteam_arch_01.py",
-          "scripts/run_rax_redteam_harness_01.py",
-          "scripts/run_repair_latency_24_01.py"
+          "scripts/run_rax_redteam_harness_01.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -1876,6 +1879,7 @@
           "tests/fixtures/roadmaps/pqx_propagation_sequence.json",
           "tests/fixtures/roadmaps/pqx_verification_sequence.json",
           "tests/governance/test_3ls_authority_preflight.py",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/mvp-2/context-bundle-assembler.test.ts",
@@ -1889,8 +1893,7 @@
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_build_preflight_pqx_wrapper.py",
-          "tests/test_certification_judgment_40_explicit.py",
-          "tests/test_codex_to_pqx_wrapper.py"
+          "tests/test_certification_judgment_40_explicit.py"
         ]
       },
       "evidence_count": 128,
@@ -2551,6 +2554,11 @@
           "artifacts/aex/aex_admission_evidence_record.json",
           "artifacts/aex/aex_admission_trace_record.json",
           "artifacts/aex/aex_sel_enforcement_input.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -2567,12 +2575,7 @@
           "artifacts/certification_judgment_40_explicit/observability_completeness_guard_result.json",
           "artifacts/certification_judgment_40_explicit/promotion_proof_guard_result.json",
           "artifacts/certification_judgment_40_explicit/stale_proof_operator_guard_result.json",
-          "artifacts/dashboard_cases/case_cert_incomplete_001.json",
-          "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
-          "artifacts/dashboard_metrics/bottleneck_record.json",
-          "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
-          "artifacts/dashboard_metrics/debug_explanation_index_record.json",
-          "artifacts/dashboard_metrics/eval_candidate_record.json"
+          "artifacts/dashboard_cases/case_cert_incomplete_001.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
@@ -2636,6 +2639,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_control_surface_gap_packet.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_system_registry_artifact.py",
@@ -2664,6 +2668,7 @@
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
           "tests/fixtures/failure_diagnosis/invariant_violation.json",
           "tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/metrics/test_met_full_roadmap_contract_selection.py",
@@ -2684,11 +2689,10 @@
           "tests/test_d3l_maturity_report.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_d3l_rank_maturity_alignment.py",
-          "tests/test_d3l_ranking_report.py",
-          "tests/test_done_certification.py"
+          "tests/test_d3l_ranking_report.py"
         ]
       },
-      "evidence_count": 125,
+      "evidence_count": 126,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "SEL"
@@ -2965,6 +2969,11 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+          "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+          "artifacts/ai_programming/ai_programming_governance_rollup.json",
+          "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+          "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-1_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-2_checkpoint.json",
           "artifacts/authenticity_hardgate_24_01/umbrella-3_checkpoint.json",
@@ -2984,12 +2993,7 @@
           "artifacts/dashboard_metrics/failure_feedback_record.json",
           "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
           "artifacts/dashboard_metrics/feedback_loop_snapshot.json",
-          "artifacts/dashboard_metrics/governance_violation_record.json",
-          "artifacts/dashboard_metrics/leverage_queue_record.json",
-          "artifacts/dashboard_metrics/materialization_observation_mapper_record.json",
-          "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
-          "artifacts/dashboard_metrics/risk_summary_record.json",
-          "artifacts/dashboard_seed/failure_mode_dashboard_record.json"
+          "artifacts/dashboard_metrics/governance_violation_record.json"
         ],
         "docs": [
           "docs/architecture/3ls_authority_boundary_firewall.md",
@@ -3051,6 +3055,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/refresh_tpa_source_authority_digests.py",
           "scripts/run_authenticity_hardgate_24_01.py",
@@ -3073,6 +3078,7 @@
           "tests/fixtures/chaos_fail_closed_cases.json",
           "tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json",
           "tests/governance/test_3ls_authority_repair_suggestions.py",
+          "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/test_3ls_registry_guard.py",
           "tests/test_3ls_simplification.py",
@@ -3092,11 +3098,10 @@
           "tests/test_failure_learning_artifacts.py",
           "tests/test_governed_execution_kernel.py",
           "tests/test_governed_preflight_remediation_loop.py",
-          "tests/test_governed_repair_foundation.py",
-          "tests/test_governed_repair_loop_delegation.py"
+          "tests/test_governed_repair_foundation.py"
         ]
       },
-      "evidence_count": 117,
+      "evidence_count": 118,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"
