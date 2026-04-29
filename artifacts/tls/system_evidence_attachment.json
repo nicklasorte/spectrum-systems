@@ -590,8 +590,7 @@
           "spectrum_systems/modules/runtime/control_surface_manifest.py",
           "spectrum_systems/modules/runtime/enforcement_engine.py",
           "spectrum_systems/modules/runtime/enforcement_gate.py",
-          "spectrum_systems/modules/runtime/eval_registry.py",
-          "spectrum_systems/modules/runtime/eval_slice_summary.py"
+          "spectrum_systems/modules/runtime/eval_registry.py"
         ],
         "review_actions": [],
         "reviews": [],
