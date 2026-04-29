@@ -525,7 +525,11 @@ export async function GET() {
       ...(foldCandidateProofCheck?.warnings ?? []),
       ...(operatorDebuggabilityDrill?.warnings ?? []),
       ...(generatedArtifactPolicyHandoff?.warnings ?? []),
-      ...(aiProgrammingGovernedPath?.warnings ?? []),
+      ...(Array.isArray(aiProgrammingGovernedPath?.warnings)
+        ? (aiProgrammingGovernedPath?.warnings ?? []).filter(
+            (w): w is string => typeof w === 'string',
+          )
+        : []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -1399,7 +1403,11 @@ export async function GET() {
         ...(foldCandidateProofCheck?.source_artifacts_used ?? []),
         ...(operatorDebuggabilityDrill?.source_artifacts_used ?? []),
         ...(generatedArtifactPolicyHandoff?.source_artifacts_used ?? []),
-        ...(aiProgrammingGovernedPath?.source_artifacts_used ?? []),
+        ...(Array.isArray(aiProgrammingGovernedPath?.source_artifacts_used)
+          ? (aiProgrammingGovernedPath?.source_artifacts_used ?? []).filter(
+              (s): s is string => typeof s === 'string',
+            )
+          : []),
       ])
     ),
     intelligence_summary: {

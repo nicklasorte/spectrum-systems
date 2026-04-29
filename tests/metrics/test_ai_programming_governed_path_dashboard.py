@@ -58,7 +58,7 @@ VALID_BYPASS = {
     "lineage_missing",
     "unknown",
 }
-VALID_STATUS = {"warn", "block", "unknown"}
+VALID_STATUS = {"pass", "warn", "block", "unknown"}
 VALID_REPO_MUTATING = {True, False, "unknown"}
 
 BANNED_AUTHORITY_FIELDS = (

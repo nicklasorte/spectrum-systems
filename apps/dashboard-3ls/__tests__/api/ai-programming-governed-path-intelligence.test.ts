@@ -47,6 +47,17 @@ describe('AEX-PQX-DASH-01 — /api/intelligence exposes ai_programming_governed_
     expect(block).toContain('reason_codes');
   });
 
+  it('guards raw artifact warnings/source_artifacts_used spreads with Array.isArray', () => {
+    // Regression: a malformed-but-parseable artifact (e.g. warnings={...}) must
+    // not throw "object is not iterable" when spread into the envelope.
+    expect(intelligenceSrc).toMatch(
+      /Array\.isArray\(aiProgrammingGovernedPath\?\.warnings\)/,
+    );
+    expect(intelligenceSrc).toMatch(
+      /Array\.isArray\(aiProgrammingGovernedPath\?\.source_artifacts_used\)/,
+    );
+  });
+
   it('never names MET as a decision/enforcement/promotion authority for AI work', () => {
     expect(intelligenceSrc).not.toContain('ai_programming_decision');
     expect(intelligenceSrc).not.toContain('ai_programming_enforced');
