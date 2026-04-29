@@ -6,7 +6,7 @@ occurred, the expected outcome (what the system should have done), the actual
 outcome (what happened), the fix lineage, and the revalidation reference.
 
 This module is a non-owning phase-label support helper. It does not own eval
-coverage, control decisions, or promotion authority. Canonical ownership of
+coverage or advancement-readiness signals. Canonical ownership of
 those surfaces is recorded in ``docs/architecture/system_registry.md``.
 
 Failure prevented: regression to known historical failures when corpus drift

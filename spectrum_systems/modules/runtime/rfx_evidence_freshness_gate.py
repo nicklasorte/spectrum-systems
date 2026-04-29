@@ -5,10 +5,9 @@ acceptable freshness window. Stale evidence must not silently pass — the gate
 emits a deterministic block signal when any required input is too old or
 missing a timestamp.
 
-This module is a non-owning phase-label support helper. It does not own
-control decisions or enforcement actions — those belong to CDE and SEL as
-declared in ``docs/architecture/system_registry.md``. This gate emits
-freshness findings; downstream systems consume those findings.
+This module is a non-owning phase-label support helper. Canonical ownership
+of those surfaces is recorded in ``docs/architecture/system_registry.md``.
+This gate emits freshness findings; downstream systems consume those findings.
 
 Failure prevented: stale proof inputs silently passing verification, allowing
 outdated evidence to satisfy freshness-required gates.

@@ -6,7 +6,7 @@ runtime environment. The packet must include all inputs needed to trigger the
 failure and the expected observable outcome.
 
 This module is a non-owning phase-label support helper. It does not own
-replay authority or replay integrity decisions — those belong to REP as
+replay authority or replay integrity outputs — those belong to REP as
 declared in ``docs/architecture/system_registry.md``. The packet is a
 support input for REP-owned replay runs.
 

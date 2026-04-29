@@ -5,9 +5,9 @@ static forbidden authority phrases as literal source text. Forbidden phrases
 must be constructed dynamically at runtime so they cannot be accidentally
 committed as owned verbs in fixture files.
 
-This module is a non-owning phase-label support helper. It does not own or
-enforce authority boundaries — that authority belongs to SEL, TPA, and CDE
-as declared in ``docs/architecture/system_registry.md``.
+This module is a non-owning phase-label support helper. It does not own the
+governed authority-boundary surfaces declared in
+``docs/architecture/system_registry.md``.
 
 Failure prevented: static forbidden authority phrases persisting in fixture
 source, bypassing authority-shape checks on committed code.

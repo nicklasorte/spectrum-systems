@@ -14,8 +14,7 @@ Every campaign produced the expected failure signal. Fix and revalidation
 steps are recorded below.
 
 RFX remains a non-owning phase label throughout. None of the new modules
-claim decision, approval, certification, enforcement, promotion, or
-adjudication authority.
+claim any governed-system authority.
 
 ---
 

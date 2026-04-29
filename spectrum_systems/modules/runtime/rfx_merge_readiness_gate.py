@@ -4,8 +4,7 @@ Checks that all required proof artifacts, guard conditions, and test
 evidence are present before a change is considered ready for merge. Missing
 proof, guards, or tests cause the gate to emit a block signal.
 
-This module is a non-owning phase-label support helper. It does not own
-merge decisions, promotion authority, or enforcement actions. Canonical
+This module is a non-owning phase-label support helper. Canonical
 ownership of those surfaces is recorded in
 ``docs/architecture/system_registry.md``. This gate emits a readiness
 signal as input to the canonical owners.

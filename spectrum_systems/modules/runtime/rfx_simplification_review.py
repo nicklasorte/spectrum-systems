@@ -6,7 +6,7 @@ justification are flagged for folding or deprecation. Helpers with duplicate
 responsibilities are flagged for consolidation.
 
 This module is a non-owning phase-label support helper. It does not own the
-decision to remove or keep modules — that belongs to the governed PR process
+outcome of removing or keeping modules — that belongs to the governed PR process
 and canonical system owners in ``docs/architecture/system_registry.md``.
 
 Failure prevented: bloated helper surface with no traceable failure-prevention

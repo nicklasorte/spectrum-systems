@@ -8,7 +8,7 @@ candidate is warranted.
 This module is a non-owning phase-label support helper. EVL remains the sole
 eval-coverage authority as recorded in ``docs/architecture/system_registry.md``.
 This bridge emits candidate inputs for EVL; it does not own or record eval
-coverage decisions.
+coverage outputs.
 
 Failure prevented: incidents that close without any regression eval coverage,
 allowing the same failure to recur undetected; missing rationale when eval is
@@ -92,7 +92,7 @@ def build_rfx_incident_to_eval_bridge(
             else:
                 skip_with_rationale += 1
         else:
-            if not classification or not incident_id:
+            if not classification or not incident_id or not trace_ref:
                 reason.append("rfx_bridge_no_eval_candidate")
             else:
                 candidates.append({

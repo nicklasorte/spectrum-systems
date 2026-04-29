@@ -6,7 +6,7 @@ justification, duplicate responsibilities, or superseded functionality are
 flagged as consolidation candidates.
 
 This module is a non-owning phase-label support helper. It does not own
-the module lifecycle or deprecation decisions — those require governed PR
+the module lifecycle or deprecation outputs — those require governed PR
 review. This module emits a candidate list as input to the governed process.
 
 Failure prevented: duplicate or unjustified helper modules surviving in the

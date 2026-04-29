@@ -79,3 +79,10 @@ def test_conversion_rate_signal():
 def test_artifact_type():
     result = build_rfx_incident_to_eval_bridge(incidents=[_incident()])
     assert result["artifact_type"] == "rfx_incident_to_eval_bridge"
+
+
+def test_missing_trace_ref_does_not_produce_candidate():
+    # P2 fix: missing trace_ref must fail closed — no partial candidate emitted.
+    result = build_rfx_incident_to_eval_bridge(incidents=[_incident(trace_ref=None)])
+    assert result["eval_candidates"] == []
+    assert "rfx_bridge_no_eval_candidate" in result["reason_codes_emitted"]

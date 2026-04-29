@@ -110,3 +110,18 @@ def test_non_list_extra_constraints_does_not_raise():
         extra_constraints="not-a-list",
     )
     assert result["artifact_type"] == "rfx_repair_prompt"
+
+
+def test_string_validation_cmds_treated_as_missing():
+    # P2 fix: a string validation_cmds must not pass the list check.
+    result = generate_rfx_repair_prompt(
+        rfx_proof=_proof(validation_cmds="pytest -q")
+    )
+    assert "rfx_repair_missing_validation_cmds" in result["reason_codes_emitted"]
+    assert isinstance(result["validation_cmds"], list)
+
+
+def test_list_validation_cmds_accepted():
+    result = generate_rfx_repair_prompt(rfx_proof=_proof())
+    assert isinstance(result["validation_cmds"], list)
+    assert len(result["validation_cmds"]) > 0

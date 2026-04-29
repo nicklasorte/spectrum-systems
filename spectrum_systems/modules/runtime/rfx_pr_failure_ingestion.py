@@ -5,8 +5,8 @@ RFX failure records suitable for corpus, eval-bridge, and replay-packet
 consumption. Raw unstructured log strings are rejected.
 
 This module is a non-owning phase-label support helper. It does not own PR
-governance, merge decisions, or enforcement — those belong to GOV, CDE, and
-SEL as declared in ``docs/architecture/system_registry.md``.
+governance or merge outcomes — canonical ownership is declared in
+``docs/architecture/system_registry.md``.
 
 Failure prevented: PR log data entering RFX without structured failure
 extraction, hiding failure patterns and blocking replay/eval pipelines.

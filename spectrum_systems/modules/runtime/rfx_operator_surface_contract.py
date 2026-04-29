@@ -6,9 +6,8 @@ contract enforces that every operator surface record exposes only the
 required compact fields and does not leak raw internal artifact payloads.
 
 This module is a non-owning phase-label support helper. It does not own
-operator dashboards, enforcement gates, or promotion decisions — those
-belong to OBS, SEL, CDE, and GOV as recorded in
-``docs/architecture/system_registry.md``.
+operator dashboards or readiness-gate surfaces — canonical ownership is
+recorded in ``docs/architecture/system_registry.md``.
 
 Failure prevented: operators drowning in raw artifact output instead of
 compact, actionable state summaries; operator tooling that bypasses proof

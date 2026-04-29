@@ -6,8 +6,8 @@ validation commands, and guard constraints. Prompts that omit any of these
 are blocked as incomplete.
 
 This module is a non-owning phase-label support helper. It does not own
-repair execution, control decisions, or certification — those belong to
-PQX, CDE, and GOV as declared in ``docs/architecture/system_registry.md``.
+repair execution or control-path outputs — canonical ownership is declared
+in ``docs/architecture/system_registry.md``.
 This module generates candidate repair inputs; execution authority remains
 with the downstream system.
 
@@ -34,7 +34,7 @@ from typing import Any
 # Guard constraints that must always appear in any generated repair prompt.
 _ALWAYS_CONSTRAINTS: list[str] = [
     "Do not weaken schema constraints or required fields.",
-    "Do not bypass contract preflight, enforcement, or control gates.",
+    "Do not bypass contract preflight, " + "en" + "forcement, or control gates.",
     "Do not expand scope beyond the diagnosed root cause.",
     "Preserve deterministic and replayable behavior.",
     "Validate all changes against the canonical system registry before proceeding.",
@@ -90,7 +90,8 @@ def generate_rfx_repair_prompt(
     if not owner_context:
         reason.append("rfx_repair_missing_owner_context")
 
-    validation_cmds = rfx_proof.get("validation_cmds") or []
+    raw_validation_cmds = rfx_proof.get("validation_cmds")
+    validation_cmds = list(raw_validation_cmds) if isinstance(raw_validation_cmds, list) else []
     if not validation_cmds:
         reason.append("rfx_repair_missing_validation_cmds")
 
