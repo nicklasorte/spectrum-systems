@@ -55,6 +55,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
             r"jsonschema\.exceptions|ValidationError.*schema|contract.schema"
             r"|schema.validation.fail|additionalProperties.*false"
             r"|required.*property.*missing|is not valid under any of"
+            r"|is a required property"
             r"|schema_violation|contract_mismatch|control_surface_gap",
             re.IGNORECASE,
         ),

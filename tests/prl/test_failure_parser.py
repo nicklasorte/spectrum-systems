@@ -55,6 +55,12 @@ class TestParseLogLine:
         assert result is not None
         assert result.failure_class == "contract_schema_violation"
 
+    def test_contract_schema_violation_required_property(self):
+        line = "ValidationError: 'trace_id' is a required property"
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "contract_schema_violation"
+
     def test_missing_required_artifact(self):
         line = "halt: missing_required_artifact — artifact lineage_record not found"
         result = parse_log_line(line)
