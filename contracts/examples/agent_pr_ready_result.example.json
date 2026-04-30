@@ -1,0 +1,19 @@
+{
+  "artifact_type": "agent_pr_ready_result",
+  "schema_version": "1.0.0",
+  "guard_id": "agent-pr-ready-EXAMPLE-READY-0001",
+  "work_item_id": "CLP-02-EXAMPLE-READY",
+  "agent_type": "claude",
+  "repo_mutating": true,
+  "policy_ref": "docs/governance/core_loop_pre_pr_gate_policy.json",
+  "clp_result_ref": "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+  "clp_gate_status": "pass",
+  "pr_ready_status": "ready",
+  "reason_codes": [],
+  "required_follow_up": [],
+  "trace_refs": [],
+  "replay_refs": [],
+  "authority_scope": "observation_only",
+  "human_review_required": false,
+  "generated_at": "2026-04-30T00:00:00Z"
+}

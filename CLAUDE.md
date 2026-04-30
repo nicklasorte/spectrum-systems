@@ -214,7 +214,27 @@ Do not infer schema alignment — validate it.
 - No bypass of SEL / CDE / TLC.
 - No interactive permission prompts — halt and emit a finding instead.
 
+## Pre-PR Gate Evidence (CLP-02)
+
+Before marking repo-mutating work PR-ready or updating an existing PR, run
+or provide:
+
+- `python scripts/run_core_loop_pre_pr_gate.py --work-item-id <ID> --agent-type claude`
+- `python scripts/check_agent_pr_ready.py --work-item-id <ID> --agent-type claude`
+
+Rules:
+
+- Repo-mutating slice with no `core_loop_pre_pr_gate_result` is not PR-ready.
+- CLP `gate_status=block` blocks PR-ready handoff. Repair via PRL/FRE/CDE/PQX
+  or report the CLP block.
+- CLP `gate_status=warn` permits PR-ready only if every warn reason code is
+  in `docs/governance/core_loop_pre_pr_gate_policy.json` →
+  `allowed_warn_reason_codes`.
+- CLP is observation-only. AEX owns admission, PQX owns execution closure,
+  TPA owns policy, CDE owns continuation/closure, SEL owns final compliance.
+
 ## References
 
 - `README.md`
 - `docs/architecture/system_registry.md`
+- `docs/architecture/clp_02_pr_ready_admission.md`

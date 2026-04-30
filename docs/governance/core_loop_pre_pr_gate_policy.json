@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0.0",
+  "policy_id": "CLP-02",
+  "policy_name": "core_loop_pre_pr_gate_policy",
+  "authority_scope": "observation_only",
+  "owners": {
+    "policy_owner": "TPA",
+    "evidence_runner": "CLP",
+    "consumers": [
+      "AEX",
+      "PQX",
+      "EVL",
+      "TPA",
+      "CDE",
+      "SEL",
+      "PRL",
+      "AGL"
+    ]
+  },
+  "governed_agent_types": [
+    "codex",
+    "claude",
+    "other",
+    "unknown"
+  ],
+  "repo_mutating_surfaces": [
+    ".github/workflows/",
+    "scripts/",
+    "contracts/",
+    "spectrum_systems/",
+    "tests/",
+    "docs/governance/",
+    "docs/architecture/system_registry.md"
+  ],
+  "non_governed_docs_only_surfaces": [
+    "README.md",
+    "CHANGELOG.md",
+    "docs/reviews/",
+    "docs/review-actions/",
+    "docs/roadmaps/"
+  ],
+  "required_clp_artifact_type": "core_loop_pre_pr_gate_result",
+  "required_clp_artifact_path_default": "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+  "required_checks": [
+    "authority_shape_preflight",
+    "authority_leak_guard",
+    "contract_enforcement",
+    "tls_generated_artifact_freshness",
+    "contract_preflight",
+    "selected_tests"
+  ],
+  "allowed_warn_reason_codes": [],
+  "block_reason_codes": [
+    "authority_shape_violation",
+    "authority_shape_review_language_lint",
+    "authority_leak_violation",
+    "authority_leak_guard_failure",
+    "forbidden_authority_value",
+    "contract_enforcement_violation",
+    "contract_compliance_findings",
+    "tls_generated_artifact_stale",
+    "tls_generated_artifact_drift",
+    "tls_generator_returned_nonzero",
+    "contract_preflight_block",
+    "contract_mismatch",
+    "schema_violation",
+    "missing_required_artifact",
+    "missing_required_check_output",
+    "pytest_selection_missing",
+    "no_tests_selected_for_governed_changes",
+    "selected_test_failure",
+    "policy_mismatch",
+    "system_registry_mismatch"
+  ],
+  "max_repair_attempts": 0,
+  "rules": {
+    "repo_mutating_requires_clp_evidence": true,
+    "missing_clp_evidence_blocks_pr_ready": true,
+    "clp_block_blocks_pr_ready": true,
+    "clp_warn_requires_explicit_allow": true,
+    "unknown_check_output_blocks": true,
+    "selected_tests_missing_for_governed_surfaces_blocks": true,
+    "generated_artifact_freshness_failure_blocks": true,
+    "contract_mismatch_blocks": true,
+    "schema_violation_blocks": true,
+    "authority_shape_violation_blocks": true,
+    "authority_leak_guard_failure_blocks": true,
+    "authority_scope_must_be_observation_only": true
+  },
+  "must_not_do": [
+    "approve",
+    "certify",
+    "promote",
+    "enforce",
+    "admit",
+    "execute",
+    "auto_apply_repairs",
+    "suppress_existing_gates",
+    "make_final_cde_decisions"
+  ],
+  "introduced_in": "CLP-02",
+  "last_updated_in": "CLP-02",
+  "notes": "CLP-02 policy. CLP is observation-only. Policy/scope authority remains with TPA; admission with AEX; execution closure with PQX; eval evidence with EVL; continuation/closure with CDE; final compliance with SEL. CLP emits the core_loop_pre_pr_gate_result artifact and feeds AGL via clp_evidence_artifact and the agent_pr_ready_result guard. Enforcement of agent PR-ready handoff lives in the AGL/check_agent_pr_ready guards and the existing required_pr_checks pytest gate, never in CLP itself."
+}

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/clp/agent_pr_ready_result.schema.json",
+  "title": "Agent PR-Ready Result",
+  "description": "CLP-02 agent PR-ready guard artifact emitted by scripts/check_agent_pr_ready.py. The guard observes a core_loop_pre_pr_gate_result against docs/governance/core_loop_pre_pr_gate_policy.json and reports whether a repo-mutating Codex/Claude slice may be marked PR-ready. This artifact is observation-only. It does not approve, certify, promote, or enforce. AEX retains admission authority, PQX retains execution closure authority, TPA retains policy authority, CDE retains continuation/closure authority, SEL retains final compliance authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "guard_id",
+    "work_item_id",
+    "agent_type",
+    "repo_mutating",
+    "policy_ref",
+    "clp_result_ref",
+    "pr_ready_status",
+    "reason_codes",
+    "required_follow_up",
+    "trace_refs",
+    "replay_refs",
+    "authority_scope",
+    "human_review_required",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "agent_pr_ready_result"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "guard_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent_type": {
+      "enum": ["codex", "claude", "other", "unknown"]
+    },
+    "repo_mutating": {
+      "type": "boolean"
+    },
+    "policy_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "clp_result_ref": {
+      "type": ["string", "null"]
+    },
+    "clp_gate_status": {
+      "enum": ["pass", "warn", "block", null]
+    },
+    "pr_ready_status": {
+      "enum": ["ready", "not_ready", "human_review_required"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_follow_up": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["owner_system", "action_type", "reason_code", "source_failure_ref"],
+        "properties": {
+          "owner_system": {
+            "enum": [
+              "AEX",
+              "PQX",
+              "EVL",
+              "TPA",
+              "CDE",
+              "SEL",
+              "LIN",
+              "REP",
+              "OBS",
+              "SLO",
+              "PRL",
+              "RIL",
+              "FRE",
+              "AGL",
+              "CLP"
+            ]
+          },
+          "action_type": { "type": "string", "minLength": 1 },
+          "reason_code": { "type": "string", "minLength": 1 },
+          "source_failure_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    },
+    "human_review_required": {
+      "type": "boolean"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "pr_ready_status": { "const": "ready" }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_review_required": { "const": false }
+        }
+      }
+    }
+  ]
+}

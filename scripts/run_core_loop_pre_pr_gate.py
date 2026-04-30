@@ -47,6 +47,11 @@ from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (  # noqa: E4
     utc_now_iso,
     write_json,
 )
+from spectrum_systems.modules.runtime.core_loop_pre_pr_gate_policy import (  # noqa: E402
+    DEFAULT_POLICY_REL_PATH,
+    PolicyLoadError,
+    load_policy,
+)
 from spectrum_systems.modules.runtime.pr_test_selection import (  # noqa: E402
     is_docs_only_non_governed,
     resolve_required_tests,
@@ -105,6 +110,15 @@ def _parse_args() -> argparse.Namespace:
         action="append",
         default=[],
         help="Skip a named check (DEBUG ONLY: gate will block on missing required check).",
+    )
+    parser.add_argument(
+        "--policy",
+        default=DEFAULT_POLICY_REL_PATH,
+        help=(
+            "Path to docs/governance/core_loop_pre_pr_gate_policy.json. "
+            "Loaded for traceability and recorded in source_artifacts_used. "
+            "TPA owns policy authority; CLP only consumes it."
+        ),
     )
     return parser.parse_args()
 
@@ -486,6 +500,25 @@ def main() -> int:
     output_dir = (REPO_ROOT / args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    policy_path = (REPO_ROOT / args.policy).resolve()
+    try:
+        load_policy(policy_path)
+    except PolicyLoadError as exc:
+        # Fail-closed: refuse to emit a CLP result without a valid policy ref.
+        print(
+            json.dumps(
+                {
+                    "error": "policy_load_failed",
+                    "policy": str(policy_path),
+                    "detail": str(exc),
+                },
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
+        return 2
+    policy_ref = str(policy_path.relative_to(REPO_ROOT))
+
     try:
         changed_files = resolve_changed_files(
             repo_root=REPO_ROOT,
@@ -533,6 +566,9 @@ def main() -> int:
         )
 
     emitted_path = output_dir / "core_loop_pre_pr_gate_result.json"
+    source_artifacts = list(args.source_artifact or [])
+    if policy_ref not in source_artifacts:
+        source_artifacts.append(policy_ref)
     artifact = build_gate_result(
         work_item_id=args.work_item_id,
         agent_type=args.agent_type,
@@ -541,7 +577,7 @@ def main() -> int:
         head_ref=args.head_ref,
         changed_files=changed_files,
         checks=checks,
-        source_artifacts_used=list(args.source_artifact or []),
+        source_artifacts_used=source_artifacts,
         emitted_artifacts=[str(emitted_path.relative_to(REPO_ROOT))],
         generated_at=utc_now_iso(),
     )
