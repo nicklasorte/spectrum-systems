@@ -75,6 +75,7 @@
           "spectrum_systems/governance/proof_presence_enforcement.py",
           "spectrum_systems/governance/system_dependency_map.py",
           "spectrum_systems/modules/hop/ai_failure_mapper.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
@@ -83,8 +84,7 @@
           "spectrum_systems/modules/runtime/chx_runtime.py",
           "spectrum_systems/modules/runtime/context_governed_flow.py",
           "spectrum_systems/modules/runtime/cvx_runtime.py",
-          "spectrum_systems/modules/runtime/dep_runtime.py",
-          "spectrum_systems/modules/runtime/dex_runtime.py"
+          "spectrum_systems/modules/runtime/dep_runtime.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -128,15 +128,15 @@
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/metrics/test_met_full_roadmap_contract_selection.py",
+          "tests/prl/test_artifact_builder.py",
+          "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase1_foundation.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_3ls_simplification.py",
           "tests/test_3ls_simplification_phases_6_9.py",
           "tests/test_aex_admission.py",
           "tests/test_aex_authority_shape_regression.py",
-          "tests/test_aex_fail_closed.py",
-          "tests/test_aex_hardening.py",
-          "tests/test_aex_repo_write_boundary_structural.py"
+          "tests/test_aex_fail_closed.py"
         ]
       },
       "evidence_count": 119,
@@ -201,6 +201,7 @@
         "modules": [
           "spectrum_systems/modules/budget/cap_enforcer.py",
           "spectrum_systems/modules/hop/proposer.py",
+          "spectrum_systems/modules/prl/artifact_builder.py",
           "spectrum_systems/modules/regression/harness.py",
           "spectrum_systems/modules/runtime/adaptive_execution_observability.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
@@ -227,6 +228,7 @@
           "scripts/validate_system_registry_boundaries.py"
         ],
         "tests": [
+          "tests/prl/test_artifact_builder.py",
           "tests/test_3ls_phase5_release_budget.py",
           "tests/test_ai_governed_integration.py",
           "tests/test_integration_fabric_ifb.py",
@@ -237,7 +239,7 @@
           "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
-      "evidence_count": 77,
+      "evidence_count": 79,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CAP"
@@ -581,6 +583,8 @@
           "spectrum_systems/modules/hop/extraction_baseline_harness.py",
           "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/failure_trace.py",
+          "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
@@ -588,9 +592,7 @@
           "spectrum_systems/modules/runtime/bne02_full_wave.py",
           "spectrum_systems/modules/runtime/chaos_failure_intelligence.py",
           "spectrum_systems/modules/runtime/control_chain_invariants.py",
-          "spectrum_systems/modules/runtime/control_integration.py",
-          "spectrum_systems/modules/runtime/control_loop.py",
-          "spectrum_systems/modules/runtime/control_loop_chaos.py"
+          "spectrum_systems/modules/runtime/control_integration.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -625,14 +627,14 @@
           "tests/mvp-3/ingestion-eval-gate.test.ts",
           "tests/mvp-6/extraction-eval-gate.test.ts",
           "tests/mvp-9/draft-eval-gate.test.ts",
+          "tests/prl/test_eval_generator.py",
+          "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase2_context_eval.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_authority_shape_preflight.py",
           "tests/test_certification_integrity.py",
           "tests/test_chaos_fail_closed.py",
-          "tests/test_clx_all_01_redteam.py",
-          "tests/test_contracts.py",
-          "tests/test_control_executor.py"
+          "tests/test_clx_all_01_redteam.py"
         ]
       },
       "evidence_count": 110,
@@ -703,6 +705,9 @@
           "spectrum_systems/governance/authority_shape_early_gate.py",
           "spectrum_systems/governance/system_dependency_map.py",
           "spectrum_systems/modules/observability/failure_trace.py",
+          "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/prl/repair_generator.py",
           "spectrum_systems/modules/review_handoff_disposition.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
@@ -718,10 +723,7 @@
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
           "spectrum_systems/modules/runtime/recovery_orchestrator.py",
           "spectrum_systems/modules/runtime/repair_prompt_generator.py",
-          "spectrum_systems/modules/runtime/review_parsing_engine.py",
-          "spectrum_systems/modules/runtime/review_signal_classifier.py",
-          "spectrum_systems/modules/runtime/rfx_flow_integration.py",
-          "spectrum_systems/modules/runtime/rfx_route_guard.py"
+          "spectrum_systems/modules/runtime/review_parsing_engine.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -739,6 +741,7 @@
         ],
         "tests": [
           "tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json",
+          "tests/prl/test_failure_classifier.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_cde_decision_flow.py",
@@ -761,8 +764,7 @@
           "tests/test_rfx_route_guard.py",
           "tests/test_roadmap_execution.py",
           "tests/test_roadmap_expansion_contracts.py",
-          "tests/test_rqx_redteam_orchestrator.py",
-          "tests/test_rwa_runtime_wiring.py"
+          "tests/test_rqx_redteam_orchestrator.py"
         ]
       },
       "evidence_count": 109,
@@ -1296,6 +1298,8 @@
           "spectrum_systems/modules/lineage/replay_lineage_join.py",
           "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
+          "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/artifact_lineage.py",
@@ -1312,9 +1316,7 @@
           "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
           "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py",
           "spectrum_systems/modules/runtime/rfx_flow_integration.py",
-          "spectrum_systems/modules/runtime/rfx_integrity_bundle.py",
-          "spectrum_systems/modules/runtime/rfx_observability_replay_consistency.py",
-          "spectrum_systems/modules/runtime/rfx_route_guard.py"
+          "spectrum_systems/modules/runtime/rfx_integrity_bundle.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1330,6 +1332,7 @@
           "tests/fixtures/autonomous_cycle/hardening/lin_lineage_report.json",
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/metrics/test_met_04_18_contract_selection.py",
+          "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_aex_trust_hardening.py",
           "tests/test_authority_drift_regression.py",
@@ -1350,8 +1353,7 @@
           "tests/test_nt_trust_regression_pack.py",
           "tests/test_nx_registry_red_team.py",
           "tests/test_oc_bottleneck_classifier.py",
-          "tests/test_oc_closure_decision_packet.py",
-          "tests/test_oc_operational_closure_bundle.py"
+          "tests/test_oc_closure_decision_packet.py"
         ]
       },
       "evidence_count": 104,
@@ -1436,11 +1438,11 @@
           "spectrum_systems/modules/observability/dashboard_truth_projection.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
           "spectrum_systems/modules/observability/trust_artifact_freshness.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/artifact_lineage.py",
           "spectrum_systems/modules/runtime/control_surface_manifest.py",
           "spectrum_systems/modules/runtime/decision_gating.py",
-          "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py",
-          "spectrum_systems/modules/runtime/governed_execution_kernel.py"
+          "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -1486,6 +1488,7 @@
           "tests/mvp-2/context-bundle-assembler.test.ts",
           "tests/mvp-5/issue-extraction.test.ts",
           "tests/mvp-7/issue-structuring.test.ts",
+          "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_simplification.py",
           "tests/test_3ls_simplification_phases_6_9.py",
           "tests/test_authenticity_hardgate_24_01.py",
@@ -1501,8 +1504,7 @@
           "tests/test_oc_bottleneck_classifier.py",
           "tests/test_pqx_fix_gate.py",
           "tests/test_pqx_sequence_runner.py",
-          "tests/test_preflight_selection_diagnostic.py",
-          "tests/test_registry_valid.py"
+          "tests/test_preflight_selection_diagnostic.py"
         ]
       },
       "evidence_count": 128,
@@ -1576,6 +1578,7 @@
           "spectrum_systems/modules/observability/obs_emitter.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
           "spectrum_systems/modules/observability/trust_artifact_freshness.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/alert_triggers.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
@@ -1590,8 +1593,7 @@
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
           "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
-          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
-          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py"
+          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1615,6 +1617,7 @@
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/metrics/test_met_full_roadmap_contract_selection.py",
+          "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_3ls_phase6_integration.py",
           "tests/test_aex_trust_hardening.py",
@@ -1634,8 +1637,7 @@
           "tests/test_rfx_error_budget_governance.py",
           "tests/test_rfx_flow_integration.py",
           "tests/test_rfx_loop_04_06_red_team.py",
-          "tests/test_rfx_loop_07_08_chaos.py",
-          "tests/test_rfx_observability_replay_consistency.py"
+          "tests/test_rfx_loop_07_08_chaos.py"
         ]
       },
       "evidence_count": 111,
@@ -1840,9 +1842,9 @@
           "spectrum_systems/modules/observability/failure_trace.py",
           "spectrum_systems/modules/orchestration/pqx_step_harness.py",
           "spectrum_systems/modules/pqx_backbone.py",
-          "spectrum_systems/modules/prompt_queue/queue_state_machine.py",
-          "spectrum_systems/modules/prompt_queue/review_trigger_policy.py",
-          "spectrum_systems/modules/review_fix_execution_loop.py"
+          "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/prl/repair_generator.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -1895,6 +1897,7 @@
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
           "tests/mvp-2/context-bundle-assembler.test.ts",
+          "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_measurement_layer.py",
           "tests/test_3ls_phase1_foundation.py",
           "tests/test_3ls_phase4_observability.py",
@@ -1903,8 +1906,7 @@
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
-          "tests/test_authority_drift_regression.py",
-          "tests/test_build_preflight_pqx_wrapper.py"
+          "tests/test_authority_drift_regression.py"
         ]
       },
       "evidence_count": 128,
@@ -1992,6 +1994,70 @@
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRA"
+    },
+    {
+      "evidence": {
+        "artifacts": [
+          "artifacts/dependency-graph-summary.md",
+          "artifacts/policy-engine-report.json",
+          "artifacts/policy-engine-summary.md",
+          "artifacts/system_dependency_priority_report.json",
+          "artifacts/tls/d3l_registry_contract.json",
+          "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
+          "artifacts/tls/system_registry_dependency_graph.json",
+          "artifacts/tls/system_trust_gap_report.json"
+        ],
+        "docs": [
+          "docs/architecture/system_registry.md",
+          "docs/governance/preflight_required_surface_test_overrides.json",
+          "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
+          "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md"
+        ],
+        "modules": [
+          "spectrum_systems/modules/prl/__init__.py",
+          "spectrum_systems/modules/prl/artifact_builder.py",
+          "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/prl/failure_parser.py",
+          "spectrum_systems/modules/prl/repair_generator.py",
+          "spectrum_systems/modules/runtime/fre_repair_flow.py",
+          "spectrum_systems/modules/runtime/governed_repair_foundation.py",
+          "spectrum_systems/modules/runtime/governed_repair_loop_execution.py",
+          "spectrum_systems/modules/runtime/prl_lrt_failure_packet.py",
+          "spectrum_systems/modules/runtime/ril_interpretation.py",
+          "spectrum_systems/modules/runtime/system_enforcement_layer.py",
+          "spectrum_systems/modules/runtime/top_level_conductor.py"
+        ],
+        "review_actions": [],
+        "reviews": [],
+        "schemas": [],
+        "scripts": [
+          "scripts/run_github_pr_autofix_contract_preflight.py",
+          "scripts/run_pre_pr_reliability_gate.py"
+        ],
+        "tests": [
+          "tests/prl/__init__.py",
+          "tests/prl/test_artifact_builder.py",
+          "tests/prl/test_eval_generator.py",
+          "tests/prl/test_failure_classifier.py",
+          "tests/prl/test_failure_parser.py",
+          "tests/prl/test_pre_pr_gate.py",
+          "tests/prl/test_repair_generator.py",
+          "tests/test_cde_decision_flow.py",
+          "tests/test_contract_enforcement.py",
+          "tests/test_fre_repair_flow.py",
+          "tests/test_governed_preflight_remediation_loop.py",
+          "tests/test_governed_repair_foundation.py",
+          "tests/test_governed_repair_loop_delegation.py",
+          "tests/test_ril_interpretation.py"
+        ]
+      },
+      "evidence_count": 43,
+      "has_evidence": true,
+      "missing_evidence_reason": null,
+      "system_id": "PRL"
     },
     {
       "evidence": {
@@ -2213,6 +2279,9 @@
           "spectrum_systems/modules/lineage/replay_lineage_join.py",
           "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
+          "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/prl/repair_generator.py",
           "spectrum_systems/modules/replay/replay_gate.py",
           "spectrum_systems/modules/replay/replay_support.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
@@ -2229,10 +2298,7 @@
           "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
           "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
-          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py",
-          "spectrum_systems/modules/runtime/rfx_failure_profile.py",
-          "spectrum_systems/modules/runtime/rfx_failure_replay_packet.py",
-          "spectrum_systems/modules/runtime/rfx_flow_integration.py"
+          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -2250,6 +2316,8 @@
           "tests/fixtures/autonomous_cycle/hardening/rep_replay_gate_decision.json",
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/metrics/test_met_04_18_contract_selection.py",
+          "tests/prl/test_failure_classifier.py",
+          "tests/prl/test_repair_generator.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_aex_trust_hardening.py",
           "tests/test_clx_all_01_redteam.py",
@@ -2268,9 +2336,7 @@
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_flow_integration.py",
           "tests/test_rfx_integrity_bundle.py",
-          "tests/test_rfx_loop_04_06_red_team.py",
-          "tests/test_rfx_loop_07_08_chaos.py",
-          "tests/test_rfx_memory_persistence_handoff.py"
+          "tests/test_rfx_loop_04_06_red_team.py"
         ]
       },
       "evidence_count": 105,
@@ -3050,6 +3116,7 @@
           "spectrum_systems/modules/governance/tpa_policy_composition.py",
           "spectrum_systems/modules/governance/tpa_scope_policy.py",
           "spectrum_systems/modules/observability/failure_trace.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/review_fix_execution_loop.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
@@ -3057,8 +3124,7 @@
           "spectrum_systems/modules/runtime/authority_repair_engine.py",
           "spectrum_systems/modules/runtime/cal_runtime.py",
           "spectrum_systems/modules/runtime/cax.py",
-          "spectrum_systems/modules/runtime/chx_runtime.py",
-          "spectrum_systems/modules/runtime/context_governed_flow.py"
+          "spectrum_systems/modules/runtime/chx_runtime.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -3091,6 +3157,7 @@
           "tests/governance/test_3ls_authority_repair_suggestions.py",
           "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_met_04_18_contract_selection.py",
+          "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_registry_guard.py",
           "tests/test_3ls_simplification.py",
           "tests/test_3ls_simplification_phases_6_9.py",
@@ -3108,8 +3175,7 @@
           "tests/test_fail_closed_enforcer.py",
           "tests/test_failure_learning_artifacts.py",
           "tests/test_governed_execution_kernel.py",
-          "tests/test_governed_preflight_remediation_loop.py",
-          "tests/test_governed_repair_foundation.py"
+          "tests/test_governed_preflight_remediation_loop.py"
         ]
       },
       "evidence_count": 118,

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prl/prl_eval_case.schema.json",
+  "title": "PRL Eval Case",
+  "description": "PRL-03: advanced eval case consumed by EVL for regression gating. Owned by PRL; gate pass/fail authority remains with EVL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "timestamp",
+    "run_id",
+    "trace_id",
+    "trace_refs",
+    "candidate_ref",
+    "failure_class",
+    "eval_type",
+    "target_artifact",
+    "pass_condition",
+    "required",
+    "threshold",
+    "gated_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prl_eval_case"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^prl-evl-[a-f0-9]{16}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": { "type": "string", "minLength": 1 },
+        "related": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "candidate_ref": {
+      "type": "string",
+      "pattern": "^eval_case_candidate:.+"
+    },
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "pytest_selection_missing",
+        "authority_shape_violation",
+        "system_registry_mismatch",
+        "contract_schema_violation",
+        "missing_required_artifact",
+        "trace_missing",
+        "replay_mismatch",
+        "policy_mismatch",
+        "timeout",
+        "rate_limited",
+        "unknown_failure"
+      ]
+    },
+    "eval_type": {
+      "type": "string",
+      "enum": [
+        "schema_conformance",
+        "policy_alignment",
+        "replay_consistency",
+        "failure_regression_check"
+      ]
+    },
+    "target_artifact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pass_condition": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required": {
+      "const": true
+    },
+    "threshold": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "gated_at": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

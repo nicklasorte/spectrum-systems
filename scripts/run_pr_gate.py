@@ -154,12 +154,13 @@ def _evaluate_shard(
             return "skipped_required", "skipped_required_shard"
         if res_status in ("fail", "block"):
             return "failed", "shard_failed"
+        if res_status in ("pass", "ok"):
+            return "ok", None
+        # Unrecognized result status for a required shard — fail closed.
+        return "failed", "unknown_shard_result_status"
 
-    # Any other combination of statuses: accept as pass if result is not a failure.
-    if res_status in ("fail", "block"):
-        return "failed", "shard_failed"
-
-    return "ok", None
+    # Unrecognized selection status — fail closed rather than defaulting to pass.
+    return "failed", "unknown_shard_selection_status"
 
 
 def main() -> int:

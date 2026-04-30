@@ -372,6 +372,23 @@ they feed OBS / LIN / REP / SLO.
   - `apps/dashboard-3ls/app/page.tsx`
   - `artifacts/dashboard_metrics/`
 
+### PRL
+- **Status:** active
+- **Purpose:** PR reliability loop — converts PR/CI failures into structured failure artifacts, bounded repair candidates, and regression-preventing eval cases. Pre-PR gate enforces fail-closed checks before any branch update.
+- **Failure Prevented:** repeated PR failures without structured diagnosis, orphaned CI failures with no repair path, missing regression eval coverage.
+- **Signal Improved:** failure classification precision, repair candidate actionability, eval case coverage breadth.
+- **Canonical Artifacts Owned:** `pr_failure_capture_record`, `pre_pr_failure_packet`, `repair_candidate`, `eval_case_candidate`, `prl_eval_case`, `prl_eval_generation_record`, `prl_gate_result`.
+- **Upstream Dependencies:** CI log outputs, preflight scripts (authority_shape_preflight, system_registry_guard, contract_preflight).
+- **Downstream Dependencies:** FRE (repair candidates consumed advisory-only), EVL (prl_eval_case feeds regression gating), CDE (prl_gate_result feeds control decision).
+- **Authority Boundary:** PRL emits evidence and gate result artifacts only. Control decisions remain with CDE. Enforcement remains with SEL. Promotion remains with PRA/GOV. repair_candidate is advisory-only — auto_apply is always false.
+- **Primary Code Paths:**
+  - `spectrum_systems/modules/prl/failure_parser.py`
+  - `spectrum_systems/modules/prl/failure_classifier.py`
+  - `spectrum_systems/modules/prl/artifact_builder.py`
+  - `spectrum_systems/modules/prl/repair_generator.py`
+  - `spectrum_systems/modules/prl/eval_generator.py`
+  - `scripts/run_pre_pr_reliability_gate.py`
+
 ### HOP
 - **Status:** active
 - **Purpose:** harness optimization substrate — stores candidate harness code,
@@ -498,6 +515,7 @@ These are important but non-top-level authority families:
 - **GOV** — active certification and governance gate authority
 - **MAP** — active metadata/topology authority
 - **HOP** — active harness optimization substrate authority
+- **PRL** — active PR reliability loop authority (evidence only; control with CDE, enforcement with SEL)
 - **MET** — active non-owning measurement, observation, and signal-integrity capability (no authority)
 - **SUP** — deprecated merged into JSX supersession lifecycle
 - **RET** — deprecated merged into JSX retirement lifecycle
@@ -1423,6 +1441,28 @@ These are important but non-top-level authority families:
   - own_execution_authority
   - own_admission_authority
   - emit_authority_outcomes
+
+### PRL
+- **role:** PR reliability loop.
+- **status:** active
+- **owns:**
+  - pr_failure_capture_records
+  - pre_pr_failure_packets
+  - repair_candidates
+  - eval_case_candidates
+  - prl_eval_cases
+  - prl_eval_generation_records
+  - prl_gate_results
+- **consumes:**
+  - ci_log_outputs
+  - preflight_script_results
+- **produces:**
+  - prl_gate_result
+- **must_not_do:**
+  - own_control_decisions
+  - own_enforcement_authority
+  - own_promotion_authority
+  - auto_apply_repairs
 
 ### HOP
 - **role:** harness optimization substrate.

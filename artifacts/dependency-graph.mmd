@@ -352,6 +352,7 @@ flowchart TD
   art_eval_candidate_registry["eval_candidate_registry\ngovernance"]
   art_eval_canonicalization_policy["eval_canonicalization_policy\ncoordination"]
   art_eval_case["eval_case\nreview"]
+  art_eval_case_candidate["eval_case_candidate\ngovernance"]
   art_eval_coverage_artifact["eval_coverage_artifact\ncoordination"]
   art_eval_coverage_redteam_findings["eval_coverage_redteam_findings\ncoordination"]
   art_eval_coverage_registry["eval_coverage_registry\ncoordination"]
@@ -813,7 +814,7 @@ flowchart TD
   art_pqx_slice_execution_record["pqx_slice_execution_record\ncoordination"]
   art_pqx_strategy_status_artifact["pqx_strategy_status_artifact\ncoordination"]
   art_pqx_triage_plan_record["pqx_triage_plan_record\ncoordination"]
-  art_pr_test_shard_result["pr_test_shard_result\ngovernance"]
+  art_pr_failure_capture_record["pr_failure_capture_record\ngovernance"]
   art_pra_changed_scope_extraction_record["pra_changed_scope_extraction_record\ncoordination"]
   art_pra_ci_review_extraction_record["pra_ci_review_extraction_record\ncoordination"]
   art_pra_pull_request_anchor_record["pra_pull_request_anchor_record\ncoordination"]
@@ -821,6 +822,7 @@ flowchart TD
   art_pra_pull_request_metadata_normalization_record["pra_pull_request_metadata_normalization_record\ncoordination"]
   art_pra_pull_request_resolution_record["pra_pull_request_resolution_record\ncoordination"]
   art_pra_system_impact_mapping_record["pra_system_impact_mapping_record\ncoordination"]
+  art_pre_pr_failure_packet["pre_pr_failure_packet\ngovernance"]
   art_precedent_conflict_record["precedent_conflict_record\ncoordination"]
   art_precedent_ranking_evaluation_record["precedent_ranking_evaluation_record\ncoordination"]
   art_precedent_retrieval["precedent_retrieval\ncoordination"]
@@ -857,6 +859,10 @@ flowchart TD
   art_prg_signal_prioritization_record["prg_signal_prioritization_record\ngovernance"]
   art_prg_smallest_safe_next_batch_recommendation["prg_smallest_safe_next_batch_recommendation\ngovernance"]
   art_prioritized_adoption_candidate_set["prioritized_adoption_candidate_set\ncoordination"]
+  art_prl_eval_case["prl_eval_case\ngovernance"]
+  art_prl_eval_generation_record["prl_eval_generation_record\ngovernance"]
+  art_prl_gate_result["prl_gate_result\ngovernance"]
+  art_prl_repair_candidate["prl_repair_candidate\ngovernance"]
   art_prm_ai_prompt_admissibility_result["prm_ai_prompt_admissibility_result\ngovernance"]
   art_prm_ai_task_registry_record["prm_ai_task_registry_record\ngovernance"]
   art_prm_artifact_taxonomy_validation_result["prm_artifact_taxonomy_validation_result\ncoordination"]
@@ -1675,6 +1681,7 @@ flowchart TD
   con_eval_candidate_registry["eval_candidate_registry\ncontract"]
   con_eval_canonicalization_policy["eval_canonicalization_policy\ncontract"]
   con_eval_case["eval_case\ncontract"]
+  con_eval_case_candidate["eval_case_candidate\ncontract"]
   con_eval_coverage_artifact["eval_coverage_artifact\ncontract"]
   con_eval_coverage_redteam_findings["eval_coverage_redteam_findings\ncontract"]
   con_eval_coverage_registry["eval_coverage_registry\ncontract"]
@@ -2131,7 +2138,7 @@ flowchart TD
   con_pqx_slice_execution_record["pqx_slice_execution_record\ncontract"]
   con_pqx_strategy_status_artifact["pqx_strategy_status_artifact\ncontract"]
   con_pqx_triage_plan_record["pqx_triage_plan_record\ncontract"]
-  con_pr_test_shard_result["pr_test_shard_result\ncontract"]
+  con_pr_failure_capture_record["pr_failure_capture_record\ncontract"]
   con_pra_changed_scope_extraction_record["pra_changed_scope_extraction_record\ncontract"]
   con_pra_ci_review_extraction_record["pra_ci_review_extraction_record\ncontract"]
   con_pra_pull_request_anchor_record["pra_pull_request_anchor_record\ncontract"]
@@ -2139,6 +2146,7 @@ flowchart TD
   con_pra_pull_request_metadata_normalization_record["pra_pull_request_metadata_normalization_record\ncontract"]
   con_pra_pull_request_resolution_record["pra_pull_request_resolution_record\ncontract"]
   con_pra_system_impact_mapping_record["pra_system_impact_mapping_record\ncontract"]
+  con_pre_pr_failure_packet["pre_pr_failure_packet\ncontract"]
   con_precedent_conflict_record["precedent_conflict_record\ncontract"]
   con_precedent_ranking_evaluation_record["precedent_ranking_evaluation_record\ncontract"]
   con_precedent_retrieval["precedent_retrieval\ncontract"]
@@ -2175,6 +2183,10 @@ flowchart TD
   con_prg_signal_prioritization_record["prg_signal_prioritization_record\ncontract"]
   con_prg_smallest_safe_next_batch_recommendation["prg_smallest_safe_next_batch_recommendation\ncontract"]
   con_prioritized_adoption_candidate_set["prioritized_adoption_candidate_set\ncontract"]
+  con_prl_eval_case["prl_eval_case\ncontract"]
+  con_prl_eval_generation_record["prl_eval_generation_record\ncontract"]
+  con_prl_gate_result["prl_gate_result\ncontract"]
+  con_prl_repair_candidate["prl_repair_candidate\ncontract"]
   con_prm_ai_prompt_admissibility_result["prm_ai_prompt_admissibility_result\ncontract"]
   con_prm_ai_task_registry_record["prm_ai_task_registry_record\ncontract"]
   con_prm_artifact_taxonomy_validation_result["prm_artifact_taxonomy_validation_result\ncontract"]
@@ -2988,6 +3000,7 @@ flowchart TD
   art_eval_candidate_registry -. governed_by .-> con_eval_candidate_registry
   art_eval_canonicalization_policy -. governed_by .-> con_eval_canonicalization_policy
   art_eval_case -. governed_by .-> con_eval_case
+  art_eval_case_candidate -. governed_by .-> con_eval_case_candidate
   art_eval_coverage_artifact -. governed_by .-> con_eval_coverage_artifact
   art_eval_coverage_redteam_findings -. governed_by .-> con_eval_coverage_redteam_findings
   art_eval_coverage_registry -. governed_by .-> con_eval_coverage_registry
@@ -3444,7 +3457,7 @@ flowchart TD
   art_pqx_slice_execution_record -. governed_by .-> con_pqx_slice_execution_record
   art_pqx_strategy_status_artifact -. governed_by .-> con_pqx_strategy_status_artifact
   art_pqx_triage_plan_record -. governed_by .-> con_pqx_triage_plan_record
-  art_pr_test_shard_result -. governed_by .-> con_pr_test_shard_result
+  art_pr_failure_capture_record -. governed_by .-> con_pr_failure_capture_record
   art_pra_changed_scope_extraction_record -. governed_by .-> con_pra_changed_scope_extraction_record
   art_pra_ci_review_extraction_record -. governed_by .-> con_pra_ci_review_extraction_record
   art_pra_pull_request_anchor_record -. governed_by .-> con_pra_pull_request_anchor_record
@@ -3452,6 +3465,7 @@ flowchart TD
   art_pra_pull_request_metadata_normalization_record -. governed_by .-> con_pra_pull_request_metadata_normalization_record
   art_pra_pull_request_resolution_record -. governed_by .-> con_pra_pull_request_resolution_record
   art_pra_system_impact_mapping_record -. governed_by .-> con_pra_system_impact_mapping_record
+  art_pre_pr_failure_packet -. governed_by .-> con_pre_pr_failure_packet
   art_precedent_conflict_record -. governed_by .-> con_precedent_conflict_record
   art_precedent_ranking_evaluation_record -. governed_by .-> con_precedent_ranking_evaluation_record
   art_precedent_retrieval -. governed_by .-> con_precedent_retrieval
@@ -3488,6 +3502,10 @@ flowchart TD
   art_prg_signal_prioritization_record -. governed_by .-> con_prg_signal_prioritization_record
   art_prg_smallest_safe_next_batch_recommendation -. governed_by .-> con_prg_smallest_safe_next_batch_recommendation
   art_prioritized_adoption_candidate_set -. governed_by .-> con_prioritized_adoption_candidate_set
+  art_prl_eval_case -. governed_by .-> con_prl_eval_case
+  art_prl_eval_generation_record -. governed_by .-> con_prl_eval_generation_record
+  art_prl_gate_result -. governed_by .-> con_prl_gate_result
+  art_prl_repair_candidate -. governed_by .-> con_prl_repair_candidate
   art_prm_ai_prompt_admissibility_result -. governed_by .-> con_prm_ai_prompt_admissibility_result
   art_prm_ai_task_registry_record -. governed_by .-> con_prm_ai_task_registry_record
   art_prm_artifact_taxonomy_validation_result -. governed_by .-> con_prm_artifact_taxonomy_validation_result
@@ -4301,6 +4319,7 @@ flowchart TD
   con_eval_candidate_registry -->|validates| art_eval_candidate_registry
   con_eval_canonicalization_policy -->|validates| art_eval_canonicalization_policy
   con_eval_case -->|validates| art_eval_case
+  con_eval_case_candidate -->|validates| art_eval_case_candidate
   con_eval_coverage_artifact -->|validates| art_eval_coverage_artifact
   con_eval_coverage_redteam_findings -->|validates| art_eval_coverage_redteam_findings
   con_eval_coverage_registry -->|validates| art_eval_coverage_registry
@@ -4757,7 +4776,7 @@ flowchart TD
   con_pqx_slice_execution_record -->|validates| art_pqx_slice_execution_record
   con_pqx_strategy_status_artifact -->|validates| art_pqx_strategy_status_artifact
   con_pqx_triage_plan_record -->|validates| art_pqx_triage_plan_record
-  con_pr_test_shard_result -->|validates| art_pr_test_shard_result
+  con_pr_failure_capture_record -->|validates| art_pr_failure_capture_record
   con_pra_changed_scope_extraction_record -->|validates| art_pra_changed_scope_extraction_record
   con_pra_ci_review_extraction_record -->|validates| art_pra_ci_review_extraction_record
   con_pra_pull_request_anchor_record -->|validates| art_pra_pull_request_anchor_record
@@ -4765,6 +4784,7 @@ flowchart TD
   con_pra_pull_request_metadata_normalization_record -->|validates| art_pra_pull_request_metadata_normalization_record
   con_pra_pull_request_resolution_record -->|validates| art_pra_pull_request_resolution_record
   con_pra_system_impact_mapping_record -->|validates| art_pra_system_impact_mapping_record
+  con_pre_pr_failure_packet -->|validates| art_pre_pr_failure_packet
   con_precedent_conflict_record -->|validates| art_precedent_conflict_record
   con_precedent_ranking_evaluation_record -->|validates| art_precedent_ranking_evaluation_record
   con_precedent_retrieval -->|validates| art_precedent_retrieval
@@ -4801,6 +4821,10 @@ flowchart TD
   con_prg_signal_prioritization_record -->|validates| art_prg_signal_prioritization_record
   con_prg_smallest_safe_next_batch_recommendation -->|validates| art_prg_smallest_safe_next_batch_recommendation
   con_prioritized_adoption_candidate_set -->|validates| art_prioritized_adoption_candidate_set
+  con_prl_eval_case -->|validates| art_prl_eval_case
+  con_prl_eval_generation_record -->|validates| art_prl_eval_generation_record
+  con_prl_gate_result -->|validates| art_prl_gate_result
+  con_prl_repair_candidate -->|validates| art_prl_repair_candidate
   con_prm_ai_prompt_admissibility_result -->|validates| art_prm_ai_prompt_admissibility_result
   con_prm_ai_task_registry_record -->|validates| art_prm_ai_task_registry_record
   con_prm_artifact_taxonomy_validation_result -->|validates| art_prm_artifact_taxonomy_validation_result

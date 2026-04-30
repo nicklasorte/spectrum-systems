@@ -2605,6 +2605,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "eval_case_candidate",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `eval_case_candidate`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "eval_coverage_artifact",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `eval_coverage_artifact`.",
@@ -5855,9 +5862,9 @@
       "consuming_systems": []
     },
     {
-      "artifact_type": "pr_test_shard_result",
+      "artifact_type": "pr_failure_capture_record",
       "artifact_class": "governance",
-      "description": "Governed artifact for contract `pr_test_shard_result`.",
+      "description": "Governed artifact for contract `pr_failure_capture_record`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -5907,6 +5914,13 @@
       "artifact_type": "pra_system_impact_mapping_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `pra_system_impact_mapping_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "pre_pr_failure_packet",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `pre_pr_failure_packet`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -6159,6 +6173,34 @@
       "artifact_type": "prioritized_adoption_candidate_set",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `prioritized_adoption_candidate_set`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_eval_case",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_eval_case`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_eval_generation_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_eval_generation_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_gate_result",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_gate_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_repair_candidate",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_repair_candidate`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -12949,6 +12991,16 @@
       ]
     },
     {
+      "contract_name": "eval_case_candidate",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "eval_case_candidate"
+      ]
+    },
+    {
       "contract_name": "eval_coverage_artifact",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -17516,13 +17568,13 @@
       ]
     },
     {
-      "contract_name": "pr_test_shard_result",
+      "contract_name": "pr_failure_capture_record",
       "artifact_class": "governance",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "related_artifact_types": [
-        "pr_test_shard_result"
+        "pr_failure_capture_record"
       ]
     },
     {
@@ -17593,6 +17645,16 @@
       ],
       "related_artifact_types": [
         "pra_system_impact_mapping_record"
+      ]
+    },
+    {
+      "contract_name": "pre_pr_failure_packet",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "pre_pr_failure_packet"
       ]
     },
     {
@@ -17953,6 +18015,46 @@
       ],
       "related_artifact_types": [
         "prioritized_adoption_candidate_set"
+      ]
+    },
+    {
+      "contract_name": "prl_eval_case",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_eval_case"
+      ]
+    },
+    {
+      "contract_name": "prl_eval_generation_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_eval_generation_record"
+      ]
+    },
+    {
+      "contract_name": "prl_gate_result",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_gate_result"
+      ]
+    },
+    {
+      "contract_name": "prl_repair_candidate",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_repair_candidate"
       ]
     },
     {
@@ -25079,6 +25181,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "eval_case_candidate",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "eval_case_candidate"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "eval_coverage_artifact",
       "relation": "governed_by",
       "to_type": "contract",
@@ -28271,10 +28380,10 @@
     },
     {
       "from_type": "artifact",
-      "from_id": "pr_test_shard_result",
+      "from_id": "pr_failure_capture_record",
       "relation": "governed_by",
       "to_type": "contract",
-      "to_id": "pr_test_shard_result"
+      "to_id": "pr_failure_capture_record"
     },
     {
       "from_type": "artifact",
@@ -28324,6 +28433,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "pra_system_impact_mapping_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "pre_pr_failure_packet",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "pre_pr_failure_packet"
     },
     {
       "from_type": "artifact",
@@ -28576,6 +28692,34 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "prioritized_adoption_candidate_set"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_eval_case",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_eval_case"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_eval_generation_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_eval_generation_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_gate_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_gate_result"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_repair_candidate",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_repair_candidate"
     },
     {
       "from_type": "artifact",
@@ -34270,6 +34414,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "eval_case_candidate",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "eval_case_candidate"
+    },
+    {
+      "from_type": "contract",
       "from_id": "eval_coverage_artifact",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -37462,10 +37613,10 @@
     },
     {
       "from_type": "contract",
-      "from_id": "pr_test_shard_result",
+      "from_id": "pr_failure_capture_record",
       "relation": "validates_against",
       "to_type": "artifact",
-      "to_id": "pr_test_shard_result"
+      "to_id": "pr_failure_capture_record"
     },
     {
       "from_type": "contract",
@@ -37515,6 +37666,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "pra_system_impact_mapping_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "pre_pr_failure_packet",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "pre_pr_failure_packet"
     },
     {
       "from_type": "contract",
@@ -37767,6 +37925,34 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "prioritized_adoption_candidate_set"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_eval_case",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_eval_case"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_eval_generation_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_eval_generation_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_gate_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_gate_result"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_repair_candidate",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_repair_candidate"
     },
     {
       "from_type": "contract",

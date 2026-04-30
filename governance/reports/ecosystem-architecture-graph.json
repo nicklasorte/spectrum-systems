@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-30T05:31:36Z",
+  "generated_at": "2026-04-29T20:27:58Z",
   "nodes": {
     "repositories": [
       {
@@ -2155,6 +2155,12 @@
       },
       {
         "id": "eval_case",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "eval_case_candidate",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -4896,7 +4902,7 @@
         "stability": ""
       },
       {
-        "id": "pr_test_shard_result",
+        "id": "pr_failure_capture_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -4939,6 +4945,12 @@
       },
       {
         "id": "pra_system_impact_mapping_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "pre_pr_failure_packet",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -5155,6 +5167,30 @@
       },
       {
         "id": "prioritized_adoption_candidate_set",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_eval_case",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_eval_generation_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_gate_result",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_repair_candidate",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
