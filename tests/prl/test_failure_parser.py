@@ -130,6 +130,42 @@ class TestParseLogLine:
         assert result is not None
         assert any("ci.yml" in f for f in result.file_refs)
 
+    def test_preflight_schema_violation(self):
+        line = '    "failure_class": "schema_violation",'
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "contract_schema_violation"
+
+    def test_preflight_contract_mismatch(self):
+        line = '    "failure_class": "contract_mismatch",'
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "contract_schema_violation"
+
+    def test_preflight_control_surface_gap(self):
+        line = '    "failure_class": "control_surface_gap",'
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "contract_schema_violation"
+
+    def test_preflight_test_inventory_regression(self):
+        line = '    "failure_class": "test_inventory_regression",'
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "pytest_selection_missing"
+
+    def test_preflight_downstream_test_failure(self):
+        line = '    "failure_class": "downstream_test_failure",'
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "policy_mismatch"
+
+    def test_preflight_strategy_gate_block(self):
+        line = '  "strategy_gate_decision": "BLOCK",'
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "policy_mismatch"
+
     def test_raw_excerpt_truncated_at_500(self):
         long_line = "authority_shape_violation " + "x" * 600
         result = parse_log_line(long_line)

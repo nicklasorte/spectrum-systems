@@ -54,7 +54,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
         re.compile(
             r"jsonschema\.exceptions|ValidationError.*schema|contract.schema"
             r"|schema.validation.fail|additionalProperties.*false"
-            r"|required.*property.*missing|is not valid under any of",
+            r"|required.*property.*missing|is not valid under any of"
+            r"|schema_violation|contract_mismatch|control_surface_gap",
             re.IGNORECASE,
         ),
         "Contract schema validation failure",
@@ -93,7 +94,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
         "policy_mismatch",
         re.compile(
             r"policy.mismatch|policy.violation|policy.drift|trust.policy.block"
-            r"|tier_drift|tier_indirect|POLICY_MISMATCH",
+            r"|tier_drift|tier_indirect|POLICY_MISMATCH"
+            r"|downstream_test_failure|strategy_gate.*BLOCK",
             re.IGNORECASE,
         ),
         "Policy mismatch or violation",
@@ -103,7 +105,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
         re.compile(
             r"no tests ran|collected 0 items"
             r"|ERROR collecting|pytest.*error.*no.*test|selection.*guard.*missing"
-            r"|no module named.*test",
+            r"|no module named.*test|test_inventory_regression",
             re.IGNORECASE,
         ),
         "Pytest test selection missing or no tests collected",
