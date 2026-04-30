@@ -406,7 +406,9 @@
       "purpose": "PR reliability loop \u2014 converts PR/CI failures into structured failure artifacts, bounded repair candidates, and regression-preventing eval cases. Pre-PR gate enforces fail-closed checks before any branch update.",
       "status": "active",
       "system_id": "PRL",
-      "upstream": []
+      "upstream": [
+        "CLP"
+      ]
     },
     {
       "artifacts_owned": [
@@ -748,6 +750,7 @@
     }
   ],
   "parse_notes": [
+    "unresolved_reference:PRL->CLP",
     "unresolved_reference:HOP->RDX"
   ],
   "phase": "TLS-00",

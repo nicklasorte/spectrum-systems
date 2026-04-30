@@ -146,7 +146,15 @@
       "docs/governance/preflight_required_surface_test_overrides.json",
       "docs/reviews/PAR-00-01_parallel_pr_tests_final_report.md",
       "docs/reviews/PAR-00-01_parallel_pr_tests_redteam.md",
-      "spectrum_systems/modules/runtime/pr_test_selection.py"
+      "spectrum_systems/modules/runtime/pr_test_selection.py",
+      "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+      "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py",
+      "scripts/run_core_loop_pre_pr_gate.py",
+      "contracts/schemas/core_loop_pre_pr_gate_result.schema.json",
+      "contracts/examples/core_loop_pre_pr_gate_result.example.json",
+      "docs/reviews/CLP-01_core_loop_pre_pr_gate_redteam.md",
+      "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md",
+      "docs/review-actions/CLP-01_fix_actions.md"
     ]
   },
   "clusters": {

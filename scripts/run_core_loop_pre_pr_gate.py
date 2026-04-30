@@ -1,0 +1,560 @@
+#!/usr/bin/env python3
+"""CLP-01: Core Loop Pre-PR Gate runner.
+
+Runs the canonical pre-admission check bundle (authority shape, authority
+leak, contract enforcement, TLS generated artifact freshness, contract
+preflight, selected tests) before a repo-mutating agent slice can be handed
+off as PR-ready. Emits a ``core_loop_pre_pr_gate_result`` artifact.
+
+Authority scope: observation_only. CLP does not approve, certify, promote,
+or enforce. AEX/PQX/EVL/TPA/CDE/SEL retain those authorities.
+
+Exit codes
+----------
+0 — gate_status=pass
+1 — gate_status=warn
+2 — gate_status=block (fail-closed: do not proceed to PR-ready handoff)
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import shlex
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from spectrum_systems.contracts import validate_artifact  # noqa: E402
+from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (  # noqa: E402
+    build_check,
+    build_gate_result,
+    diff_hash_maps,
+    gate_status_to_exit_code,
+    hash_paths,
+    utc_now_iso,
+    write_json,
+)
+from spectrum_systems.modules.runtime.pr_test_selection import (  # noqa: E402
+    is_docs_only_non_governed,
+    resolve_required_tests,
+)
+from spectrum_systems.modules.governance.changed_files import (  # noqa: E402
+    ChangedFilesResolutionError,
+    resolve_changed_files,
+)
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="CLP-01 Core Loop Pre-PR Gate")
+    parser.add_argument("--work-item-id", required=True)
+    parser.add_argument(
+        "--agent-type",
+        default="unknown",
+        choices=["codex", "claude", "other", "unknown"],
+    )
+    parser.add_argument("--base-ref", default="origin/main")
+    parser.add_argument("--head-ref", default="HEAD")
+    parser.add_argument(
+        "--output-dir",
+        default="outputs/core_loop_pre_pr_gate",
+    )
+    parser.add_argument(
+        "--execution-context",
+        default="pqx_governed",
+        help="Forwarded to contract preflight as --execution-context.",
+    )
+    parser.add_argument(
+        "--max-repair-attempts",
+        type=int,
+        default=0,
+        help="CLP-01 does not auto-fix. Repair belongs to PRL/FRE/CDE/PQX. Default 0.",
+    )
+    parser.add_argument(
+        "--repo-mutating",
+        default="auto",
+        choices=["auto", "true", "false"],
+        help="Override repo-mutating detection. Default 'auto' uses changed-file heuristics.",
+    )
+    parser.add_argument(
+        "--changed-file",
+        action="append",
+        default=[],
+        help="Optional explicit changed file path. Repeat as needed.",
+    )
+    parser.add_argument(
+        "--source-artifact",
+        action="append",
+        default=[],
+        help="Optional upstream source artifact path. Repeat as needed.",
+    )
+    parser.add_argument(
+        "--skip",
+        action="append",
+        default=[],
+        help="Skip a named check (DEBUG ONLY: gate will block on missing required check).",
+    )
+    return parser.parse_args()
+
+
+def _run_subcommand(
+    *,
+    cmd: list[str],
+    log_path: Path,
+    cwd: Path = REPO_ROOT,
+) -> tuple[int, str]:
+    """Run a subprocess command. Always tee combined stdout+stderr to log_path."""
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    proc = subprocess.run(
+        cmd,
+        cwd=cwd,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=os.environ.copy(),
+    )
+    combined = (proc.stdout or "") + (proc.stderr or "")
+    log_path.write_text(combined, encoding="utf-8")
+    return proc.returncode, combined
+
+
+def _detect_repo_mutating(changed_files: list[str], override: str) -> bool:
+    if override == "true":
+        return True
+    if override == "false":
+        return False
+    if not changed_files:
+        return False
+    return not is_docs_only_non_governed(changed_files)
+
+
+def _check_authority_shape(
+    *, base_ref: str, head_ref: str, output_dir: Path
+) -> dict[str, Any]:
+    out_path = output_dir / "authority_shape_preflight_result.json"
+    log_path = output_dir / "authority_shape_preflight.log"
+    cmd = [
+        sys.executable,
+        "scripts/run_authority_shape_preflight.py",
+        "--base-ref",
+        base_ref,
+        "--head-ref",
+        head_ref,
+        "--suggest-only",
+        "--output",
+        str(out_path.relative_to(REPO_ROOT)),
+    ]
+    rc, _ = _run_subcommand(cmd=cmd, log_path=log_path)
+    status = "pass"
+    failure_class: str | None = None
+    reason_codes: list[str] = []
+    if not out_path.is_file():
+        status = "block"
+        failure_class = "missing_required_artifact"
+        reason_codes = ["authority_shape_output_missing"]
+        return build_check(
+            check_name="authority_shape_preflight",
+            command=" ".join(shlex.quote(p) for p in cmd),
+            status=status,
+            output_ref=None if status == "skipped" else str(out_path.relative_to(REPO_ROOT)),
+            failure_class=failure_class,
+            reason_codes=reason_codes,
+            next_action="rerun_authority_shape_preflight",
+        )
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
+    payload_status = str(payload.get("status") or "").lower()
+    if rc != 0 or payload_status == "fail":
+        status = "block"
+        failure_class = "authority_shape_violation"
+        reason_codes = sorted(
+            {str(v.get("rule") or "authority_shape_violation") for v in payload.get("violations", [])}
+        ) or ["authority_shape_violation"]
+    return build_check(
+        check_name="authority_shape_preflight",
+        command=" ".join(shlex.quote(p) for p in cmd),
+        status=status,
+        output_ref=str(out_path.relative_to(REPO_ROOT)),
+        failure_class=failure_class,
+        reason_codes=reason_codes,
+        next_action="resolve_authority_shape_violations" if status == "block" else "none",
+    )
+
+
+def _check_authority_leak(
+    *, base_ref: str, head_ref: str, output_dir: Path
+) -> dict[str, Any]:
+    out_path = output_dir / "authority_leak_guard_result.json"
+    log_path = output_dir / "authority_leak_guard.log"
+    cmd = [
+        sys.executable,
+        "scripts/run_authority_leak_guard.py",
+        "--base-ref",
+        base_ref,
+        "--head-ref",
+        head_ref,
+        "--output",
+        str(out_path.relative_to(REPO_ROOT)),
+    ]
+    rc, _ = _run_subcommand(cmd=cmd, log_path=log_path)
+    status = "pass"
+    failure_class: str | None = None
+    reason_codes: list[str] = []
+    if not out_path.is_file():
+        return build_check(
+            check_name="authority_leak_guard",
+            command=" ".join(shlex.quote(p) for p in cmd),
+            status="block",
+            output_ref=None,
+            failure_class="missing_required_artifact",
+            reason_codes=["authority_leak_output_missing"],
+            next_action="rerun_authority_leak_guard",
+        )
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
+    payload_status = str(payload.get("status") or "").lower()
+    if rc != 0 or payload_status == "fail":
+        status = "block"
+        failure_class = "authority_leak_violation"
+        reason_codes = list(payload.get("normalized_reason_codes") or []) or [
+            "authority_leak_violation"
+        ]
+    return build_check(
+        check_name="authority_leak_guard",
+        command=" ".join(shlex.quote(p) for p in cmd),
+        status=status,
+        output_ref=str(out_path.relative_to(REPO_ROOT)),
+        failure_class=failure_class,
+        reason_codes=reason_codes,
+        next_action="resolve_authority_leak_violations" if status == "block" else "none",
+    )
+
+
+def _check_contract_enforcement(*, output_dir: Path) -> dict[str, Any]:
+    log_path = output_dir / "contract_enforcement.log"
+    cmd = [sys.executable, "scripts/run_contract_enforcement.py"]
+    rc, combined = _run_subcommand(cmd=cmd, log_path=log_path)
+    status = "pass" if rc == 0 else "block"
+    failure_class = None
+    reason_codes: list[str] = []
+    if status == "block":
+        failure_class = "contract_enforcement_violation"
+        reason_codes = ["contract_compliance_findings"]
+    return build_check(
+        check_name="contract_enforcement",
+        command=" ".join(shlex.quote(p) for p in cmd),
+        status=status,
+        output_ref=str(log_path.relative_to(REPO_ROOT)),
+        failure_class=failure_class,
+        reason_codes=reason_codes,
+        next_action="resolve_contract_enforcement_findings" if status == "block" else "none",
+    )
+
+
+def _check_tls_freshness(*, output_dir: Path) -> dict[str, Any]:
+    """Run TLS generators and detect stale generated artifacts via hash diff."""
+    artifact_paths = [
+        REPO_ROOT / "artifacts" / "tls" / "system_registry_dependency_graph.json",
+        REPO_ROOT / "artifacts" / "tls" / "system_evidence_attachment.json",
+        REPO_ROOT / "artifacts" / "tls" / "system_candidate_classification.json",
+        REPO_ROOT / "artifacts" / "tls" / "system_trust_gap_report.json",
+        REPO_ROOT / "artifacts" / "tls" / "system_dependency_priority_report.json",
+        REPO_ROOT / "artifacts" / "system_dependency_priority_report.json",
+    ]
+    health_path = REPO_ROOT / "artifacts" / "ecosystem_health_report.json"
+    if health_path.exists() or (REPO_ROOT / "artifacts").exists():
+        artifact_paths.append(health_path)
+    before = hash_paths(artifact_paths)
+    log_path = output_dir / "tls_freshness.log"
+    obs_path = output_dir / "tls_freshness_observation.json"
+    tls_cmd = [
+        sys.executable,
+        "scripts/build_tls_dependency_priority.py",
+        "--out",
+        "artifacts/tls",
+        "--top-level-out",
+        "artifacts",
+    ]
+    eco_cmd = [sys.executable, "scripts/generate_ecosystem_health_report.py"]
+    rc1, _ = _run_subcommand(cmd=tls_cmd, log_path=log_path)
+    rc2, _ = _run_subcommand(cmd=eco_cmd, log_path=output_dir / "ecosystem_health.log")
+    after = hash_paths(artifact_paths)
+    changed = diff_hash_maps(before, after)
+    payload = {
+        "artifact_type": "tls_freshness_observation",
+        "authority_scope": "observation_only",
+        "tls_command_returncode": rc1,
+        "ecosystem_command_returncode": rc2,
+        "checked_paths": [str(p.relative_to(REPO_ROOT)) for p in artifact_paths],
+        "changed_paths": [str(Path(p).relative_to(REPO_ROOT)) for p in changed if Path(p).is_absolute()]
+        or changed,
+        "before_digests": {str(Path(k).relative_to(REPO_ROOT)) if Path(k).is_absolute() else k: v for k, v in before.items()},
+        "after_digests": {str(Path(k).relative_to(REPO_ROOT)) if Path(k).is_absolute() else k: v for k, v in after.items()},
+    }
+    write_json(obs_path, payload)
+    status = "pass"
+    failure_class: str | None = None
+    reason_codes: list[str] = []
+    if rc1 != 0 or rc2 != 0:
+        status = "block"
+        failure_class = "tls_generated_artifact_stale"
+        reason_codes = ["tls_generator_returned_nonzero"]
+    elif changed:
+        status = "block"
+        failure_class = "tls_generated_artifact_stale"
+        reason_codes = ["tls_generated_artifact_drift"]
+    return build_check(
+        check_name="tls_generated_artifact_freshness",
+        command=" && ".join(
+            [
+                " ".join(shlex.quote(p) for p in tls_cmd),
+                " ".join(shlex.quote(p) for p in eco_cmd),
+            ]
+        ),
+        status=status,
+        output_ref=str(obs_path.relative_to(REPO_ROOT)),
+        failure_class=failure_class,
+        reason_codes=reason_codes,
+        next_action="regenerate_and_commit_tls_artifacts" if status == "block" else "none",
+    )
+
+
+def _check_contract_preflight(
+    *, base_ref: str, head_ref: str, output_dir: Path, execution_context: str
+) -> dict[str, Any]:
+    sub_dir = output_dir / "contract_preflight"
+    sub_dir.mkdir(parents=True, exist_ok=True)
+    wrapper_path = sub_dir / "preflight_pqx_task_wrapper.json"
+    log_path = output_dir / "contract_preflight.log"
+    build_cmd = [
+        sys.executable,
+        "scripts/build_preflight_pqx_wrapper.py",
+        "--base-ref",
+        base_ref,
+        "--head-ref",
+        head_ref,
+        "--output",
+        str(wrapper_path.relative_to(REPO_ROOT)),
+    ]
+    rc_build, _ = _run_subcommand(cmd=build_cmd, log_path=output_dir / "preflight_pqx_wrapper.log")
+    if rc_build != 0 or not wrapper_path.is_file():
+        return build_check(
+            check_name="contract_preflight",
+            command=" ".join(shlex.quote(p) for p in build_cmd),
+            status="block",
+            output_ref=str((output_dir / "preflight_pqx_wrapper.log").relative_to(REPO_ROOT)),
+            failure_class="missing_required_artifact",
+            reason_codes=["preflight_wrapper_build_failed"],
+            next_action="diagnose_preflight_wrapper_build_failure",
+        )
+    preflight_cmd = [
+        sys.executable,
+        "scripts/run_contract_preflight.py",
+        "--base-ref",
+        base_ref,
+        "--head-ref",
+        head_ref,
+        "--output-dir",
+        str(sub_dir.relative_to(REPO_ROOT)),
+        "--execution-context",
+        execution_context,
+        "--pqx-wrapper-path",
+        str(wrapper_path.relative_to(REPO_ROOT)),
+        "--authority-evidence-ref",
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+    ]
+    rc, _ = _run_subcommand(cmd=preflight_cmd, log_path=log_path)
+    artifact_path = sub_dir / "contract_preflight_result_artifact.json"
+    output_ref = (
+        str(artifact_path.relative_to(REPO_ROOT))
+        if artifact_path.is_file()
+        else str(log_path.relative_to(REPO_ROOT))
+    )
+    if not artifact_path.is_file():
+        return build_check(
+            check_name="contract_preflight",
+            command=" ".join(shlex.quote(p) for p in preflight_cmd),
+            status="block",
+            output_ref=output_ref,
+            failure_class="missing_required_artifact",
+            reason_codes=["contract_preflight_artifact_missing"],
+            next_action="diagnose_preflight_run_failure",
+        )
+    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    decision = (
+        payload.get("control_signal", {}).get("strategy_gate_decision") or ""
+    ).upper()
+    status = "pass"
+    failure_class: str | None = None
+    reason_codes: list[str] = []
+    if rc != 0 or decision in {"BLOCK", "FREEZE"}:
+        status = "block"
+        failure_class = "contract_preflight_block"
+        reason_codes = [decision.lower() or "contract_preflight_block"]
+    return build_check(
+        check_name="contract_preflight",
+        command=" ".join(shlex.quote(p) for p in preflight_cmd),
+        status=status,
+        output_ref=output_ref,
+        failure_class=failure_class,
+        reason_codes=reason_codes,
+        next_action="diagnose_preflight_block_bundle" if status == "block" else "none",
+    )
+
+
+def _check_selected_tests(
+    *, changed_files: list[str], output_dir: Path
+) -> dict[str, Any]:
+    targets_map = resolve_required_tests(REPO_ROOT, changed_files)
+    test_targets = sorted({t for ts in targets_map.values() for t in ts})
+    obs_path = output_dir / "selected_tests_result.json"
+    log_path = output_dir / "selected_tests.log"
+    if not test_targets:
+        if changed_files and is_docs_only_non_governed(changed_files):
+            payload = {
+                "artifact_type": "selected_tests_observation",
+                "authority_scope": "observation_only",
+                "changed_files": changed_files,
+                "selected_tests": [],
+                "reason": "docs_only_non_governed",
+                "returncode": None,
+            }
+            write_json(obs_path, payload)
+            return build_check(
+                check_name="selected_tests",
+                command="(no governed tests required)",
+                status="pass",
+                output_ref=str(obs_path.relative_to(REPO_ROOT)),
+                next_action="none",
+            )
+        # Repo-mutating without selectable tests: fail closed.
+        payload = {
+            "artifact_type": "selected_tests_observation",
+            "authority_scope": "observation_only",
+            "changed_files": changed_files,
+            "selected_tests": [],
+            "reason": "no_tests_selected_for_governed_changes",
+            "returncode": None,
+        }
+        write_json(obs_path, payload)
+        return build_check(
+            check_name="selected_tests",
+            command="(canonical selector returned empty test set)",
+            status="block",
+            output_ref=str(obs_path.relative_to(REPO_ROOT)),
+            failure_class="pytest_selection_missing",
+            reason_codes=["no_tests_selected_for_governed_changes"],
+            next_action="add_canonical_test_for_changed_surface",
+        )
+    cmd = [sys.executable, "-m", "pytest", "-q", *test_targets]
+    rc, combined = _run_subcommand(cmd=cmd, log_path=log_path)
+    payload = {
+        "artifact_type": "selected_tests_observation",
+        "authority_scope": "observation_only",
+        "changed_files": changed_files,
+        "selected_tests": test_targets,
+        "returncode": rc,
+        "log_ref": str(log_path.relative_to(REPO_ROOT)),
+    }
+    write_json(obs_path, payload)
+    status = "pass" if rc == 0 else "block"
+    failure_class = None if rc == 0 else "selected_test_failure"
+    reason_codes: list[str] = [] if rc == 0 else [f"pytest_returncode_{rc}"]
+    return build_check(
+        check_name="selected_tests",
+        command=" ".join(shlex.quote(p) for p in cmd),
+        status=status,
+        output_ref=str(obs_path.relative_to(REPO_ROOT)),
+        failure_class=failure_class,
+        reason_codes=reason_codes,
+        next_action="repair_failing_tests" if status == "block" else "none",
+    )
+
+
+def main() -> int:
+    args = _parse_args()
+    output_dir = (REPO_ROOT / args.output_dir).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        changed_files = resolve_changed_files(
+            repo_root=REPO_ROOT,
+            base_ref=args.base_ref,
+            head_ref=args.head_ref,
+            explicit_changed_files=list(args.changed_file or []),
+        )
+    except ChangedFilesResolutionError as exc:
+        changed_files = list(args.changed_file or [])
+        warning_path = output_dir / "changed_files_resolution.warning"
+        warning_path.write_text(str(exc), encoding="utf-8")
+
+    repo_mutating = _detect_repo_mutating(changed_files, args.repo_mutating)
+
+    skip = set(args.skip or [])
+    checks: list[dict[str, Any]] = []
+    if "authority_shape_preflight" not in skip:
+        checks.append(
+            _check_authority_shape(
+                base_ref=args.base_ref, head_ref=args.head_ref, output_dir=output_dir
+            )
+        )
+    if "authority_leak_guard" not in skip:
+        checks.append(
+            _check_authority_leak(
+                base_ref=args.base_ref, head_ref=args.head_ref, output_dir=output_dir
+            )
+        )
+    if "contract_enforcement" not in skip:
+        checks.append(_check_contract_enforcement(output_dir=output_dir))
+    if "tls_generated_artifact_freshness" not in skip:
+        checks.append(_check_tls_freshness(output_dir=output_dir))
+    if "contract_preflight" not in skip:
+        checks.append(
+            _check_contract_preflight(
+                base_ref=args.base_ref,
+                head_ref=args.head_ref,
+                output_dir=output_dir,
+                execution_context=args.execution_context,
+            )
+        )
+    if "selected_tests" not in skip:
+        checks.append(
+            _check_selected_tests(changed_files=changed_files, output_dir=output_dir)
+        )
+
+    emitted_path = output_dir / "core_loop_pre_pr_gate_result.json"
+    artifact = build_gate_result(
+        work_item_id=args.work_item_id,
+        agent_type=args.agent_type,
+        repo_mutating=repo_mutating,
+        base_ref=args.base_ref,
+        head_ref=args.head_ref,
+        changed_files=changed_files,
+        checks=checks,
+        source_artifacts_used=list(args.source_artifact or []),
+        emitted_artifacts=[str(emitted_path.relative_to(REPO_ROOT))],
+        generated_at=utc_now_iso(),
+    )
+    validate_artifact(artifact, "core_loop_pre_pr_gate_result")
+    write_json(emitted_path, artifact)
+    print(
+        json.dumps(
+            {
+                "gate_status": artifact["gate_status"],
+                "first_failed_check": artifact["first_failed_check"],
+                "failure_classes": artifact["failure_classes"],
+                "human_review_required": artifact["human_review_required"],
+                "output": str(emitted_path.relative_to(REPO_ROOT)),
+            },
+            indent=2,
+        )
+    )
+    return gate_status_to_exit_code(artifact["gate_status"])
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

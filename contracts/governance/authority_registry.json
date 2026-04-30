@@ -164,7 +164,13 @@
       "scripts/run_ci_drift_detector.py": ["block"],
       "contracts/schemas/pr_test_shard_result.schema.json": ["block"],
       "tests/test_pr_gate_parallel.py": ["block"],
-      "tests/test_pr_test_selection_engine.py": ["block"]
+      "tests/test_pr_test_selection_engine.py": ["block"],
+      "spectrum_systems/modules/runtime/agent_core_loop_proof.py": ["block"],
+      "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py": ["block", "allow", "freeze"],
+      "scripts/run_core_loop_pre_pr_gate.py": ["block", "allow", "freeze"],
+      "contracts/schemas/core_loop_pre_pr_gate_result.schema.json": ["block"],
+      "contracts/examples/core_loop_pre_pr_gate_result.example.json": ["block"],
+      "tests/test_core_loop_pre_pr_gate.py": ["block"]
     }
   },
   "preparatory_only": {
