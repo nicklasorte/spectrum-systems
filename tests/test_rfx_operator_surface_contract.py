@@ -119,3 +119,13 @@ def test_non_iterable_records_does_not_raise():
     result = validate_rfx_operator_surface(records=1)
     assert "rfx_operator_surface_empty" in result["reason_codes_emitted"]
     assert result["artifact_type"] == "rfx_operator_surface_contract_result"
+
+
+def test_whitespace_only_status_flagged():
+    # P2 fix: whitespace-only status must emit rfx_operator_surface_missing_status
+    # rather than passing as truthy.
+    result = validate_rfx_operator_surface(
+        records=[{"status": "   ", "reason_codes_emitted": [], "proof_ref": "p-1"}]
+    )
+    assert "rfx_operator_surface_missing_status" in result["reason_codes_emitted"]
+    assert result["status"] == "invalid"

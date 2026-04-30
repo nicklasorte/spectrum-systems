@@ -199,3 +199,26 @@ def test_neg_inf_reference_time_flagged():
     assert "rfx_freshness_invalid_reference_time" in result["reason_codes_emitted"]
     assert result["signals"]["fresh_count"] == 0
     assert result["status"] == "stale"
+
+
+def test_future_timestamp_flagged():
+    # P1 fix: a record with timestamp_seconds > reference_time_seconds (negative age)
+    # must emit rfx_freshness_future_timestamp and not be counted as fresh.
+    result = check_rfx_evidence_freshness(
+        evidence_records=[{"id": "future", "timestamp_seconds": _REF_TIME + 1000.0}],
+        reference_time_seconds=_REF_TIME,
+        max_age_seconds=3600.0,
+    )
+    assert "rfx_freshness_future_timestamp" in result["reason_codes_emitted"]
+    assert result["signals"]["fresh_count"] == 0
+    assert result["status"] == "stale"
+
+
+def test_future_timestamp_not_in_stale_ids():
+    # P1 fix: future-timestamp records appear in stale_record_ids (they are not fresh).
+    result = check_rfx_evidence_freshness(
+        evidence_records=[{"id": "future", "timestamp_seconds": _REF_TIME + 9999.0}],
+        reference_time_seconds=_REF_TIME,
+        max_age_seconds=3600.0,
+    )
+    assert "future" in result["stale_record_ids"]

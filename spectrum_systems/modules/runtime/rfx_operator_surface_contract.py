@@ -77,7 +77,8 @@ def validate_rfx_operator_surface(
             reason.append("rfx_operator_surface_malformed_record")
             continue
         rec_ok = True
-        if not rec.get("status"):
+        status_val = rec.get("status")
+        if not (isinstance(status_val, str) and status_val.strip()):
             reason.append("rfx_operator_surface_missing_status")
             rec_ok = False
         if not isinstance(rec.get("reason_codes_emitted"), list):

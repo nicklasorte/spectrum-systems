@@ -18,6 +18,7 @@ coverage.
 Reason codes:
   rfx_freshness_missing_timestamp      — evidence record lacks a timestamp
   rfx_freshness_stale                  — evidence record is older than the max age
+  rfx_freshness_future_timestamp       — evidence record timestamp is in the future
   rfx_freshness_empty_inputs           — no evidence records supplied
   rfx_freshness_invalid_max_age        — max_age_seconds is missing or non-positive
   rfx_freshness_invalid_reference_time — reference_time_seconds is missing or non-finite
@@ -83,7 +84,10 @@ def check_rfx_evidence_freshness(
             stale_ids.append(str(rec_id))
             continue
         age = reference_time_seconds - ts_float
-        if age > max_age_seconds:
+        if age < 0:
+            reason.append("rfx_freshness_future_timestamp")
+            stale_ids.append(str(rec_id))
+        elif age > max_age_seconds:
             reason.append("rfx_freshness_stale")
             stale_ids.append(str(rec_id))
         else:
