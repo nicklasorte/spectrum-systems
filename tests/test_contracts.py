@@ -882,6 +882,24 @@ class ContractSchemaTests(unittest.TestCase):
         for proposal in map_failure_to_proposals(pattern):
             validate_hop_artifact(proposal, "hop_harness_system_improvement_proposal")
 
+    def test_hop_harness_extraction_signal_schema_validates(self) -> None:
+        from spectrum_systems.modules.hop.artifacts import finalize_artifact, make_trace
+        from spectrum_systems.modules.hop.schemas import validate_hop_artifact
+        payload = {
+            "artifact_type": "hop_harness_extraction_signal",
+            "schema_ref": "hop/harness_extraction_signal.schema.json",
+            "schema_version": "1.0.0",
+            "trace": make_trace(primary="contracts_test"),
+            "advisory_only": True,
+            "delegates_to": ["JSX", "EVL"],
+            "transcript_id": "t_contracts_test_001",
+            "candidate_id": "extraction_baseline_v1",
+            "items": [],
+            "generated_at": "2026-04-29T00:00:00.000000Z",
+        }
+        finalize_artifact(payload, id_prefix="hop_extract_")
+        validate_hop_artifact(payload, "hop_harness_extraction_signal")
+
 
 if __name__ == "__main__":
     unittest.main()
