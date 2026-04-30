@@ -203,7 +203,18 @@ def main() -> None:
         # Try fallback smoke baseline
         baseline_path = repo_root / _SMOKE_BASELINE_PATH
         if baseline_path.is_file():
-            baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+            try:
+                baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError) as exc:
+                _fail_closed(
+                    "smoke baseline JSON is malformed or unreadable",
+                    str(exc),
+                    f"Fix or regenerate {_SMOKE_BASELINE_PATH}",
+                    [str(baseline_path)],
+                    str(baseline_path),
+                    [],
+                    output_dir,
+                )
             fallback_targets = baseline.get("suite_targets") or []
             if fallback_targets:
                 print(f"[test_selection_gate] Selection below threshold ({len(selected_targets)} < {minimum_threshold}); invoking smoke fallback baseline")

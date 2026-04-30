@@ -63,7 +63,7 @@ _KNOWN_WORKFLOW_GATE_MAPPING = {
 }
 
 
-_WORKFLOW_SCRIPT_RE = re.compile(r'python[23]?\s+scripts/([\w.\-]+\.py)')
+_WORKFLOW_SCRIPT_RE = re.compile(r'python[23]?(?:\s+-\S+)*\s+scripts/([\w.\-]+\.py)')
 
 
 def _sha256(text: str) -> str:
