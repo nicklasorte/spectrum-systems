@@ -197,8 +197,10 @@ jobs:
           # Compare structure only — strip volatile timestamp fields before diffing
           # so the check is stable across reruns on identical source inputs.
           python - <<'PYCODE'
-          import json, subprocess, sys
+          import hashlib, json, subprocess, sys
           from pathlib import Path
+
+          print(f"[diag] Python version: {sys.version}", flush=True)
 
           VOLATILE = {"generated_at", "created_at", "last_updated", "run_at", "timestamp"}
           JSON_FILES = [
@@ -219,20 +221,33 @@ jobs:
                       return items
               return obj
 
+          def _md5(s: str) -> str:
+              return hashlib.md5(s.encode()).hexdigest()
+
           mismatches = []
           for rel in JSON_FILES:
               path = Path(rel)
               if not path.is_file():
+                  print(f"[diag] {rel}: file not present on disk — skipping", flush=True)
                   continue
               result = subprocess.run(
                   ["git", "show", f"HEAD:{rel}"],
                   capture_output=True, text=True,
               )
               if result.returncode != 0:
-                  continue  # new file on this branch — skip
+                  print(f"[diag] {rel}: not in HEAD — new file, skipping", flush=True)
+                  continue
               try:
-                  committed = normalize(json.loads(result.stdout))
-                  current   = normalize(json.loads(path.read_text()))
+                  raw_committed = result.stdout
+                  raw_current   = path.read_text()
+                  committed_raw_hash = _md5(raw_committed)
+                  current_raw_hash   = _md5(raw_current)
+                  print(f"[diag] {rel}: raw committed_md5={committed_raw_hash} current_md5={current_raw_hash} raw_match={committed_raw_hash==current_raw_hash}", flush=True)
+                  committed = normalize(json.loads(raw_committed))
+                  current   = normalize(json.loads(raw_current))
+                  committed_norm_hash = _md5(json.dumps(committed, sort_keys=True))
+                  current_norm_hash   = _md5(json.dumps(current,   sort_keys=True))
+                  print(f"[diag] {rel}: norm committed_md5={committed_norm_hash} current_md5={current_norm_hash} norm_match={committed_norm_hash==current_norm_hash}", flush=True)
               except Exception as exc:
                   print(f"WARN: could not parse {rel}: {exc}")
                   continue
