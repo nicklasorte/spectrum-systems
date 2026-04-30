@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-04-29T20:29:21Z",
-  "freshness_timestamp_utc": "2026-04-29T20:29:21Z",
+  "generated_at": "2026-04-30T01:00:09Z",
+  "freshness_timestamp_utc": "2026-04-30T01:00:09Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 9062,
-    "runtime_modules": 338,
-    "tests": 834,
-    "contracts_total": 2864,
-    "schemas": 1561,
-    "examples": 1303,
-    "docs": 1630,
+    "files_total": 9112,
+    "runtime_modules": 352,
+    "tests": 853,
+    "contracts_total": 2869,
+    "schemas": 1565,
+    "examples": 1304,
+    "docs": 1636,
     "run_artifacts": 152
   },
   "core_areas": [
@@ -62,7 +62,7 @@
     },
     {
       "area": "Review",
-      "count": 12,
+      "count": 13,
       "note": "Review ingestion and projection interfaces."
     },
     {
@@ -72,17 +72,17 @@
     },
     {
       "area": "Evaluation",
-      "count": 23,
+      "count": 24,
       "note": "Evaluation and quality validation modules."
     },
     {
       "area": "Replay",
-      "count": 5,
+      "count": 6,
       "note": "Replay and rerun execution support."
     },
     {
       "area": "Governed repair",
-      "count": 12,
+      "count": 14,
       "note": "Governed repair and remediation pathways."
     }
   ],
@@ -100,17 +100,17 @@
     {
       "title": "Evidence and review density",
       "status": "Strong",
-      "detail": "Review artifacts detected: 1282 markdown files."
+      "detail": "Review artifacts detected: 1288 markdown files."
     },
     {
       "title": "Roadmap sprawl risk",
       "status": "Watch",
-      "detail": "Docs-to-runtime ratio: 4.82."
+      "detail": "Docs-to-runtime ratio: 4.65."
     },
     {
       "title": "Runtime concentration",
       "status": "Strong",
-      "detail": "Distinct runtime filename prefixes: 152."
+      "detail": "Distinct runtime filename prefixes: 153."
     },
     {
       "title": "Constitutional center coverage",
@@ -122,7 +122,7 @@
     "current_run_state_record": {
       "artifact_type": "current_run_state_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-29T20:28:00Z",
+      "generated_at": "2026-04-30T00:59:06Z",
       "last_run_id": "OPS-MASTER-01",
       "status": "completed",
       "outcomes": [
@@ -134,7 +134,7 @@
     "current_bottleneck_record": {
       "artifact_type": "current_bottleneck_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-29T20:28:00Z",
+      "generated_at": "2026-04-30T00:59:06Z",
       "bottleneck_name": "repair_loop_latency",
       "evidence": [
         "first_pass_quality_artifact.first_pass_rate=0.71",
@@ -148,7 +148,7 @@
     "hard_gate_status_record": {
       "artifact_type": "hard_gate_status_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-29T20:28:00Z",
+      "generated_at": "2026-04-30T00:59:06Z",
       "required_artifacts": [
         "current_run_state_record",
         "pre_pqx_contract_readiness_artifact",

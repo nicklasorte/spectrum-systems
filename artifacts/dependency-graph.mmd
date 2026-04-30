@@ -813,6 +813,7 @@ flowchart TD
   art_pqx_slice_execution_record["pqx_slice_execution_record\ncoordination"]
   art_pqx_strategy_status_artifact["pqx_strategy_status_artifact\ncoordination"]
   art_pqx_triage_plan_record["pqx_triage_plan_record\ncoordination"]
+  art_pr_test_shard_result["pr_test_shard_result\ngovernance"]
   art_pra_changed_scope_extraction_record["pra_changed_scope_extraction_record\ncoordination"]
   art_pra_ci_review_extraction_record["pra_ci_review_extraction_record\ncoordination"]
   art_pra_pull_request_anchor_record["pra_pull_request_anchor_record\ncoordination"]
@@ -2130,6 +2131,7 @@ flowchart TD
   con_pqx_slice_execution_record["pqx_slice_execution_record\ncontract"]
   con_pqx_strategy_status_artifact["pqx_strategy_status_artifact\ncontract"]
   con_pqx_triage_plan_record["pqx_triage_plan_record\ncontract"]
+  con_pr_test_shard_result["pr_test_shard_result\ncontract"]
   con_pra_changed_scope_extraction_record["pra_changed_scope_extraction_record\ncontract"]
   con_pra_ci_review_extraction_record["pra_ci_review_extraction_record\ncontract"]
   con_pra_pull_request_anchor_record["pra_pull_request_anchor_record\ncontract"]
@@ -3442,6 +3444,7 @@ flowchart TD
   art_pqx_slice_execution_record -. governed_by .-> con_pqx_slice_execution_record
   art_pqx_strategy_status_artifact -. governed_by .-> con_pqx_strategy_status_artifact
   art_pqx_triage_plan_record -. governed_by .-> con_pqx_triage_plan_record
+  art_pr_test_shard_result -. governed_by .-> con_pr_test_shard_result
   art_pra_changed_scope_extraction_record -. governed_by .-> con_pra_changed_scope_extraction_record
   art_pra_ci_review_extraction_record -. governed_by .-> con_pra_ci_review_extraction_record
   art_pra_pull_request_anchor_record -. governed_by .-> con_pra_pull_request_anchor_record
@@ -4754,6 +4757,7 @@ flowchart TD
   con_pqx_slice_execution_record -->|validates| art_pqx_slice_execution_record
   con_pqx_strategy_status_artifact -->|validates| art_pqx_strategy_status_artifact
   con_pqx_triage_plan_record -->|validates| art_pqx_triage_plan_record
+  con_pr_test_shard_result -->|validates| art_pr_test_shard_result
   con_pra_changed_scope_extraction_record -->|validates| art_pra_changed_scope_extraction_record
   con_pra_ci_review_extraction_record -->|validates| art_pra_ci_review_extraction_record
   con_pra_pull_request_anchor_record -->|validates| art_pra_pull_request_anchor_record

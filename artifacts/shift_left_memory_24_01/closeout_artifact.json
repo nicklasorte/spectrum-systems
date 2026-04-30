@@ -1,7 +1,7 @@
 {
   "artifact_type": "closeout_artifact",
   "batch_id": "SHIFT-LEFT-MEMORY-24-01",
-  "generated_at": "2026-04-29T20:28:58Z",
+  "generated_at": "2026-04-30T00:59:51Z",
   "bottleneck": "repair_loop_latency",
   "authorities_checked": [
     "README.md",

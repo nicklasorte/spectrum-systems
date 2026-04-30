@@ -817,6 +817,7 @@
 - pqx_slice_execution_record [coordination] producers: —; consumers: —; Governed artifact for contract `pqx_slice_execution_record`.
 - pqx_strategy_status_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `pqx_strategy_status_artifact`.
 - pqx_triage_plan_record [coordination] producers: —; consumers: —; Governed artifact for contract `pqx_triage_plan_record`.
+- pr_test_shard_result [governance] producers: —; consumers: —; Governed artifact for contract `pr_test_shard_result`.
 - pra_changed_scope_extraction_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_changed_scope_extraction_record`.
 - pra_ci_review_extraction_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_ci_review_extraction_record`.
 - pra_pull_request_anchor_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_pull_request_anchor_record`.
@@ -2136,6 +2137,7 @@
 - pqx_slice_execution_record [coordination] intended consumers: spectrum-systems; artifacts: pqx_slice_execution_record
 - pqx_strategy_status_artifact [coordination] intended consumers: spectrum-systems; artifacts: pqx_strategy_status_artifact
 - pqx_triage_plan_record [coordination] intended consumers: spectrum-systems; artifacts: pqx_triage_plan_record
+- pr_test_shard_result [governance] intended consumers: spectrum-systems; artifacts: pr_test_shard_result
 - pra_changed_scope_extraction_record [coordination] intended consumers: spectrum-systems; artifacts: pra_changed_scope_extraction_record
 - pra_ci_review_extraction_record [coordination] intended consumers: spectrum-systems; artifacts: pra_ci_review_extraction_record
 - pra_pull_request_anchor_record [coordination] intended consumers: spectrum-systems; artifacts: pra_pull_request_anchor_record

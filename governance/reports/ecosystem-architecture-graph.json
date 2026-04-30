@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-29T20:27:58Z",
+  "generated_at": "2026-04-30T00:59:04Z",
   "nodes": {
     "repositories": [
       {
@@ -4891,6 +4891,12 @@
       },
       {
         "id": "pqx_triage_plan_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "pr_test_shard_result",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

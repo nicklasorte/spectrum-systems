@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-18",
   "owner": "PRG",
-  "generated_at": "2026-04-29T20:28:42Z",
+  "generated_at": "2026-04-30T00:59:39Z",
   "cross_cycle_stability_index": 0.79,
   "window": [
     "cycle_04",

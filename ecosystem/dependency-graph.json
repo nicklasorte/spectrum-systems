@@ -5855,6 +5855,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "pr_test_shard_result",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `pr_test_shard_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "pra_changed_scope_extraction_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `pra_changed_scope_extraction_record`.",
@@ -17509,6 +17516,16 @@
       ]
     },
     {
+      "contract_name": "pr_test_shard_result",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "pr_test_shard_result"
+      ]
+    },
+    {
       "contract_name": "pra_changed_scope_extraction_record",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -28254,6 +28271,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "pr_test_shard_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "pr_test_shard_result"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "pra_changed_scope_extraction_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -37435,6 +37459,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "pqx_triage_plan_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "pr_test_shard_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "pr_test_shard_result"
     },
     {
       "from_type": "contract",
