@@ -309,7 +309,7 @@ def main() -> None:
                 [str(artifact_path)],
                 output_dir,
             )
-        record_path = Path(record_ref)
+        record_path = repo_root / record_ref
         if not record_path.is_file():
             _fail_closed(
                 f"missing pytest_execution_record artifact at {record_ref}",

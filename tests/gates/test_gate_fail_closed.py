@@ -331,8 +331,13 @@ class TestGateResultSchemaValidation:
             props = schema.get("properties", {})
             status_prop = props.get("status", {})
             assert "enum" in status_prop, f"{name} status must be an enum"
-            assert set(status_prop["enum"]) >= {"allow", "block"}, \
-                f"{name} status enum must include allow and block"
+            enum_set = set(status_prop["enum"])
+            assert "block" in enum_set, f"{name} status enum must include 'block'"
+            # pr_gate_result uses 'pass' as its positive outcome; all others use 'allow'
+            if name == "pr_gate_result":
+                assert "pass" in enum_set, f"{name} status enum must include 'pass'"
+            else:
+                assert "allow" in enum_set, f"{name} status enum must include 'allow'"
 
 
 # ---------------------------------------------------------------------------
