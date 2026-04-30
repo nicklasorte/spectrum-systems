@@ -206,3 +206,23 @@ def test_non_iterable_cases_does_not_raise():
     result = build_rfx_golden_failure_corpus_v2(cases=1)
     assert "rfx_v2_corpus_empty" in result["reason_codes_emitted"]
     assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"
+
+
+def test_numeric_registered_id_matches_string_case_id():
+    # P2 fix: registered_case_ids with numeric entries must match string-normalized
+    # case IDs so {1} matches id=1 (normalized to "1") without false unregistered signal.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[_case(id="1")],
+        registered_case_ids={1},
+    )
+    assert "rfx_v2_case_unregistered" not in result["reason_codes_emitted"]
+
+
+def test_string_registered_id_matches_numeric_case_id():
+    # P2 fix: numeric case ID (normalized to string) must match string entry in registry.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[{"id": 1, "category": "authority_shape_doc_violation",
+                "trace_ref": "t", "fix_ref": "f", "expected": "ok", "actual": "ok"}],
+        registered_case_ids={"1"},
+    )
+    assert "rfx_v2_case_unregistered" not in result["reason_codes_emitted"]

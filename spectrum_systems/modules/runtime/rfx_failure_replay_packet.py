@@ -32,13 +32,28 @@ import json
 from typing import Any
 
 
+def _canonicalize(obj: Any) -> Any:
+    """Recursively convert sets/frozensets to sorted lists for deterministic JSON."""
+    if isinstance(obj, (set, frozenset)):
+        return sorted([_canonicalize(x) for x in obj], key=str)
+    if isinstance(obj, dict):
+        return {k: _canonicalize(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_canonicalize(x) for x in obj]
+    return obj
+
+
 def _stable_packet_id(failure_id: str, inputs: Any) -> str:
     try:
-        payload = json.dumps({"failure_id": failure_id, "inputs": inputs},
-                             sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        payload = json.dumps(
+            {"failure_id": failure_id, "inputs": _canonicalize(inputs)},
+            sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+        )
     except (TypeError, ValueError):
-        payload = json.dumps({"failure_id": failure_id, "inputs": str(inputs)},
-                             sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        payload = json.dumps(
+            {"failure_id": failure_id, "inputs": repr(inputs)},
+            sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+        )
     return "replay-" + hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 

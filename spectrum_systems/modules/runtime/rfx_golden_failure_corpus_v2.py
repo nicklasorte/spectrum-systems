@@ -64,6 +64,16 @@ def build_rfx_golden_failure_corpus_v2(
     if not cases:
         reason.append("rfx_v2_corpus_empty")
 
+    # Normalize registered_case_ids to a frozenset of strings so numeric IDs
+    # (e.g. {1}) match string-normalized case_ids (e.g. "1").
+    _registered_check = registered_case_ids is not None
+    _normalized_registered: frozenset[str] | None = None
+    if _registered_check:
+        try:
+            _normalized_registered = frozenset(str(rid).strip() for rid in registered_case_ids)
+        except TypeError:
+            _normalized_registered = None  # non-iterable → all cases unregistered
+
     for c in cases:
         if not isinstance(c, dict):
             reason.append("rfx_v2_case_malformed_row")
@@ -74,10 +84,8 @@ def build_rfx_golden_failure_corpus_v2(
         elif case_id in seen_ids:
             reason.append("rfx_v2_duplicate_case_id")
         else:
-            # Only check registration when registered_case_ids was explicitly supplied.
-            if registered_case_ids is not None and (
-                not isinstance(registered_case_ids, (set, frozenset, list, tuple))
-                or case_id not in registered_case_ids
+            if _registered_check and (
+                _normalized_registered is None or case_id not in _normalized_registered
             ):
                 reason.append("rfx_v2_case_unregistered")
         seen_ids.add(case_id)

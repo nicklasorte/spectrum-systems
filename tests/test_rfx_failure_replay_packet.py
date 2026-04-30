@@ -105,3 +105,21 @@ def test_non_json_serializable_inputs_does_not_raise():
     )
     assert result["artifact_type"] == "rfx_failure_replay_packet"
     assert result["packet_id"] is not None
+
+
+def test_set_inputs_packet_id_is_stable():
+    # P1 fix: set-valued reproduction_inputs must be canonicalized (sorted) so
+    # the packet_id is deterministic across Python processes with different hash seeds.
+    from spectrum_systems.modules.runtime.rfx_failure_replay_packet import _stable_packet_id
+    pid1 = _stable_packet_id("fid", {"z", "a", "m"})
+    pid2 = _stable_packet_id("fid", {"z", "a", "m"})
+    assert pid1 == pid2
+    assert pid1.startswith("replay-")
+
+
+def test_nested_set_inputs_packet_id_is_stable():
+    # P1 fix: sets nested in dicts must also be canonicalized.
+    from spectrum_systems.modules.runtime.rfx_failure_replay_packet import _stable_packet_id
+    pid1 = _stable_packet_id("fid", {"tags": {"b", "a"}, "val": 1})
+    pid2 = _stable_packet_id("fid", {"tags": {"b", "a"}, "val": 1})
+    assert pid1 == pid2
