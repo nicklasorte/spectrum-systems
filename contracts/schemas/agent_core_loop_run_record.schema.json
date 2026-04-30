@@ -1,0 +1,369 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/agent_core_loop_run_record.schema.json",
+  "title": "Agent Core Loop Run Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "work_item_id",
+    "agent_type",
+    "repo_mutating",
+    "source_refs",
+    "changed_surfaces",
+    "loop_legs",
+    "overlays",
+    "first_missing_leg",
+    "first_failed_leg",
+    "core_loop_complete",
+    "compliance_status",
+    "learning_actions",
+    "trace_refs",
+    "replay_refs",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "agent_core_loop_run_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent_type": {
+      "enum": [
+        "codex",
+        "claude",
+        "other",
+        "unknown"
+      ]
+    },
+    "repo_mutating": {
+      "type": "boolean"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "changed_surfaces": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "loop_legs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "AEX",
+        "PQX",
+        "EVL",
+        "TPA",
+        "CDE",
+        "SEL"
+      ],
+      "properties": {
+        "AEX": {
+          "$ref": "#/$defs/leg"
+        },
+        "PQX": {
+          "$ref": "#/$defs/leg"
+        },
+        "EVL": {
+          "$ref": "#/$defs/leg"
+        },
+        "TPA": {
+          "$ref": "#/$defs/leg"
+        },
+        "CDE": {
+          "$ref": "#/$defs/leg"
+        },
+        "SEL": {
+          "$ref": "#/$defs/leg"
+        }
+      }
+    },
+    "overlays": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "LIN",
+        "REP",
+        "OBS",
+        "SLO"
+      ],
+      "properties": {
+        "LIN": {
+          "$ref": "#/$defs/leg"
+        },
+        "REP": {
+          "$ref": "#/$defs/leg"
+        },
+        "OBS": {
+          "$ref": "#/$defs/leg"
+        },
+        "SLO": {
+          "$ref": "#/$defs/leg"
+        }
+      }
+    },
+    "first_missing_leg": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "first_failed_leg": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "core_loop_complete": {
+      "type": "boolean"
+    },
+    "compliance_status": {
+      "enum": [
+        "PASS",
+        "WARN",
+        "BLOCK"
+      ]
+    },
+    "learning_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/action"
+      }
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "repo_mutating": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "compliance_status": {
+            "enum": [
+              "WARN",
+              "BLOCK",
+              "PASS"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "core_loop_complete": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "loop_legs": {
+            "properties": {
+              "AEX": {
+                "properties": {
+                  "status": {
+                    "const": "present"
+                  },
+                  "artifact_refs": {
+                    "minItems": 1
+                  }
+                }
+              },
+              "PQX": {
+                "properties": {
+                  "status": {
+                    "const": "present"
+                  },
+                  "artifact_refs": {
+                    "minItems": 1
+                  }
+                }
+              },
+              "EVL": {
+                "properties": {
+                  "status": {
+                    "const": "present"
+                  },
+                  "artifact_refs": {
+                    "minItems": 1
+                  }
+                }
+              },
+              "TPA": {
+                "properties": {
+                  "status": {
+                    "const": "present"
+                  },
+                  "artifact_refs": {
+                    "minItems": 1
+                  }
+                }
+              },
+              "CDE": {
+                "properties": {
+                  "status": {
+                    "const": "present"
+                  },
+                  "artifact_refs": {
+                    "minItems": 1
+                  }
+                }
+              },
+              "SEL": {
+                "properties": {
+                  "status": {
+                    "const": "present"
+                  },
+                  "artifact_refs": {
+                    "minItems": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "leg": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "artifact_refs",
+        "reason_codes",
+        "confidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "present",
+            "partial",
+            "missing",
+            "failed",
+            "unknown",
+            "not_required"
+          ]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "present"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "artifact_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "partial",
+                  "missing",
+                  "failed",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_system",
+        "action_type",
+        "reason_code",
+        "source_failure_ref",
+        "recommended_artifact"
+      ],
+      "properties": {
+        "owner_system": {
+          "type": "string"
+        },
+        "action_type": {
+          "type": "string"
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "source_failure_ref": {
+          "type": "string"
+        },
+        "recommended_artifact": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

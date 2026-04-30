@@ -1,0 +1,117 @@
+{
+  "artifact_type": "agent_core_loop_run_record",
+  "schema_version": "1.0.0",
+  "work_item_id": "AGL-01-CLAUDE",
+  "agent_type": "claude",
+  "repo_mutating": true,
+  "source_refs": [
+    "artifacts/dashboard_metrics/ai_programming_governed_path_record.json"
+  ],
+  "changed_surfaces": [
+    "scripts/"
+  ],
+  "loop_legs": {
+    "AEX": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/aex.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "PQX": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/pqx.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "EVL": {
+      "status": "missing",
+      "artifact_refs": [],
+      "reason_codes": [
+        "eval_missing"
+      ],
+      "confidence": "low"
+    },
+    "TPA": {
+      "status": "missing",
+      "artifact_refs": [],
+      "reason_codes": [
+        "policy_missing"
+      ],
+      "confidence": "low"
+    },
+    "CDE": {
+      "status": "missing",
+      "artifact_refs": [],
+      "reason_codes": [
+        "cde_signal_missing"
+      ],
+      "confidence": "low"
+    },
+    "SEL": {
+      "status": "missing",
+      "artifact_refs": [],
+      "reason_codes": [
+        "sel_signal_missing"
+      ],
+      "confidence": "low"
+    }
+  },
+  "overlays": {
+    "LIN": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/lin.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "REP": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/rep.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "OBS": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/obs.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "SLO": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/slo.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    }
+  },
+  "first_missing_leg": "EVL",
+  "first_failed_leg": null,
+  "core_loop_complete": false,
+  "compliance_status": "WARN",
+  "learning_actions": [
+    {
+      "owner_system": "EVL",
+      "action_type": "add_eval_case",
+      "reason_code": "eval_missing",
+      "source_failure_ref": "artifacts/missing.json",
+      "recommended_artifact": "contracts/examples/required_eval_coverage.example.json"
+    }
+  ],
+  "trace_refs": [
+    "artifacts/trace.json"
+  ],
+  "replay_refs": [
+    "artifacts/replay.json"
+  ],
+  "authority_scope": "observation_only"
+}
