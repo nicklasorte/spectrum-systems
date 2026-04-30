@@ -162,6 +162,29 @@ This rule ensures:
 
 All changes must be admissible, traceable, testable, and governed before execution.
 
+## Pre-PR Gate Evidence (CLP-02)
+
+Before marking repo-mutating agent work PR-ready or updating an existing PR,
+agents must run the core loop pre-PR gate or provide a valid
+`core_loop_pre_pr_gate_result` artifact and a passing `agent_pr_ready_result`
+guard artifact:
+
+- `python scripts/run_core_loop_pre_pr_gate.py --work-item-id <ID> --agent-type claude|codex`
+- `python scripts/check_agent_pr_ready.py --work-item-id <ID> --agent-type claude|codex`
+
+CLP rules:
+
+- repo-mutating slice with no CLP evidence → not PR-ready (fail closed).
+- CLP `gate_status=block` → no PR update / no PR-ready handoff.
+- CLP `gate_status=warn` → PR update permitted only when every warn reason
+  code is listed in `docs/governance/core_loop_pre_pr_gate_policy.json` →
+  `allowed_warn_reason_codes`.
+- CLP `gate_status=pass` → PR update may proceed.
+
+If CLP blocks, repair through the governed PRL/FRE/CDE/PQX flow or report
+the CLP block. CLP itself never approves, certifies, promotes, admits, or
+enforces — it only emits structured pre-PR evidence.
+
 ## Terminology normalization
 
 Use these terms consistently:

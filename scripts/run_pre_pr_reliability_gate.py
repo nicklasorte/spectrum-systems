@@ -39,6 +39,10 @@ from spectrum_systems.modules.prl.failure_classifier import (
     classify,
     aggregate_gate_signal,
 )
+from spectrum_systems.modules.prl.clp_consumer import (
+    load_clp_result as _load_clp_result_for_prl,
+    parsed_failures_from_clp_result,
+)
 from spectrum_systems.modules.prl.artifact_builder import (
     build_capture_record,
     build_failure_packet,
@@ -211,6 +215,7 @@ def run_gate(
     pytest_args: list[str] | None = None,
     base_ref: str = "origin/main",
     head_ref: str = "HEAD",
+    clp_result_path: Path | None = None,
 ) -> dict[str, Any]:
     """Execute the full pre-PR reliability gate. Returns the prl_gate_result artifact."""
     all_signals: list[str] = []
@@ -226,6 +231,80 @@ def run_gate(
         if pytest_args:
             cmd = cmd + pytest_args
         checks.append((label, cmd, source))
+
+    # CLP-02: Consume `core_loop_pre_pr_gate_result` evidence as structured PRL
+    # input. CLP block becomes ParsedFailure records that flow through the
+    # standard classify/repair/eval pipeline. PRL retains all repair authority;
+    # this path performs no auto-repair.
+    clp_failures: list[tuple[Any, str]] = []
+    if clp_result_path is not None:
+        clp_payload = _load_clp_result_for_prl(clp_result_path)
+        if clp_payload is not None and clp_payload.get("gate_status") == "block":
+            try:
+                clp_relpath = str(clp_result_path.relative_to(REPO_ROOT))
+            except ValueError:
+                clp_relpath = str(clp_result_path)
+            for parsed in parsed_failures_from_clp_result(
+                clp_payload, clp_path=clp_relpath
+            ):
+                clp_failures.append((parsed, "clp_evidence"))
+
+    for parsed, source in clp_failures:
+        classification = classify(parsed)
+        capture = build_capture_record(
+            parsed=parsed,
+            classification=classification,
+            source=source,
+            run_id=run_id,
+            trace_id=trace_id,
+        )
+        _emit(capture)
+        packet = build_failure_packet(
+            capture_record=capture,
+            classification=classification,
+            run_id=run_id,
+            trace_id=trace_id,
+        )
+        _emit(packet)
+        repair = generate_repair_candidate(
+            failure_packet=packet,
+            classification=classification,
+            run_id=run_id,
+            trace_id=trace_id,
+        )
+        _emit(repair)
+        candidate = generate_eval_case_candidate(
+            failure_packet=packet,
+            classification=classification,
+            run_id=run_id,
+            trace_id=trace_id,
+        )
+        _emit(candidate)
+        gated = advance_to_eval_case(
+            candidate=candidate,
+            classification=classification,
+            run_id=run_id,
+            trace_id=trace_id,
+        )
+        if gated is not None:
+            _emit(gated)
+        gen_record = build_generation_record(
+            failure_packet=packet,
+            candidate=candidate,
+            gated_eval=gated,
+            run_id=run_id,
+            trace_id=trace_id,
+        )
+        _emit(gen_record)
+        all_signals.append(classification.gate_signal)
+        failure_classes.append(classification.failure_class)
+        failure_packet_refs.append(f"pre_pr_failure_packet:{packet['id']}")
+        repair_candidate_refs.append(f"prl_repair_candidate:{repair['id']}")
+        eval_candidate_refs.append(f"eval_case_candidate:{candidate['id']}")
+        if classification.gate_signal == "failed_gate":
+            blocking_reasons.append(
+                f"{classification.failure_class}: {parsed.normalized_message}"
+            )
 
     for label, cmd, source in checks:
         exit_code, output = _run_check(label, cmd)
@@ -344,6 +423,17 @@ def main() -> int:
         help="Git head ref for changed-file resolution (default: HEAD)",
     )
     parser.add_argument(
+        "--clp-result",
+        default=None,
+        help=(
+            "Optional path to a core_loop_pre_pr_gate_result artifact. "
+            "When supplied and gate_status=block, CLP-02 failure classes are "
+            "normalized into PRL ParsedFailure records and processed by the "
+            "standard classify/repair/eval pipeline. PRL retains all repair "
+            "and classification authority — CLP-02 performs no auto-repair."
+        ),
+    )
+    parser.add_argument(
         "pytest_args",
         nargs=argparse.REMAINDER,
         help="Additional arguments passed to pytest (use -- before pytest flags)",
@@ -360,6 +450,13 @@ def main() -> int:
     # Prepend any flags argparse treated as unknown (e.g. -v, -x, -k "expr")
     pytest_args = unknown_args + pytest_args
 
+    clp_result_path: Path | None = None
+    if args.clp_result:
+        candidate = Path(args.clp_result)
+        if not candidate.is_absolute():
+            candidate = REPO_ROOT / candidate
+        clp_result_path = candidate
+
     try:
         gate_result = run_gate(
             run_id=run_id,
@@ -368,6 +465,7 @@ def main() -> int:
             pytest_args=pytest_args or None,
             base_ref=args.base_ref,
             head_ref=args.head_ref,
+            clp_result_path=clp_result_path,
         )
     except Exception as exc:
         error_record = {

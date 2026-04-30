@@ -548,6 +548,32 @@ These are important but non-top-level authority families:
 
 ## Recurring Cross-System Phase Labels (Non-Owner)
 
+### CLP-02 — Agent PR-Ready Guard (Policy + Guard Artifact)
+- **classification:** evidence-bundle guard (observation-only; not a canonical authority owner)
+- **status:** non_owner_evidence_runner
+- **role:** loads `docs/governance/core_loop_pre_pr_gate_policy.json` and a `core_loop_pre_pr_gate_result` artifact, then emits an `agent_pr_ready_result` evidence artifact recording whether a repo-mutating Codex/Claude slice may be marked PR-ready. CLP-02 is observation-only: AEX retains admission authority, PQX retains execution closure authority, TPA retains policy authority, CDE retains continuation/closure authority, SEL retains final compliance authority.
+- **owns:**
+  - agent_pr_ready_result
+- **consumes:**
+  - core_loop_pre_pr_gate_result
+  - core_loop_pre_pr_gate_policy
+- **produces:**
+  - agent_pr_ready_result
+- **downstream consumers (evidence only — CLP does not bind):**
+  - **AGL** (`agent_core_loop_run_record`) consumes the guard via `agent_pr_ready_result_ref`; a not_ready guard on a repo-mutating slice forces `compliance_status=BLOCK`.
+  - **PRL** consumes the guard's reason codes alongside `core_loop_pre_pr_gate_result.failure_classes` for failure classification (no auto-repair).
+  - **AEX/PQX** documented expectation: do not handoff PR-ready without a `pr_ready_status=ready` guard artifact. Hard enforcement remains a documented gap (see `docs/architecture/clp_02_pr_ready_admission.md`).
+- **authority_scope (metadata note):** observation_only — applies to every emitted `agent_pr_ready_result` instance. The schema pins this value with a const constraint.
+- **must_not_do:**
+  - own_admission_authority
+  - own_execution_authority
+  - own_eval_authority
+  - own_policy_authority
+  - own_control_authority
+  - own_enforcement_authority
+  - auto_apply_repairs (repair belongs to PRL/FRE/CDE/PQX)
+  - suppress_existing_gates
+
 ### CLP-01 — Core Loop Pre-PR Gate (Bundle Runner / Evidence Artifact)
 - **classification:** evidence-bundle runner (observation-only; not a canonical authority owner)
 - **status:** non_owner_evidence_runner

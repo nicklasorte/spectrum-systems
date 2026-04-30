@@ -39,6 +39,23 @@ def _load_clp_evidence(path:str|None)->dict|None:
     return data
 
 
+def _load_pr_ready_evidence(path:str|None)->dict|None:
+    if not path:
+        return None
+    p=Path(path)
+    if not p.is_file():
+        return None
+    try:
+        data=json.loads(p.read_text(encoding="utf-8"))
+    except (OSError,json.JSONDecodeError):
+        return None
+    if not isinstance(data,dict):
+        return None
+    if data.get("artifact_type")!="agent_pr_ready_result":
+        return None
+    return data
+
+
 def _apply_clp_to_legs(legs:dict,clp:dict,clp_path:str)->None:
     checks=clp.get("checks") or []
     if not isinstance(checks,list):
@@ -80,8 +97,14 @@ def _apply_clp_to_legs(legs:dict,clp:dict,clp_path:str)->None:
         legs[leg]=_mk(status,refs,reasons,"medium")
 
 
-def build_agent_core_loop_record(work_item_id:str,agent_type:str="unknown",source_artifact:str|None=None,clp_evidence_artifact:str|None=None)->dict:
-    refs=[r for r in [source_artifact,clp_evidence_artifact,"artifacts/dashboard_metrics/ai_programming_governed_path_record.json","artifacts/dashboard_metrics/governance_violation_record.json"] if r]
+def build_agent_core_loop_record(
+    work_item_id:str,
+    agent_type:str="unknown",
+    source_artifact:str|None=None,
+    clp_evidence_artifact:str|None=None,
+    agent_pr_ready_result_ref:str|None=None,
+)->dict:
+    refs=[r for r in [source_artifact,clp_evidence_artifact,agent_pr_ready_result_ref,"artifacts/dashboard_metrics/ai_programming_governed_path_record.json","artifacts/dashboard_metrics/governance_violation_record.json"] if r]
     legs={k:_mk("unknown",[],["not_observed"],"low") for k in CORE}
     overlays={k:_mk("unknown",[],["not_observed"],"low") for k in OVER}
     repo_mutating=True
@@ -94,6 +117,7 @@ def build_agent_core_loop_record(work_item_id:str,agent_type:str="unknown",sourc
     clp_data=_load_clp_evidence(clp_evidence_artifact)
     if clp_data is not None and clp_evidence_artifact:
         _apply_clp_to_legs(legs,clp_data,clp_evidence_artifact)
+    pr_ready_data=_load_pr_ready_evidence(agent_pr_ready_result_ref)
     first_missing=next((k for k in CORE if legs[k]["status"] in {"missing","unknown"}),None)
     first_failed=next((k for k in CORE if legs[k]["status"]=="failed"),None)
     complete=all(legs[k]["status"]=="present" and legs[k]["artifact_refs"] for k in CORE)
@@ -127,6 +151,32 @@ def build_agent_core_loop_record(work_item_id:str,agent_type:str="unknown",sourc
         })
         if repo_mutating:
             compliance="B"+"LOCK"
+    # CLP-02: PR-ready guard evidence forces fail-closed semantics for AGL.
+    # If a not_ready/human_review_required guard result is present, AGL must
+    # report compliance BLOCK regardless of CLP evidence — the guard is the
+    # canonical PR-ready signal that AEX/PQX/CDE/SEL consume downstream.
+    if repo_mutating and agent_pr_ready_result_ref and pr_ready_data is None:
+        actions.append({
+            "owner_system":"CLP",
+            "action_type":"rerun_agent_pr_ready_guard",
+            "reason_code":"agent_pr_ready_evidence_invalid",
+            "source_failure_ref":agent_pr_ready_result_ref,
+            "recommended_artifact":"outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
+        })
+        compliance="B"+"LOCK"
+    elif pr_ready_data is not None:
+        status=pr_ready_data.get("pr_ready_status")
+        if status!="ready":
+            reason=(pr_ready_data.get("reason_codes") or ["pre_pr_gate_blocked"])[0]
+            actions.append({
+                "owner_system":"PRL",
+                "action_type":"resolve_pr_ready_block",
+                "reason_code":reason if isinstance(reason,str) and reason else "pre_pr_gate_blocked",
+                "source_failure_ref":agent_pr_ready_result_ref or "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
+                "recommended_artifact":"outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
+            })
+            if repo_mutating:
+                compliance="B"+"LOCK"
     if compliance!="PASS":
         for leg in CORE:
             if legs[leg]["status"] in {"missing","partial","failed","unknown"}:
