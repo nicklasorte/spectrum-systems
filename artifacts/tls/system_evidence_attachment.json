@@ -187,6 +187,7 @@
           "docs/review-actions/PLAN-FAE-001-2026-04-16.md",
           "docs/review-actions/PLAN-IFB-001-2026-04-15.md",
           "docs/review-actions/PLAN-PMH-003-2026-04-17.md",
+          "docs/review-actions/PLAN-PRL-01-2026-04-30.md",
           "docs/review-actions/PLAN-R100-001-2026-04-15.md",
           "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
@@ -195,8 +196,7 @@
           "docs/reviews/AEX-TRUST-01_root_cause.md",
           "docs/reviews/AUD-02_required_check_alignment_and_trust_gap_audit.md",
           "docs/reviews/CDX-01_redteam_round_2.md",
-          "docs/reviews/CDX-02_redteam_round_2.md",
-          "docs/reviews/MET-29-simplification-debuggability-redteam.md"
+          "docs/reviews/CDX-02_redteam_round_2.md"
         ],
         "modules": [
           "spectrum_systems/modules/budget/cap_enforcer.py",
@@ -1584,10 +1584,10 @@
           "spectrum_systems/modules/runtime/obs_timeout_trend.py",
           "spectrum_systems/modules/runtime/observability_metrics.py",
           "spectrum_systems/modules/runtime/pmh_003_surfaces.py",
+          "spectrum_systems/modules/runtime/pr_repair_loop.py",
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
           "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
-          "spectrum_systems/modules/runtime/rfx_certification_gate.py",
-          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py"
+          "spectrum_systems/modules/runtime/rfx_certification_gate.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1601,6 +1601,7 @@
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
           "scripts/run_operationalization.py",
+          "scripts/run_pr_repair_loop.py",
           "scripts/run_regression_check.py",
           "scripts/sync_project_design_sources.py",
           "scripts/validate_system_registry.py",
@@ -1625,16 +1626,16 @@
           "tests/test_ns_system_justification_v2.py",
           "tests/test_oc_bottleneck_classifier.py",
           "tests/test_pqx_sequential_loop.py",
+          "tests/test_pr_repair_loop.py",
           "tests/test_regression_harness.py",
           "tests/test_rfx_adversarial_reliability_guard.py",
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_error_budget_governance.py",
           "tests/test_rfx_flow_integration.py",
-          "tests/test_rfx_loop_04_06_red_team.py",
-          "tests/test_rfx_loop_07_08_chaos.py"
+          "tests/test_rfx_loop_04_06_red_team.py"
         ]
       },
-      "evidence_count": 111,
+      "evidence_count": 112,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "OBS"
@@ -2005,7 +2006,11 @@
           "docs/architecture/system_registry.md",
           "docs/governance/preflight_required_surface_test_overrides.json",
           "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
-          "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md"
+          "docs/review-actions/PLAN-PRL-01-2026-04-30.md",
+          "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md",
+          "docs/review-actions/PRL-01_fix_actions.md",
+          "docs/reviews/PRL-01_pr_repair_loop_final_report.md",
+          "docs/reviews/PRL-01_pr_repair_loop_redteam.md"
         ],
         "modules": [
           "spectrum_systems/modules/prl/__init__.py",
@@ -2046,7 +2051,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 41,
+      "evidence_count": 45,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"
