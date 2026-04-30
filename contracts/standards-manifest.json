@@ -2985,7 +2985,8 @@
       "introduced_in": "CLP-01",
       "last_updated_in": "CLP-01",
       "example_path": "contracts/examples/core_loop_pre_pr_gate_result.example.json",
-      "notes": "Core loop pre-PR gate bundle result. Observation only."
+      "notes": "Core loop pre-PR gate bundle result. Observation only.",
+      "schema_path": "contracts/schemas/core_loop_pre_pr_gate_result.schema.json"
     },
     {
       "artifact_type": "core_system_integration_validation",

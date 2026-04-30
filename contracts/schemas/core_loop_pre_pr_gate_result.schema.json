@@ -124,7 +124,8 @@
               "FRE"
             ]
           }
-        }
+        },
+        "additionalProperties": false
       }
     },
     "first_failed_check": {
@@ -175,5 +176,7 @@
     "authority_scope": {
       "const": "observation_only"
     }
-  }
+  },
+  "$id": "https://spectrum-systems.dev/contracts/schemas/core_loop_pre_pr_gate_result.schema.json",
+  "additionalProperties": false
 }
