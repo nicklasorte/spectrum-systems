@@ -93,3 +93,12 @@ def test_numeric_metadata_fields_do_not_raise():
     )
     assert result["artifact_type"] == "rfx_bloat_burndown_report"
     assert result["signals"]["justified_count"] == 1
+
+
+def test_numeric_name_does_not_raise():
+    # P1 fix: non-string name must not raise AttributeError.
+    result = build_rfx_bloat_burndown_report(
+        helpers=[{"name": 42, "justification": "prevents regression", "responsibility": "r"}]
+    )
+    assert result["artifact_type"] == "rfx_bloat_burndown_report"
+    assert result["signals"]["justified_count"] == 1

@@ -84,7 +84,7 @@ def build_rfx_operator_handbook(
             "code": code,
             "plain_action": plain_action or None,
             "owner_context": owner_context or None,
-            "failure_prevented": (entry.get("failure_prevented") or "").strip() or None,
+            "failure_prevented": str(entry.get("failure_prevented") or "").strip() or None,
             "severity": entry.get("severity", "medium"),
         })
 

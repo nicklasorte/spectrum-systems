@@ -74,3 +74,12 @@ def test_mixed_helpers_malformed_skipped():
     result = assess_rfx_simplification(helpers=[_helper(), "bad-row"])
     assert "rfx_simplification_malformed_row" in result["reason_codes_emitted"]
     assert len(result["recommendations"]) == 1
+
+
+def test_numeric_justification_fields_do_not_raise():
+    # P1 fix: non-string failure_prevented/signal_improved/role must not raise AttributeError.
+    result = assess_rfx_simplification(
+        helpers=[{"name": "rfx_foo", "failure_prevented": 42, "signal_improved": True, "role": 99}]
+    )
+    assert result["artifact_type"] == "rfx_simplification_review_result"
+    assert result["recommendations"][0]["recommendation"] == "keep"

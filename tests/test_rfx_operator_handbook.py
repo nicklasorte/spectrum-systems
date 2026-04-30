@@ -111,3 +111,12 @@ def test_numeric_plain_action_and_owner_context_do_not_raise():
     assert result["artifact_type"] == "rfx_operator_handbook"
     assert result["entries"][0]["plain_action"] == "42"
     assert result["entries"][0]["owner_context"] == "True"
+
+
+def test_numeric_failure_prevented_does_not_raise():
+    # P1 fix: non-string failure_prevented must not raise AttributeError.
+    result = build_rfx_operator_handbook(
+        reason_code_entries=[_entry(failure_prevented=1)]
+    )
+    assert result["artifact_type"] == "rfx_operator_handbook"
+    assert result["entries"][0]["failure_prevented"] == "1"

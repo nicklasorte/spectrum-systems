@@ -68,9 +68,9 @@ def assess_rfx_simplification(
             reason.append("rfx_simplification_missing_name")
             continue
 
-        failure_prevented = (h.get("failure_prevented") or "").strip()
-        signal_improved = (h.get("signal_improved") or "").strip()
-        role = (h.get("role") or "").strip().lower()
+        failure_prevented = str(h.get("failure_prevented") or "").strip()
+        signal_improved = str(h.get("signal_improved") or "").strip()
+        role = str(h.get("role") or "").strip().lower()
 
         has_justification = bool(failure_prevented or signal_improved)
         if not has_justification:

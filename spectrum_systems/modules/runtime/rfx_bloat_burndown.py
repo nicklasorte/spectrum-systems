@@ -68,7 +68,7 @@ def build_rfx_bloat_burndown_report(
             reason.append("rfx_bloat_malformed_helper")
             continue
         valid_helpers.append(h)
-        name = (h.get("name") or "").strip()
+        name = str(h.get("name") or "").strip()
         if not name:
             reason.append("rfx_bloat_missing_name")
             continue
