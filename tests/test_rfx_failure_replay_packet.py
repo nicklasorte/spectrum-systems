@@ -87,3 +87,12 @@ def test_whitespace_only_trace_ref_flagged():
     result = build_rfx_failure_replay_packet(failure_record=_full_record(trace_ref="   "))
     assert "rfx_replay_missing_trace_ref" in result["reason_codes_emitted"]
     assert result["status"] == "incomplete"
+
+
+def test_non_json_serializable_inputs_does_not_raise():
+    # P1 fix: sets/datetimes in reproduction_inputs must not raise TypeError.
+    result = build_rfx_failure_replay_packet(
+        failure_record=_full_record(reproduction_inputs={"a", "b"})
+    )
+    assert result["artifact_type"] == "rfx_failure_replay_packet"
+    assert result["packet_id"] is not None

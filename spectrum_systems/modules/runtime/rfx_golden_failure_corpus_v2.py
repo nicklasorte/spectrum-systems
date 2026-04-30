@@ -78,11 +78,14 @@ def build_rfx_golden_failure_corpus_v2(
                 reason.append("rfx_v2_case_unregistered")
         seen_ids.add(case_id)
 
-        if not c.get("trace_ref"):
+        trace_ref_val = c.get("trace_ref")
+        if not (isinstance(trace_ref_val, str) and trace_ref_val.strip()):
             reason.append("rfx_v2_case_missing_trace")
-        if not c.get("fix_ref"):
+        fix_ref_val = c.get("fix_ref")
+        if not (isinstance(fix_ref_val, str) and fix_ref_val.strip()):
             reason.append("rfx_v2_case_missing_fix_ref")
-        if not c.get("category"):
+        category_val = c.get("category")
+        if not (isinstance(category_val, str) and category_val.strip()):
             reason.append("rfx_v2_case_missing_category")
         if c.get("actual") != c.get("expected"):
             reason.append("rfx_v2_outcome_mismatch")

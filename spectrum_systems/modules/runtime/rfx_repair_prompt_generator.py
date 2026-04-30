@@ -99,8 +99,14 @@ def generate_rfx_repair_prompt(
         reason.append("rfx_repair_missing_validation_cmds")
 
     raw_proof_constraints = rfx_proof.get("guard_constraints")
-    proof_constraints = list(raw_proof_constraints) if isinstance(raw_proof_constraints, list) else []
-    caller_constraints = list(extra_constraints) if isinstance(extra_constraints, list) else []
+    proof_constraints = [
+        c for c in (raw_proof_constraints if isinstance(raw_proof_constraints, list) else [])
+        if isinstance(c, str) and c.strip()
+    ]
+    caller_constraints = [
+        c for c in (extra_constraints if isinstance(extra_constraints, list) else [])
+        if isinstance(c, str) and c.strip()
+    ]
     all_constraints = _ALWAYS_CONSTRAINTS + [
         c for c in (proof_constraints + caller_constraints)
         if c not in _ALWAYS_CONSTRAINTS

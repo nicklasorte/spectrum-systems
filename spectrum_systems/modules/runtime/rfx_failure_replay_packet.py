@@ -33,8 +33,12 @@ from typing import Any
 
 
 def _stable_packet_id(failure_id: str, inputs: Any) -> str:
-    payload = json.dumps({"failure_id": failure_id, "inputs": inputs},
-                         sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    try:
+        payload = json.dumps({"failure_id": failure_id, "inputs": inputs},
+                             sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    except (TypeError, ValueError):
+        payload = json.dumps({"failure_id": failure_id, "inputs": str(inputs)},
+                             sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return "replay-" + hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 

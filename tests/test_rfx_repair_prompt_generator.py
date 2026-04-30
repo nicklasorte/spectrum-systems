@@ -172,3 +172,17 @@ def test_missing_proof_ref_not_complete():
     assert "rfx_repair_missing_proof_ref" in result["reason_codes_emitted"]
     assert result["status"] == "incomplete"
     assert result["signals"]["completeness_score"] < 1.0
+
+
+def test_none_in_guard_constraints_flagged():
+    # P2 fix: [None] in guard_constraints must emit rfx_repair_missing_guard_constraints.
+    result = generate_rfx_repair_prompt(rfx_proof=_proof(guard_constraints=[None]))
+    assert "rfx_repair_missing_guard_constraints" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"
+
+
+def test_whitespace_only_guard_constraints_flagged():
+    # P2 fix: ['   '] in guard_constraints must emit rfx_repair_missing_guard_constraints.
+    result = generate_rfx_repair_prompt(rfx_proof=_proof(guard_constraints=["   "]))
+    assert "rfx_repair_missing_guard_constraints" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"

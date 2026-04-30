@@ -157,3 +157,21 @@ def test_non_hashable_case_id_does_not_raise():
     )
     assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"
     assert result["cases"][0]["id"] == "['not', 'hashable']"
+
+
+def test_whitespace_only_trace_ref_flagged():
+    # P1 fix: whitespace-only trace_ref must be treated as absent.
+    result = build_rfx_golden_failure_corpus_v2(cases=[_case(trace_ref="   ")])
+    assert "rfx_v2_case_missing_trace" in result["reason_codes_emitted"]
+
+
+def test_whitespace_only_fix_ref_flagged():
+    # P1 fix: whitespace-only fix_ref must be treated as absent.
+    result = build_rfx_golden_failure_corpus_v2(cases=[_case(fix_ref="   ")])
+    assert "rfx_v2_case_missing_fix_ref" in result["reason_codes_emitted"]
+
+
+def test_whitespace_only_category_flagged():
+    # P1 fix: whitespace-only category must be treated as absent.
+    result = build_rfx_golden_failure_corpus_v2(cases=[_case(category="   ")])
+    assert "rfx_v2_case_missing_category" in result["reason_codes_emitted"]
