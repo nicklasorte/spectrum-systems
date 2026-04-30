@@ -46,6 +46,7 @@ def build_rfx_bloat_burndown_report(
     report: list[dict[str, Any]] = []
     responsibility_index: dict[str, str] = {}
 
+    helpers = helpers if isinstance(helpers, (list, tuple)) else []
     if not helpers:
         reason.append("rfx_bloat_empty_input")
         return {

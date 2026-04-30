@@ -92,3 +92,11 @@ def test_numeric_name_does_not_raise():
     )
     assert result["artifact_type"] == "rfx_simplification_review_result"
     assert result["recommendations"][0]["recommendation"] == "keep"
+
+
+def test_non_iterable_helpers_does_not_raise():
+    # P1 fix: truthy non-iterable helpers (e.g. integer 1 from bad deserialization)
+    # must not raise TypeError; must emit rfx_simplification_empty_input.
+    result = assess_rfx_simplification(helpers=1)
+    assert "rfx_simplification_empty_input" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_simplification_review_result"

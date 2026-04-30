@@ -198,3 +198,11 @@ def test_non_container_registered_case_ids_does_not_raise():
     )
     assert "rfx_v2_case_unregistered" in result["reason_codes_emitted"]
     assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"
+
+
+def test_non_iterable_cases_does_not_raise():
+    # P1 fix: truthy non-iterable cases (e.g. integer 1 from bad deserialization)
+    # must not raise TypeError; must emit rfx_v2_corpus_empty.
+    result = build_rfx_golden_failure_corpus_v2(cases=1)
+    assert "rfx_v2_corpus_empty" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"

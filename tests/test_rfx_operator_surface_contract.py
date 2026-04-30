@@ -111,3 +111,11 @@ def test_whitespace_only_proof_ref_flagged():
     result = validate_rfx_operator_surface(records=[_compact(proof_ref="   ")])
     assert "rfx_operator_surface_missing_proof_ref" in result["reason_codes_emitted"]
     assert result["status"] == "invalid"
+
+
+def test_non_iterable_records_does_not_raise():
+    # P1 fix: truthy non-iterable records (e.g. integer 1 from bad deserialization)
+    # must not raise TypeError; must emit rfx_operator_surface_empty.
+    result = validate_rfx_operator_surface(records=1)
+    assert "rfx_operator_surface_empty" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_operator_surface_contract_result"

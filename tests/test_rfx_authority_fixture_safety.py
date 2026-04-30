@@ -122,3 +122,11 @@ def test_whitespace_only_dynamic_proof_ref_flagged():
     )
     assert "rfx_fixture_dynamic_check_missing" in result["reason_codes_emitted"]
     assert result["status"] == "unsafe"
+
+
+def test_non_iterable_fixtures_does_not_raise():
+    # P1 fix: truthy non-iterable fixtures (e.g. integer 1 from bad deserialization)
+    # must not raise TypeError; must emit rfx_fixture_empty_corpus.
+    result = check_rfx_authority_fixture_safety(fixtures=1)
+    assert "rfx_fixture_empty_corpus" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_authority_fixture_safety_result"

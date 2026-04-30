@@ -61,6 +61,7 @@ def check_rfx_authority_fixture_safety(
     reason: list[str] = []
     violations: list[dict[str, Any]] = []
 
+    fixtures = fixtures if isinstance(fixtures, (list, tuple)) else []
     if not fixtures:
         reason.append("rfx_fixture_empty_corpus")
         return {

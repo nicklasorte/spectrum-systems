@@ -54,6 +54,7 @@ def validate_rfx_operator_surface(
     """Validate that operator surface records satisfy the minimal compact contract."""
     reason: list[str] = []
 
+    records = records if isinstance(records, (list, tuple)) else []
     if not records:
         reason.append("rfx_operator_surface_empty")
         return {

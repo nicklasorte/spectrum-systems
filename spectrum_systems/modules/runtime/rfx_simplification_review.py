@@ -43,6 +43,7 @@ def assess_rfx_simplification(
     recommendations: list[dict[str, Any]] = []
     role_index: dict[str, str] = {}
 
+    helpers = helpers if isinstance(helpers, (list, tuple)) else []
     if not helpers:
         reason.append("rfx_simplification_empty_input")
         return {

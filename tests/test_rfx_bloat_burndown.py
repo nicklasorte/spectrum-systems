@@ -109,3 +109,11 @@ def test_empty_helpers_status_findings_present():
     result = build_rfx_bloat_burndown_report(helpers=[])
     assert "rfx_bloat_empty_input" in result["reason_codes_emitted"]
     assert result["status"] == "findings_present"
+
+
+def test_non_iterable_helpers_does_not_raise():
+    # P1 fix: truthy non-iterable helpers (e.g. integer 1 from bad deserialization)
+    # must not raise TypeError; must emit rfx_bloat_empty_input.
+    result = build_rfx_bloat_burndown_report(helpers=1)
+    assert "rfx_bloat_empty_input" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_bloat_burndown_report"
