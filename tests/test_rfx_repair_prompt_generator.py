@@ -147,6 +147,20 @@ def test_missing_proof_ref_lowers_completeness_score():
     assert result["signals"]["completeness_score"] < 1.0
 
 
+def test_none_in_validation_cmds_flagged():
+    # P2 fix: [None] in validation_cmds must emit rfx_repair_missing_validation_cmds.
+    result = generate_rfx_repair_prompt(rfx_proof=_proof(validation_cmds=[None]))
+    assert "rfx_repair_missing_validation_cmds" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"
+
+
+def test_whitespace_validation_cmds_flagged():
+    # P2 fix: ['   '] in validation_cmds must emit rfx_repair_missing_validation_cmds.
+    result = generate_rfx_repair_prompt(rfx_proof=_proof(validation_cmds=["   "]))
+    assert "rfx_repair_missing_validation_cmds" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"
+
+
 def test_missing_proof_ref_not_complete():
     # P2 fix: rfx_repair_missing_proof_ref alone must keep status incomplete.
     result = generate_rfx_repair_prompt(rfx_proof={

@@ -91,7 +91,10 @@ def generate_rfx_repair_prompt(
         reason.append("rfx_repair_missing_owner_context")
 
     raw_validation_cmds = rfx_proof.get("validation_cmds")
-    validation_cmds = list(raw_validation_cmds) if isinstance(raw_validation_cmds, list) else []
+    validation_cmds = [
+        c for c in raw_validation_cmds
+        if isinstance(c, str) and c.strip()
+    ] if isinstance(raw_validation_cmds, list) else []
     if not validation_cmds:
         reason.append("rfx_repair_missing_validation_cmds")
 

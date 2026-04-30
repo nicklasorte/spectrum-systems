@@ -134,6 +134,14 @@ def test_mixed_cases_malformed_skipped():
     assert len(result["cases"]) == 1
 
 
+def test_none_cases_does_not_raise():
+    # P1 fix: None cases must not raise TypeError; must emit rfx_v2_corpus_empty.
+    result = build_rfx_golden_failure_corpus_v2(cases=None)
+    assert "rfx_v2_corpus_empty" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"
+    assert result["cases"] == []
+
+
 def test_non_hashable_case_id_does_not_raise():
     # P1 fix: non-hashable case id (list/dict) must not raise TypeError on set membership check.
     result = build_rfx_golden_failure_corpus_v2(

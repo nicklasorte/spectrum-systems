@@ -63,7 +63,7 @@ def build_rfx_golden_failure_corpus_v2(
     if not cases:
         reason.append("rfx_v2_corpus_empty")
 
-    for c in cases:
+    for c in (cases or []):
         if not isinstance(c, dict):
             reason.append("rfx_v2_case_malformed_row")
             continue
@@ -107,7 +107,7 @@ def build_rfx_golden_failure_corpus_v2(
         "reason_codes_emitted": unique_reasons,
         "status": "stable" if not unique_reasons else "drifted",
         "signals": {
-            "total_cases": len(cases),
+            "total_cases": len(cases or []),
             "stable_cases": sum(
                 1 for c in validated if c.get("actual") == c.get("expected")
             ),
