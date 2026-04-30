@@ -767,9 +767,10 @@
       "classification": "active_system",
       "failing_signals": [
         "missing_lineage",
+        "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 2,
+      "gap_count": 3,
       "gaps_evaluated": 9,
       "passing_signals": [
         "missing_control",
@@ -777,11 +778,10 @@
         "missing_eval",
         "missing_observability",
         "missing_readiness_evidence",
-        "missing_replay",
         "missing_tests"
       ],
       "system_id": "SLO",
-      "trust_state": "warn"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "support_capability",

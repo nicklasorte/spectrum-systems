@@ -45,6 +45,7 @@
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/rca_guide.md",
           "docs/review-actions/AGL-01_fix_actions.md",
+          "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
           "docs/review-actions/PLAN-AFX-02-ARTIFACT-SPINE-2026-04-09.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
@@ -56,8 +57,7 @@
           "docs/review-actions/PLAN-BATCH-AEX-FIX-02-2026-04-09.md",
           "docs/review-actions/PLAN-BATCH-AEX-FIX-03-2026-04-09.md",
           "docs/review-actions/PLAN-BATCH-AEX-FIX-04-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-05-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-06-2026-04-09.md"
+          "docs/review-actions/PLAN-BATCH-AEX-FIX-05-2026-04-09.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -84,7 +84,7 @@
           "spectrum_systems/modules/runtime/cal_runtime.py",
           "spectrum_systems/modules/runtime/chx_runtime.py",
           "spectrum_systems/modules/runtime/context_governed_flow.py",
-          "spectrum_systems/modules/runtime/cvx_runtime.py"
+          "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -341,6 +341,7 @@
           "scripts/build_system_registry_artifact.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_pra_nsx_prg_automation.py",
           "scripts/run_repair_latency_24_01.py",
@@ -381,7 +382,7 @@
           "tests/test_closure_decision_engine.py"
         ]
       },
-      "evidence_count": 119,
+      "evidence_count": 120,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -731,6 +732,7 @@
           "scripts/build_failure_diagnosis_artifact.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/run_authenticity_hardgate_24_01.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_ops_master_01.py",
           "scripts/run_repair_latency_24_01.py",
           "scripts/run_repair_standardization_24_01.py",
@@ -744,6 +746,7 @@
           "tests/test_authority_drift_regression.py",
           "tests/test_cde_decision_flow.py",
           "tests/test_contract_preflight.py",
+          "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_failure_diagnosis_engine.py",
           "tests/test_failure_explanation.py",
@@ -761,11 +764,10 @@
           "tests/test_rfx_loop_07_08_chaos.py",
           "tests/test_rfx_route_guard.py",
           "tests/test_roadmap_execution.py",
-          "tests/test_roadmap_expansion_contracts.py",
-          "tests/test_rqx_redteam_orchestrator.py"
+          "tests/test_roadmap_expansion_contracts.py"
         ]
       },
-      "evidence_count": 109,
+      "evidence_count": 110,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "FRE"
@@ -866,6 +868,7 @@
         ],
         "scripts": [
           "scripts/run_contract_enforcement.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/validate_system_registry.py"
         ],
         "tests": [
@@ -896,7 +899,7 @@
           "tests/test_nx_registry_red_team.py"
         ]
       },
-      "evidence_count": 108,
+      "evidence_count": 109,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
@@ -1299,6 +1302,7 @@
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/artifact_lineage.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
+          "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py",
           "spectrum_systems/modules/runtime/failure_explanation.py",
           "spectrum_systems/modules/runtime/full_autonomy_execution.py",
           "spectrum_systems/modules/runtime/integration_fabric_ifb.py",
@@ -1309,8 +1313,7 @@
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
           "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
-          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py",
-          "spectrum_systems/modules/runtime/rfx_flow_integration.py"
+          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1330,6 +1333,7 @@
           "tests/test_3ls_phase4_observability.py",
           "tests/test_aex_trust_hardening.py",
           "tests/test_authority_drift_regression.py",
+          "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_done_certification.py",
           "tests/test_evaluation_enforcement_bridge.py",
           "tests/test_integration_fabric_ifb.py",
@@ -1346,8 +1350,7 @@
           "tests/test_nt_proof_size_budget.py",
           "tests/test_nt_trust_regression_pack.py",
           "tests/test_nx_registry_red_team.py",
-          "tests/test_oc_bottleneck_classifier.py",
-          "tests/test_oc_closure_decision_packet.py"
+          "tests/test_oc_bottleneck_classifier.py"
         ]
       },
       "evidence_count": 104,
@@ -1435,8 +1438,8 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/artifact_lineage.py",
           "spectrum_systems/modules/runtime/control_surface_manifest.py",
-          "spectrum_systems/modules/runtime/decision_gating.py",
-          "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py"
+          "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py",
+          "spectrum_systems/modules/runtime/decision_gating.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -1615,6 +1618,7 @@
           "tests/test_3ls_phase4_observability.py",
           "tests/test_3ls_phase6_integration.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_cross_run_intelligence.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_error_budget.py",
@@ -1630,8 +1634,7 @@
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_error_budget_governance.py",
           "tests/test_rfx_flow_integration.py",
-          "tests/test_rfx_loop_04_06_red_team.py",
-          "tests/test_rfx_loop_07_08_chaos.py"
+          "tests/test_rfx_loop_04_06_red_team.py"
         ]
       },
       "evidence_count": 111,
@@ -1861,6 +1864,7 @@
           "scripts/run_contract_preflight.py",
           "scripts/run_control_loop_certification.py",
           "scripts/run_control_surface_gap_extraction.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_github_pr_autofix_contract_preflight.py",
           "scripts/run_harness_integrity_bundle.py",
           "scripts/run_map_review_orchestration.py",
@@ -1872,8 +1876,7 @@
           "scripts/run_pqx_bundle.py",
           "scripts/run_pqx_sequence.py",
           "scripts/run_prompt_queue_sequence.py",
-          "scripts/run_rax_redteam_arch_01.py",
-          "scripts/run_rax_redteam_harness_01.py"
+          "scripts/run_rax_redteam_arch_01.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -2004,8 +2007,11 @@
         "docs": [
           "docs/architecture/system_registry.md",
           "docs/governance/preflight_required_surface_test_overrides.json",
+          "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
-          "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md"
+          "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md",
+          "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md",
+          "docs/reviews/CLP-01_core_loop_pre_pr_gate_redteam.md"
         ],
         "modules": [
           "spectrum_systems/modules/prl/__init__.py",
@@ -2014,6 +2020,8 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/prl/failure_parser.py",
           "spectrum_systems/modules/prl/repair_generator.py",
+          "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py",
           "spectrum_systems/modules/runtime/fre_repair_flow.py",
           "spectrum_systems/modules/runtime/governed_repair_foundation.py",
           "spectrum_systems/modules/runtime/governed_repair_loop_execution.py",
@@ -2026,6 +2034,7 @@
         "reviews": [],
         "schemas": [],
         "scripts": [
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_github_pr_autofix_contract_preflight.py",
           "scripts/run_pre_pr_reliability_gate.py"
         ],
@@ -2039,6 +2048,7 @@
           "tests/prl/test_repair_generator.py",
           "tests/test_cde_decision_flow.py",
           "tests/test_contract_enforcement.py",
+          "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_fre_repair_flow.py",
           "tests/test_governed_preflight_remediation_loop.py",
           "tests/test_governed_repair_foundation.py",
@@ -2046,7 +2056,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 41,
+      "evidence_count": 48,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"
@@ -2263,7 +2273,7 @@
           "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
           "docs/reviews/AEX-TRUST-01_final_report.md",
           "docs/reviews/AEX-TRUST-01_root_cause.md",
-          "docs/reviews/CLX_ALL_01_delivery_report.md"
+          "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md"
         ],
         "modules": [
           "spectrum_systems/aex/admission_replay.py",
@@ -2313,6 +2323,7 @@
           "tests/test_3ls_phase4_observability.py",
           "tests/test_aex_trust_hardening.py",
           "tests/test_clx_all_01_redteam.py",
+          "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_error_taxonomy.py",
           "tests/test_integration_fabric_ifb.py",
           "tests/test_ns_artifact_tiering.py",
@@ -2327,8 +2338,7 @@
           "tests/test_proof_presence_enforcement.py",
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_flow_integration.py",
-          "tests/test_rfx_integrity_bundle.py",
-          "tests/test_rfx_loop_04_06_red_team.py"
+          "tests/test_rfx_integrity_bundle.py"
         ]
       },
       "evidence_count": 105,
@@ -2443,6 +2453,7 @@
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_cde_decision_flow.py",
           "tests/test_certification_judgment_40_explicit.py",
+          "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_end_to_end_governed_scenarios.py",
           "tests/test_github_closure_continuation.py",
@@ -2459,8 +2470,7 @@
           "tests/test_oc_bottleneck_classifier.py",
           "tests/test_promotion_gate_decision.py",
           "tests/test_repair_latency_24_01.py",
-          "tests/test_review_fix_loop_36_explicit.py",
-          "tests/test_rfx_flow_integration.py"
+          "tests/test_review_fix_loop_36_explicit.py"
         ]
       },
       "evidence_count": 111,
@@ -2718,6 +2728,7 @@
           "scripts/run_control_surface_enforcement.py",
           "scripts/run_control_surface_gap_extraction.py",
           "scripts/run_control_surface_obedience.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_fast_trust_gate.py",
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_repair_latency_24_01.py",
@@ -2758,10 +2769,10 @@
           "tests/test_control_surface_enforcement.py",
           "tests/test_control_surface_gap_extractor.py",
           "tests/test_control_surface_obedience.py",
-          "tests/test_d3l_maturity_report.py"
+          "tests/test_core_loop_pre_pr_gate.py"
         ]
       },
-      "evidence_count": 126,
+      "evidence_count": 127,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "SEL"
@@ -2876,6 +2887,7 @@
           "tests/metrics/test_met_full_roadmap_contract_selection.py",
           "tests/test_ai_governed_integration.py",
           "tests/test_artifact_lineage.py",
+          "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_error_budget.py",
           "tests/test_integration_fabric_ifb.py",
@@ -2891,8 +2903,7 @@
           "tests/test_phase_a_integration.py",
           "tests/test_phase_d_slos.py",
           "tests/test_policy_registry.py",
-          "tests/test_query_surfaces.py",
-          "tests/test_replay_decision_engine.py"
+          "tests/test_query_surfaces.py"
         ]
       },
       "evidence_count": 113,
@@ -3130,6 +3141,7 @@
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_contract_preflight.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_ops_master_01.py",
           "scripts/run_repair_latency_24_01.py",
           "scripts/run_repair_standardization_24_01.py",
@@ -3158,6 +3170,7 @@
           "tests/test_authority_drift_regression.py",
           "tests/test_certification_judgment_40_explicit.py",
           "tests/test_context_governed_foundation.py",
+          "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_d3l_priority_freshness_gate.py",
           "tests/test_d3l_ranking_report.py",
@@ -3166,11 +3179,10 @@
           "tests/test_evaluation_enforcement_bridge.py",
           "tests/test_fail_closed_enforcer.py",
           "tests/test_failure_learning_artifacts.py",
-          "tests/test_governed_execution_kernel.py",
-          "tests/test_governed_preflight_remediation_loop.py"
+          "tests/test_governed_execution_kernel.py"
         ]
       },
-      "evidence_count": 118,
+      "evidence_count": 119,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"

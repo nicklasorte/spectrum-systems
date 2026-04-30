@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/clp/core_loop_pre_pr_gate_result.schema.json",
+  "title": "Core Loop Pre-PR Gate Result",
+  "description": "CLP-01 evidence artifact emitted by the core loop pre-PR gate runner. This artifact is observation-only and feeds AEX (admission), PQX (execution closure), EVL (eval evidence), TPA (policy adjudication), CDE (control decision), and SEL (final compliance) as input signals. CLP does not claim approval, certification, promotion, or enforcement authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_id",
+    "work_item_id",
+    "agent_type",
+    "repo_mutating",
+    "base_ref",
+    "head_ref",
+    "changed_files",
+    "gate_status",
+    "checks",
+    "first_failed_check",
+    "failure_classes",
+    "source_artifacts_used",
+    "emitted_artifacts",
+    "required_follow_up",
+    "trace_refs",
+    "replay_refs",
+    "authority_scope",
+    "human_review_required",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "core_loop_pre_pr_gate_result"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "gate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent_type": {
+      "enum": ["codex", "claude", "other", "unknown"]
+    },
+    "repo_mutating": {
+      "type": "boolean"
+    },
+    "base_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "head_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "gate_status": {
+      "enum": ["pass", "warn", "block"]
+    },
+    "checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check" }
+    },
+    "first_failed_check": {
+      "type": ["string", "null"]
+    },
+    "failure_classes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source_artifacts_used": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "emitted_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_follow_up": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/follow_up" }
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    },
+    "human_review_required": {
+      "type": "boolean"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "gate_status": { "const": "pass" }
+        }
+      },
+      "then": {
+        "properties": {
+          "first_failed_check": { "type": "null" },
+          "human_review_required": { "const": false }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_name",
+        "owner_system",
+        "command",
+        "status",
+        "output_ref",
+        "failure_class",
+        "reason_codes",
+        "next_action",
+        "required"
+      ],
+      "properties": {
+        "check_name": {
+          "enum": [
+            "authority_shape_preflight",
+            "authority_leak_guard",
+            "contract_enforcement",
+            "tls_generated_artifact_freshness",
+            "contract_preflight",
+            "selected_tests"
+          ]
+        },
+        "owner_system": {
+          "enum": [
+            "AEX",
+            "PQX",
+            "EVL",
+            "TPA",
+            "CDE",
+            "SEL",
+            "LIN",
+            "REP",
+            "OBS",
+            "SLO",
+            "PRL",
+            "RIL",
+            "FRE"
+          ]
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["pass", "warn", "block", "skipped"]
+        },
+        "output_ref": {
+          "type": ["string", "null"]
+        },
+        "failure_class": {
+          "type": ["string", "null"]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": { "enum": ["pass", "warn", "block"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "output_ref": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "enum": ["block", "warn"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
+    "follow_up": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner_system", "action_type", "reason_code", "source_failure_ref"],
+      "properties": {
+        "owner_system": {
+          "enum": [
+            "AEX",
+            "PQX",
+            "EVL",
+            "TPA",
+            "CDE",
+            "SEL",
+            "LIN",
+            "REP",
+            "OBS",
+            "SLO",
+            "PRL",
+            "RIL",
+            "FRE"
+          ]
+        },
+        "action_type": { "type": "string", "minLength": 1 },
+        "reason_code": { "type": "string", "minLength": 1 },
+        "source_failure_ref": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

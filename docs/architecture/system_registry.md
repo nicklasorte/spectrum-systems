@@ -378,7 +378,7 @@ they feed OBS / LIN / REP / SLO.
 - **Failure Prevented:** repeated PR failures without structured diagnosis, orphaned CI failures with no repair path, missing regression eval coverage.
 - **Signal Improved:** failure classification precision, repair candidate actionability, eval case coverage breadth.
 - **Canonical Artifacts Owned:** `pr_failure_capture_record`, `pre_pr_failure_packet`, `repair_candidate`, `eval_case_candidate`, `prl_eval_case`, `prl_eval_generation_record`, `prl_gate_result`.
-- **Upstream Dependencies:** CI log outputs, preflight scripts (authority_shape_preflight, system_registry_guard, contract_preflight).
+- **Upstream Dependencies:** CI log outputs, preflight scripts (authority_shape_preflight, system_registry_guard, contract_preflight), CLP-01 core loop pre-PR gate evidence (`core_loop_pre_pr_gate_result`).
 - **Downstream Dependencies:** FRE (repair candidates consumed advisory-only), EVL (prl_eval_case feeds regression gating), CDE (prl_gate_result feeds control decision).
 - **Authority Boundary:** PRL emits evidence and gate result artifacts only. Control decisions remain with CDE. Enforcement remains with SEL. Promotion remains with PRA/GOV. repair_candidate is advisory-only — auto_apply is always false.
 - **Primary Code Paths:**
@@ -547,6 +547,38 @@ These are important but non-top-level authority families:
 - Any attempt to invoke **TLC** or **PQX** directly for repo-mutating work without valid AEX/TLC lineage MUST fail closed.
 
 ## Recurring Cross-System Phase Labels (Non-Owner)
+
+### CLP-01 — Core Loop Pre-PR Gate (Bundle Runner / Evidence Artifact)
+- **classification:** evidence-bundle runner (observation-only; not a canonical authority owner)
+- **status:** non_owner_evidence_runner
+- **role:** runs the canonical pre-admission check bundle (authority shape, authority leak, contract enforcement, TLS generated artifact freshness, contract preflight, selected tests) before a repo-mutating Codex/Claude slice can be handed off as PR-ready, and emits a `core_loop_pre_pr_gate_result` evidence artifact. CLP-01 is observation-only: it aggregates pre-PR readiness signals and does not make policy, admission, promotion, authorization, continuation, or enforcement decisions. Policy / scope decisions remain with TPA. Continuation / closure decisions remain with CDE. Enforcement decisions remain with SEL/PRG/GOV per existing repo conventions.
+- **owns:**
+  - core_loop_pre_pr_gate_result
+- **consumes:**
+  - core_loop_pre_pr_gate_changed_files
+  - authority_shape_preflight_result
+  - authority_leak_guard_result
+  - contract_preflight_result_artifact
+- **produces:**
+  - core_loop_pre_pr_gate_result
+- **downstream consumers (evidence only — CLP does not bind):**
+  - **AEX** consumes the gate result as pre-admission evidence.
+  - **PQX** consumes it before execution closure / PR-ready handoff.
+  - **EVL** consumes the `selected_tests` and `contract_enforcement` check outputs.
+  - **TPA** consumes the `authority_shape_preflight_result`, `authority_leak_guard_result`, and `contract_preflight_result_artifact` outputs as the canonical policy/scope owner.
+  - **CDE** consumes the final gate result as the canonical continuation/closure owner.
+  - **SEL** consumes it as final compliance input.
+  - **PRL** consumes it as upstream pre-PR evidence; treats `gate_status=block` as a structured failure to classify.
+  - **AGL** (`agent_core_loop_run_record`) consumes it via the `clp_evidence_artifact` parameter; missing CLP evidence on a repo-mutating slice forces `compliance_status=BLOCK`.
+- **authority_scope (metadata note):** observation_only — applies to every emitted `core_loop_pre_pr_gate_result` instance. The schema pins this value with a const constraint; the field is part of the artifact, not the artifact name.
+- **must_not_do:**
+  - own_admission_authority
+  - own_execution_authority
+  - own_eval_authority
+  - own_policy_authority
+  - own_control_authority
+  - own_enforcement_authority
+  - auto_apply_repairs (repair belongs to PRL/FRE/CDE/PQX)
 
 ### MNT — Maintain / Cross-System Trust Integration
 - **classification:** recurring phase label (not a canonical system owner)

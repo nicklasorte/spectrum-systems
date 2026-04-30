@@ -17264,6 +17264,14 @@
       "example_path": "contracts/examples/agent_core_loop_run_record.codex.example.json",
       "artifact_class": "coordination",
       "introduced_in": "AGL-01"
+    },
+    {
+      "artifact_type": "core_loop_pre_pr_gate_result",
+      "schema_version": "1.0.0",
+      "schema_path": "contracts/schemas/core_loop_pre_pr_gate_result.schema.json",
+      "example_path": "contracts/examples/core_loop_pre_pr_gate_result.example.json",
+      "artifact_class": "coordination",
+      "introduced_in": "CLP-01"
     }
   ]
 }

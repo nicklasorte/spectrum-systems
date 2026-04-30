@@ -77,6 +77,14 @@
   "contracts/schemas/agent_core_loop_run_record.schema.json": [
     "tests/test_contracts.py"
   ],
+  "contracts/schemas/core_loop_pre_pr_gate_result.schema.json": [
+    "tests/test_contracts.py",
+    "tests/test_core_loop_pre_pr_gate.py"
+  ],
+  "contracts/examples/core_loop_pre_pr_gate_result.example.json": [
+    "tests/test_contracts.py",
+    "tests/test_core_loop_pre_pr_gate.py"
+  ],
   "contracts/schemas/eval_case_candidate.schema.json": [
     "tests/test_contracts.py"
   ],
@@ -150,6 +158,9 @@
   "scripts/run_minimality_sweep.py": [
     "tests/test_minimality_sweep.py"
   ],
+  "scripts/run_core_loop_pre_pr_gate.py": [
+    "tests/test_core_loop_pre_pr_gate.py"
+  ],
   "scripts/run_pr_gate.py": [
     "tests/test_pr_gate_parallel.py"
   ],
@@ -197,5 +208,8 @@
   ],
   "spectrum_systems/modules/runtime/test_inventory_integrity.py": [
     "tests/test_test_inventory_integrity.py"
+  ],
+  "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py": [
+    "tests/test_core_loop_pre_pr_gate.py"
   ]
 }
