@@ -85,13 +85,13 @@ def check_rfx_merge_readiness(
 
     missing_guards: list[str] = []
     for key in _REQUIRED_GUARD_KEYS:
-        if not readiness_record.get(key):
+        if readiness_record.get(key) is not True:
             reason.append("rfx_merge_missing_guard")
             missing_guards.append(key)
 
     missing_tests: list[str] = []
     for key in _REQUIRED_TEST_KEYS:
-        if not readiness_record.get(key):
+        if readiness_record.get(key) is not True:
             reason.append("rfx_merge_missing_test")
             missing_tests.append(key)
 

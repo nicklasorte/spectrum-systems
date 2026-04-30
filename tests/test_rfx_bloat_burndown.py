@@ -102,3 +102,10 @@ def test_numeric_name_does_not_raise():
     )
     assert result["artifact_type"] == "rfx_bloat_burndown_report"
     assert result["signals"]["justified_count"] == 1
+
+
+def test_empty_helpers_status_findings_present():
+    # P2 fix: empty input must return status="findings_present" not "complete".
+    result = build_rfx_bloat_burndown_report(helpers=[])
+    assert "rfx_bloat_empty_input" in result["reason_codes_emitted"]
+    assert result["status"] == "findings_present"

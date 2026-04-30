@@ -73,3 +73,23 @@ def test_proof_coverage_full():
 def test_artifact_type():
     result = check_rfx_merge_readiness(readiness_record=_ready())
     assert result["artifact_type"] == "rfx_merge_readiness_gate_result"
+
+
+def test_string_false_guard_flagged():
+    # P1 fix: string "false" must not pass as a boolean True guard condition.
+    result = check_rfx_merge_readiness(readiness_record=_ready(authority_shape_check="false"))
+    assert "rfx_merge_missing_guard" in result["reason_codes_emitted"]
+    assert result["status"] == "not_ready"
+
+
+def test_string_false_test_flagged():
+    # P1 fix: string "false" must not pass as a boolean True test condition.
+    result = check_rfx_merge_readiness(readiness_record=_ready(pytest_passed="false"))
+    assert "rfx_merge_missing_test" in result["reason_codes_emitted"]
+    assert result["status"] == "not_ready"
+
+
+def test_truthy_string_guard_flagged():
+    # P1 fix: any non-True truthy value (e.g., "yes") must also require strict bool True.
+    result = check_rfx_merge_readiness(readiness_record=_ready(authority_drift_check="yes"))
+    assert "rfx_merge_missing_guard" in result["reason_codes_emitted"]

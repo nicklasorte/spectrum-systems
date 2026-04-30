@@ -53,7 +53,7 @@ def build_rfx_bloat_burndown_report(
             "schema_version": "1.0.0",
             "consolidation_candidates": report,
             "reason_codes_emitted": sorted(set(reason)),
-            "status": "complete",
+            "status": "findings_present",
             "signals": {
                 "total_helpers": 0,
                 "justified_count": 0,

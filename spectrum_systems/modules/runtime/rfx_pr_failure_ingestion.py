@@ -71,30 +71,27 @@ def ingest_rfx_pr_failures(
         entry_ok = True
 
         failure_id = (
-            entry.get("failure_id")
-            or entry.get("id")
-            or entry.get("check_run_id")
-            or ""
+            str(entry.get("failure_id") or "").strip()
+            or str(entry.get("id") or "").strip()
+            or str(entry.get("check_run_id") or "").strip()
         )
         if not failure_id:
             reason.append("rfx_pr_ingestion_missing_failure_id")
             entry_ok = False
 
         classification = (
-            entry.get("classification")
-            or entry.get("reason")
-            or entry.get("failure_reason")
-            or ""
+            str(entry.get("classification") or "").strip()
+            or str(entry.get("reason") or "").strip()
+            or str(entry.get("failure_reason") or "").strip()
         )
         if not classification:
             reason.append("rfx_pr_ingestion_missing_reason")
             entry_ok = False
 
         trace_ref = (
-            entry.get("trace_ref")
-            or entry.get("trace_id")
-            or entry.get("run_id")
-            or ""
+            str(entry.get("trace_ref") or "").strip()
+            or str(entry.get("trace_id") or "").strip()
+            or str(entry.get("run_id") or "").strip()
         )
         if not trace_ref:
             reason.append("rfx_pr_ingestion_missing_trace")

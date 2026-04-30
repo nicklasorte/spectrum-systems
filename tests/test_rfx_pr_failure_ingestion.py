@@ -72,3 +72,24 @@ def test_output_record_fields():
 def test_artifact_type():
     result = ingest_rfx_pr_failures(pr_log_entries=[_entry()])
     assert result["artifact_type"] == "rfx_pr_failure_ingestion_result"
+
+
+def test_whitespace_failure_id_flagged():
+    # P1 fix: whitespace-only failure_id must emit rfx_pr_ingestion_missing_failure_id.
+    result = ingest_rfx_pr_failures(pr_log_entries=[_entry(failure_id="   ")])
+    assert "rfx_pr_ingestion_missing_failure_id" in result["reason_codes_emitted"]
+    assert result["signals"]["normalized_count"] == 0
+
+
+def test_whitespace_classification_flagged():
+    # P1 fix: whitespace-only classification must emit rfx_pr_ingestion_missing_reason.
+    result = ingest_rfx_pr_failures(pr_log_entries=[_entry(classification="   ")])
+    assert "rfx_pr_ingestion_missing_reason" in result["reason_codes_emitted"]
+    assert result["signals"]["normalized_count"] == 0
+
+
+def test_whitespace_trace_ref_flagged():
+    # P1 fix: whitespace-only trace_ref must emit rfx_pr_ingestion_missing_trace.
+    result = ingest_rfx_pr_failures(pr_log_entries=[_entry(trace_ref="   ")])
+    assert "rfx_pr_ingestion_missing_trace" in result["reason_codes_emitted"]
+    assert result["signals"]["normalized_count"] == 0
