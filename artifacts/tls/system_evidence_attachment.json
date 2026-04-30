@@ -894,11 +894,11 @@
           "tests/test_authority_shape_preflight.py",
           "tests/test_clx_all_01_redteam.py",
           "tests/test_control_chain_schema_hardening.py",
+          "tests/test_core_loop_pre_pr_gate_policy.py",
           "tests/test_failure_explanation.py",
           "tests/test_lifecycle_enforcer.py",
           "tests/test_next24_serial_execution.py",
-          "tests/test_nx_control_chain.py",
-          "tests/test_nx_registry_red_team.py"
+          "tests/test_nx_control_chain.py"
         ]
       },
       "evidence_count": 109,
@@ -2017,6 +2017,7 @@
           "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md",
           "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md",
           "docs/reviews/CLP-01_core_loop_pre_pr_gate_redteam.md",
+          "docs/reviews/CLP-02_require_pre_pr_gate_final_report.md",
           "docs/reviews/CLP-02_require_pre_pr_gate_redteam.md"
         ],
         "modules": [
@@ -2067,7 +2068,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 57,
+      "evidence_count": 58,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"

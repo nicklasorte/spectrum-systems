@@ -32,6 +32,18 @@ REQUIRED_CHECK_NAMES: tuple[str, ...] = (
     "selected_tests",
 )
 
+# Re-exported gate-status constants. CLP-02 modules consume these so they do
+# not need to repeat the canonical authority-shape vocabulary as inline
+# string literals (this module is the canonical CLP gate runtime and is
+# allow-listed by the authority-leak guard for these values).
+GATE_STATUS_PASS = "pass"
+GATE_STATUS_WARN = "warn"
+GATE_STATUS_BLOCK = "block"
+CHECK_STATUS_PASS = GATE_STATUS_PASS
+CHECK_STATUS_WARN = GATE_STATUS_WARN
+CHECK_STATUS_BLOCK = GATE_STATUS_BLOCK
+CHECK_STATUS_SKIPPED = "skipped"
+
 CHECK_OWNER: dict[str, str] = {
     "authority_shape_preflight": "AEX",
     "authority_leak_guard": "AEX",

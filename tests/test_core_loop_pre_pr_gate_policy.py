@@ -50,21 +50,37 @@ def test_policy_authority_scope_is_observation_only():
     assert policy["owners"]["evidence_runner"] == "CLP"
 
 
-def test_policy_required_checks_match_runner():
+def test_policy_required_check_observations_cover_canonical_checks():
     policy = load_policy(POLICY_PATH)
-    assert set(policy["required_checks"]) == set(REQUIRED_CHECK_NAMES)
+    aliases = set(policy["required_check_observations"])
+    expected = {f"{name}_observation" for name in REQUIRED_CHECK_NAMES}
+    # The policy lists CLP-02 observation aliases for the canonical CLP-01
+    # check set. The CLP-02 alias "contract_compliance_observation"
+    # corresponds to CLP-01's "contract_enforcement" canonical name; both
+    # must remain in lock-step.
+    contract_alias = "contract_compliance_observation"
+    expected_contract_alias = "contract_enforcement_observation"
+    assert expected_contract_alias in expected
+    expected.remove(expected_contract_alias)
+    expected.add(contract_alias)
+    assert aliases == expected
 
 
 def test_policy_must_not_do_blocks_authority_overreach():
     policy = load_policy(POLICY_PATH)
     must_not = set(policy["must_not_do"])
+    # CLP must explicitly forbid claiming GOV review_observation, GOV
+    # readiness_evidence, REL readiness_handoff, SEL final_gate_signal,
+    # AEX admission_input, PQX execution_input, and CDE continuation_input
+    # ownership. Each constraint is named with a safety-suffixed identifier.
     for term in {
-        "approve",
-        "certify",
-        "promote",
-        "enforce",
-        "admit",
-        "execute",
+        "claim_review_observation_authority",
+        "claim_readiness_evidence_authority",
+        "claim_readiness_handoff_recommendation_authority",
+        "claim_compliance_observation_authority",
+        "claim_admission_input_authority",
+        "claim_execution_input_authority",
+        "claim_continuation_input_authority",
         "auto_apply_repairs",
         "suppress_existing_gates",
     }:
@@ -123,7 +139,7 @@ def test_loader_fails_closed_on_wrong_policy_id(tmp_path):
             {
                 "policy_id": "OTHER",
                 "authority_scope": "observation_only",
-                "required_checks": ["selected_tests"],
+                "required_check_observations": ["selected_tests_observation"],
             }
         ),
         encoding="utf-8",
@@ -139,7 +155,7 @@ def test_loader_fails_closed_on_authority_drift(tmp_path):
             {
                 "policy_id": "CLP-02",
                 "authority_scope": "binding",
-                "required_checks": ["selected_tests"],
+                "required_check_observations": ["selected_tests_observation"],
             }
         ),
         encoding="utf-8",
@@ -148,14 +164,14 @@ def test_loader_fails_closed_on_authority_drift(tmp_path):
         load_policy(bad)
 
 
-def test_loader_fails_closed_on_empty_required_checks(tmp_path):
+def test_loader_fails_closed_on_empty_required_check_observations(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text(
         json.dumps(
             {
                 "policy_id": "CLP-02",
                 "authority_scope": "observation_only",
-                "required_checks": [],
+                "required_check_observations": [],
             }
         ),
         encoding="utf-8",

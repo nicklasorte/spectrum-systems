@@ -214,14 +214,14 @@ def test_clp_block_blocks_pr_ready(policy):
     assert "authority_shape_violation" in eval_["reason_codes"]
 
 
-def test_warn_with_unapproved_reason_blocks(policy):
+def test_warn_with_unallowed_reason_blocks(policy):
     """Default policy.allowed_warn_reason_codes = []. Any warn must block."""
     eval_ = evaluate_pr_ready(policy=policy, clp_result=_warn_clp("soft_finding"))
     assert eval_["pr_ready_status"] == "not_ready"
-    assert "clp_warn_unapproved" in eval_["reason_codes"]
+    assert "clp_warn_not_policy_allowed" in eval_["reason_codes"]
 
 
-def test_warn_with_approved_reason_passes(policy):
+def test_warn_with_policy_allowed_reason_passes(policy):
     """Local policy override: allow a specific reason code."""
     local_policy = dict(policy)
     local_policy["allowed_warn_reason_codes"] = ["soft_finding"]

@@ -4,20 +4,21 @@
 Loads a ``core_loop_pre_pr_gate_result`` artifact and the
 ``docs/governance/core_loop_pre_pr_gate_policy.json`` policy, then emits an
 ``agent_pr_ready_result`` artifact recording whether a repo-mutating
-Codex/Claude slice may be marked PR-ready.
+Codex/Claude slice has the readiness evidence required to be treated as
+PR-ready.
 
-This script is observation-only. It does not approve, certify, promote, or
-enforce. AEX retains admission authority, PQX retains execution closure
-authority, TPA retains policy authority, CDE retains continuation/closure
-authority, SEL retains final compliance authority. The guard's only job is
-to translate CLP evidence into a structured PR-ready signal that AGL, PRL,
-and the existing required_pr_checks pytest gate can consume.
+This script is observation-only. It surfaces readiness inputs and
+compliance observations only. Canonical ownership remains with AEX
+(admission), PQX (execution closure), TPA (policy), CDE
+(continuation/closure), and SEL (final gate signal). The guard's only job
+is to translate CLP evidence into a structured readiness signal that AGL,
+PRL, and the existing required_pr_checks pytest gate can consume.
 
 Exit codes
 ----------
 0 — pr_ready_status=ready
 1 — pr_ready_status=human_review_required
-2 — pr_ready_status=not_ready (fail-closed: do not handoff as PR-ready)
+2 — pr_ready_status=not_ready (fail-closed: do not hand off as PR-ready)
 """
 
 from __future__ import annotations

@@ -5,11 +5,13 @@ This module is observation-only. It loads
 ``core_loop_pre_pr_gate_result`` artifact to produce an
 ``agent_pr_ready_result`` payload.
 
-CLP does not own admission, execution closure, eval certification, policy
-adjudication, control decisions, or final compliance enforcement. Those
-authorities remain with AEX, PQX, EVL, TPA, CDE, and SEL respectively
-(per ``docs/architecture/system_registry.md``). This evaluator emits
-PR-ready evidence only — it does not approve, certify, promote, or enforce.
+CLP does not own admission, execution closure, eval readiness evidence,
+TPA signals, CDE signals, or SEL signals. Those authorities remain with
+AEX, PQX, EVL, TPA, CDE, and SEL respectively (per
+``docs/architecture/system_registry.md``). This evaluator emits PR-ready
+evidence only — it surfaces readiness observations and compliance
+observations and never claims a review_input, readiness_evidence,
+readiness_handoff, or final_gate_signal authority of its own.
 """
 
 from __future__ import annotations
@@ -19,6 +21,12 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (
+    GATE_STATUS_BLOCK,
+    GATE_STATUS_PASS,
+    GATE_STATUS_WARN,
+)
 
 DEFAULT_POLICY_REL_PATH = "docs/governance/core_loop_pre_pr_gate_policy.json"
 DEFAULT_CLP_RESULT_REL_PATH = (
@@ -58,9 +66,11 @@ def load_policy(path: Path) -> dict[str, Any]:
         raise PolicyLoadError("policy_id must be 'CLP-02'")
     if payload.get("authority_scope") != "observation_only":
         raise PolicyLoadError("policy authority_scope must be 'observation_only'")
-    required = payload.get("required_checks")
+    required = payload.get("required_check_observations")
     if not isinstance(required, list) or not required:
-        raise PolicyLoadError("policy.required_checks must be a non-empty list")
+        raise PolicyLoadError(
+            "policy.required_check_observations must be a non-empty list"
+        )
     return payload
 
 
@@ -161,7 +171,7 @@ def evaluate_pr_ready(
     if clp_result.get("human_review_required") is True:
         human_review = True
 
-    if clp_gate_status == "block":
+    if clp_gate_status == GATE_STATUS_BLOCK:
         failure_classes = clp_result.get("failure_classes") or []
         if not failure_classes:
             failure_classes = ["clp_gate_block"]
@@ -197,14 +207,14 @@ def evaluate_pr_ready(
             for code in check.get("reason_codes") or []:
                 if isinstance(code, str) and code:
                     warn_codes.append(code)
-        unapproved = [c for c in warn_codes if c not in allowed_warn]
-        if unapproved or rules.get("clp_warn_requires_explicit_allow", True) and not allowed_warn and warn_codes:
-            reasons.extend(["clp_warn_unapproved"] + unapproved)
+        not_policy_allowed = [c for c in warn_codes if c not in allowed_warn]
+        if not_policy_allowed or rules.get("clp_warn_requires_explicit_allow", True) and not allowed_warn and warn_codes:
+            reasons.extend(["clp_warn_not_policy_allowed"] + not_policy_allowed)
             follow_up.append(
                 {
                     "owner_system": "TPA",
                     "action_type": "review_clp_warn_reason_codes",
-                    "reason_code": (unapproved or warn_codes or ["clp_warn_unapproved"])[0],
+                    "reason_code": (not_policy_allowed or warn_codes or ["clp_warn_not_policy_allowed"])[0],
                     "source_failure_ref": DEFAULT_CLP_RESULT_REL_PATH,
                 }
             )

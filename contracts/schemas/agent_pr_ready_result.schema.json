@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/clp/agent_pr_ready_result.schema.json",
   "title": "Agent PR-Ready Result",
-  "description": "CLP-02 agent PR-ready guard artifact emitted by scripts/check_agent_pr_ready.py. The guard observes a core_loop_pre_pr_gate_result against docs/governance/core_loop_pre_pr_gate_policy.json and reports whether a repo-mutating Codex/Claude slice may be marked PR-ready. This artifact is observation-only. It does not approve, certify, promote, or enforce. AEX retains admission authority, PQX retains execution closure authority, TPA retains policy authority, CDE retains continuation/closure authority, SEL retains final compliance authority.",
+  "description": "CLP-02 agent PR-ready guard artifact emitted by scripts/check_agent_pr_ready.py. The guard observes a core_loop_pre_pr_gate_result against docs/governance/core_loop_pre_pr_gate_policy.json and records whether a repo-mutating Codex/Claude slice has the readiness evidence required to be treated as PR-ready. This artifact is observation-only: it emits readiness inputs and compliance observations only. Canonical ownership remains with AEX (admission), PQX (execution closure), TPA (policy), CDE (continuation/closure), and SEL (final gate signal).",
   "type": "object",
   "additionalProperties": false,
   "required": [

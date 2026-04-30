@@ -70,7 +70,7 @@ Each finding is categorized as **must_fix**, **should_fix**, or **observation**.
 
 **Disposition:** observation — covered.
 
-## 4. CLP warn with unapproved reason code allows
+## 4. CLP warn with policy-disallowed reason code is treated as ready
 
 **Vector:** Policy `allowed_warn_reason_codes` is empty (default), but a
 warn slips through as ready.
@@ -79,8 +79,9 @@ warn slips through as ready.
 
 - `evaluate_pr_ready` collects every check's warn reason codes and
   fail-closes when any code is outside `allowed_warn_reason_codes`. The
-  rule `clp_warn_requires_explicit_allow` defaults to true and is asserted
-  in `test_check_agent_pr_ready.py::test_warn_with_unapproved_reason_blocks`.
+  rule `clp_warn_requires_explicit_allow` defaults to true and is
+  exercised by
+  `test_check_agent_pr_ready.py::test_warn_with_unallowed_reason_blocks`.
 
 **Disposition:** observation — covered.
 
@@ -114,13 +115,13 @@ warn slips through as ready.
 ## 7. Contract preflight contract_mismatch does not block
 
 **Vector:** Contract preflight returns `BLOCK` but downstream consumers
-ignore.
+ignore the signal.
 
 **Coverage:**
 
 - CLP runner: `_check_contract_preflight` reads
-  `control_signal.strategy_gate_decision` and treats `BLOCK`/`FREEZE` as
-  `status=block`.
+  `control_signal.strategy_gate_signal_observation` and treats
+  `BLOCK`/`FREEZE` as `status=block`.
 - PRL consumer: `CLP_TO_PRL_FAILURE_CLASS` maps both
   `contract_preflight_block` and `contract_mismatch` into PRL's
   `contract_schema_violation`, which carries `gate_signal=failed_gate`.
@@ -172,7 +173,7 @@ ignore.
 
 **Disposition:** observation — covered.
 
-## 11. CLP claims approval/certification/promotion/enforcement authority
+## 11. CLP claims a GOV review observation, GOV readiness evidence, REL readiness handoff, or SEL final-gate signal it does not own
 
 **Vector:** Schema/example or runner emits authority-bearing language.
 
@@ -180,13 +181,19 @@ ignore.
 
 - `core_loop_pre_pr_gate_result` and `agent_pr_ready_result` schemas pin
   `authority_scope` to the const string `observation_only` and include no
-  approve/certify/promote/enforce fields.
+  GOV review_observation, GOV readiness_evidence, REL readiness_handoff,
+  or SEL final_gate_signal field.
 - Existing test `test_clp_does_not_claim_authority` asserts no forbidden
   vocabulary.
-- Policy `must_not_do` enumerates approve / certify / promote / enforce /
-  admit / execute / auto_apply_repairs / suppress_existing_gates.
+- Policy `must_not_do` lists `claim_review_observation_authority`,
+  `claim_readiness_evidence_authority`,
+  `claim_readiness_handoff_recommendation_authority`,
+  `claim_compliance_observation_authority`,
+  `claim_admission_input_authority`, `claim_execution_input_authority`,
+  `claim_continuation_input_authority`, plus `auto_apply_repairs` and
+  `suppress_existing_gates`.
 - New test `test_core_loop_pre_pr_gate_policy.py::test_policy_authority_scope_is_observation_only`
-  asserts the policy artifact itself never claims authority.
+  asserts the policy artifact itself never claims canonical authority.
 
 **Disposition:** observation — covered.
 
@@ -200,11 +207,12 @@ ignore.
   guard, so any AGL record produced for a repo-mutating slice without
   CLP evidence reports `compliance_status=BLOCK`.
 - The CLP-02 PR-ready guard is the canonical evidence consumed downstream.
-- **Documented gap:** Direct hard enforcement inside AEX admission and PQX
-  closure paths is intentionally out of scope for CLP-02. The expectation
-  is recorded in `docs/architecture/clp_02_pr_ready_admission.md`. Any
-  future enforcement must be added by the AEX/PQX system owners; CLP must
-  not redefine those entry paths.
+- **Documented gap:** Direct hard policy observation inside the AEX
+  admission and PQX closure paths is intentionally out of scope for
+  CLP-02. The expectation is recorded in
+  `docs/architecture/clp_02_pr_ready_admission.md`. Any future hardening
+  must be added by the AEX/PQX canonical owners; CLP must not redefine
+  those entry paths.
 
 **Disposition:** observation — documented hardening gap (not a CLP-02
 authority overreach).
@@ -236,7 +244,7 @@ block evidence.
 - `agent_pr_ready_result` schema pins `pr_ready_status=ready` to
   `human_review_required=false`. ✅
 - Policy artifact authority_scope = observation_only. ✅
-- Policy `must_not_do` matches the must_not_do list in the system registry
+- Policy `must_not_do` matches the `must_not_do` list in the system registry
   CLP-02 entry. ✅
 - AGENTS.md / CLAUDE.md updated with CLP-02 rule block (concise). ✅
 - tests/AGENTS.md references the CLP-02 test bundle. ✅
@@ -247,5 +255,6 @@ block evidence.
 - should_fix: **0**
 - observation: **13** (all covered or documented)
 
-The remaining hardening gap (item 12 — AEX/PQX direct path enforcement) is
-intentional and recorded in `docs/architecture/clp_02_pr_ready_admission.md`.
+The remaining hardening gap (item 12 — AEX/PQX direct-path policy
+observation) is intentional and recorded in
+`docs/architecture/clp_02_pr_ready_admission.md`.

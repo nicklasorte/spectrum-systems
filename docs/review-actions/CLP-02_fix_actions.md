@@ -19,7 +19,7 @@ and test.
 | 1       | observation | covered             | `agent_core_loop_proof.py`, `core_loop_pre_pr_gate_policy.py`; `tests/test_agent_core_loop_requires_clp.py::test_missing_clp_blocks_repo_mutating`                                                                                          |
 | 2       | observation | covered             | `agent_core_loop_proof.py::_load_clp_evidence`; existing `tests/test_core_loop_pre_pr_gate.py::test_agl_treats_invalid_clp_artifact_as_missing`                                                                                              |
 | 3       | observation | covered             | `core_loop_pre_pr_gate_policy.py::evaluate_pr_ready`; `tests/test_check_agent_pr_ready.py::test_clp_block_blocks_pr_ready`                                                                                                                  |
-| 4       | observation | covered             | `core_loop_pre_pr_gate_policy.py::evaluate_pr_ready`; `tests/test_check_agent_pr_ready.py::test_warn_with_unapproved_reason_blocks` and `test_warn_with_approved_reason_passes`                                                              |
+| 4       | observation | covered             | `core_loop_pre_pr_gate_policy.py::evaluate_pr_ready`; `tests/test_check_agent_pr_ready.py::test_warn_with_unallowed_reason_blocks` and `test_warn_with_policy_allowed_reason_passes`                                                         |
 | 5       | observation | covered             | `scripts/run_core_loop_pre_pr_gate.py::_check_authority_shape`; existing `tests/test_core_loop_pre_pr_gate.py::test_authority_shape_failure_blocks` and `test_missing_required_check_output_blocks`                                          |
 | 6       | observation | covered             | `scripts/run_core_loop_pre_pr_gate.py::_check_authority_leak`; existing `tests/test_core_loop_pre_pr_gate.py::test_authority_leak_failure_blocks`                                                                                            |
 | 7       | observation | covered             | `scripts/run_core_loop_pre_pr_gate.py::_check_contract_preflight`; `spectrum_systems/modules/prl/clp_consumer.py::CLP_TO_PRL_FAILURE_CLASS`; `tests/test_check_agent_pr_ready.py::test_clp_block_normalizes_to_prl_classes`                  |
@@ -38,15 +38,9 @@ None — no must_fix findings.
 
 None.
 
-## Validation commands
+## Validation
 
-```
-python -m pytest tests/test_core_loop_pre_pr_gate_policy.py tests/test_check_agent_pr_ready.py tests/test_agent_core_loop_requires_clp.py -q
-python -m pytest tests/test_agent_core_loop_proof.py -q
-python -m pytest tests/test_core_loop_pre_pr_gate.py -q
-python scripts/run_contract_enforcement.py
-python scripts/run_authority_shape_preflight.py --base-ref main --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json
-python scripts/run_authority_leak_guard.py --base-ref main --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json
-```
-
-All commands exit 0 (or ≤ documented warn) on the CLP-02 branch tip.
+The cleanup-section of `docs/reviews/CLP-02_require_pre_pr_gate_final_report.md`
+records the exact validation commands run and their results
+(authority-shape preflight pass, authority-leak guard pass, contract
+compliance signal pass, full CLP-02 + CLP-01 + AGL test bundle pass).

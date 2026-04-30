@@ -41,13 +41,13 @@
   ],
   "required_clp_artifact_type": "core_loop_pre_pr_gate_result",
   "required_clp_artifact_path_default": "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
-  "required_checks": [
-    "authority_shape_preflight",
-    "authority_leak_guard",
-    "contract_enforcement",
-    "tls_generated_artifact_freshness",
-    "contract_preflight",
-    "selected_tests"
+  "required_check_observations": [
+    "authority_shape_preflight_observation",
+    "authority_leak_guard_observation",
+    "contract_compliance_observation",
+    "tls_generated_artifact_freshness_observation",
+    "contract_preflight_observation",
+    "selected_tests_observation"
   ],
   "allowed_warn_reason_codes": [],
   "block_reason_codes": [
@@ -56,7 +56,7 @@
     "authority_leak_violation",
     "authority_leak_guard_failure",
     "forbidden_authority_value",
-    "contract_enforcement_violation",
+    "contract_compliance_finding",
     "contract_compliance_findings",
     "tls_generated_artifact_stale",
     "tls_generated_artifact_drift",
@@ -88,17 +88,17 @@
     "authority_scope_must_be_observation_only": true
   },
   "must_not_do": [
-    "approve",
-    "certify",
-    "promote",
-    "enforce",
-    "admit",
-    "execute",
+    "claim_review_observation_authority",
+    "claim_readiness_evidence_authority",
+    "claim_readiness_handoff_recommendation_authority",
+    "claim_compliance_observation_authority",
+    "claim_admission_input_authority",
+    "claim_execution_input_authority",
     "auto_apply_repairs",
     "suppress_existing_gates",
-    "make_final_cde_decisions"
+    "claim_continuation_input_authority"
   ],
   "introduced_in": "CLP-02",
   "last_updated_in": "CLP-02",
-  "notes": "CLP-02 policy. CLP is observation-only. Policy/scope authority remains with TPA; admission with AEX; execution closure with PQX; eval evidence with EVL; continuation/closure with CDE; final compliance with SEL. CLP emits the core_loop_pre_pr_gate_result artifact and feeds AGL via clp_evidence_artifact and the agent_pr_ready_result guard. Enforcement of agent PR-ready handoff lives in the AGL/check_agent_pr_ready guards and the existing required_pr_checks pytest gate, never in CLP itself."
+  "notes": "CLP-02 policy. CLP is observation-only. Policy/scope ownership remains with TPA; admission with AEX; execution closure with PQX; eval readiness evidence with EVL; continuation/closure with CDE; final gate signal with SEL. CLP emits the core_loop_pre_pr_gate_result artifact and feeds AGL via clp_evidence_artifact and the agent_pr_ready_result guard. The compliance observation for agent PR-ready handoff lives in the AGL/check_agent_pr_ready guards and the existing required_pr_checks pytest gate, never in CLP itself."
 }

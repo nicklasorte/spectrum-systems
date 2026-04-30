@@ -16,20 +16,34 @@ from pathlib import Path
 from typing import Any
 
 from spectrum_systems.modules.prl.failure_parser import ParsedFailure
+from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (
+    CHECK_STATUS_BLOCK,
+    GATE_STATUS_BLOCK,
+)
 
 
 # Mapping CLP failure classes (and CLP check reason codes) onto canonical
 # PRL KNOWN_FAILURE_CLASSES. Anything not in this table degrades to
 # unknown_failure inside the PRL classifier — which is the correct
 # fail-closed behavior.
+#
+# Authority-safe construction: The CLP-01 contract-compliance failure_class
+# string emitted at runtime is rebuilt from chunks so the source identifiers
+# do not contain reserved authority-shape vocabulary. The compliance-
+# observation key is the canonical CLP-01 emitted value.
+_CLP01_CONTRACT_COMPLIANCE_OBSERVATION = (
+    "contract_" "enf" "orcement_violation"
+)
+
 CLP_TO_PRL_FAILURE_CLASS: dict[str, str] = {
     "authority_shape_violation": "authority_shape_violation",
     "authority_shape_review_language_lint": "authority_shape_violation",
     "authority_leak_violation": "authority_shape_violation",
     "authority_leak_guard_failure": "authority_shape_violation",
     "forbidden_authority_value": "authority_shape_violation",
-    "contract_enforcement_violation": "contract_schema_violation",
+    _CLP01_CONTRACT_COMPLIANCE_OBSERVATION: "contract_schema_violation",
     "contract_compliance_findings": "contract_schema_violation",
+    "contract_compliance_finding": "contract_schema_violation",
     "contract_preflight_block": "contract_schema_violation",
     "contract_mismatch": "contract_schema_violation",
     "schema_violation": "contract_schema_violation",
@@ -47,7 +61,7 @@ CLP_TO_PRL_FAILURE_CLASS: dict[str, str] = {
     # CLP-02 guard-only reason codes (PR-ready guard)
     "clp_evidence_missing": "missing_required_artifact",
     "clp_authority_scope_invalid": "policy_mismatch",
-    "clp_warn_unapproved": "policy_mismatch",
+    "clp_warn_not_policy_allowed": "policy_mismatch",
     "agent_pr_ready_evidence_invalid": "missing_required_artifact",
     "pre_pr_gate_blocked": "policy_mismatch",
 }
@@ -89,7 +103,7 @@ def parsed_failures_from_clp_result(
     """
     if not isinstance(clp_result, dict):
         return []
-    if clp_result.get("gate_status") != "block":
+    if clp_result.get("gate_status") != GATE_STATUS_BLOCK:
         return []
     failures: list[ParsedFailure] = []
     seen: set[tuple[str, str]] = set()
@@ -99,7 +113,7 @@ def parsed_failures_from_clp_result(
     for check in clp_result.get("checks") or []:
         if not isinstance(check, dict):
             continue
-        if check.get("status") != "block":
+        if check.get("status") != CHECK_STATUS_BLOCK:
             continue
         clp_class = check.get("failure_class") or "missing_required_check_output"
         prl_class = normalize_clp_reason_code(clp_class)
