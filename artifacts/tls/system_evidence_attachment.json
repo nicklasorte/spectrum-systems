@@ -1897,10 +1897,10 @@
           "tests/test_3ls_phase4_observability.py",
           "tests/test_3ls_simplification.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_core_loop_proof.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
-          "tests/test_authenticity_hardgate_24_01.py",
-          "tests/test_authority_drift_regression.py"
+          "tests/test_authenticity_hardgate_24_01.py"
         ]
       },
       "evidence_count": 128,

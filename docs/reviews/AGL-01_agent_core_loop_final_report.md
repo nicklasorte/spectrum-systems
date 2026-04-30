@@ -86,3 +86,21 @@
   - `python scripts/run_authority_shape_preflight.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json`
   - `python scripts/run_authority_leak_guard.py --base-ref "2b25f8027e2a7068313caeceffe803bb19c8a065" --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json`
 - Final result: contract preflight passed with `status=passed` and `strategy_gate_decision=ALLOW` (no `contract_mismatch` block).
+
+## TLS evidence determinism cleanup
+- Diagnosis: stale artifact, not generator nondeterminism.
+- Files changed:
+  - `artifacts/tls/system_evidence_attachment.json`
+  - `docs/reviews/AGL-01_agent_core_loop_final_report.md`
+- Generator commands run (twice):
+  - `python scripts/build_tls_dependency_priority.py --out artifacts/tls --top-level-out artifacts --candidates ""`
+  - `python scripts/generate_ecosystem_health_report.py`
+- Second-run stability result: identical structural diff after both runs (no additional drift introduced on second run).
+- Evidence confirmation: regenerated attachment includes `tests/test_agent_core_loop_proof.py` in discovered evidence lists.
+- Tests added/updated: none required (generator behavior observed deterministic in repeated runs).
+- Final validation commands:
+  - `python scripts/run_contract_enforcement.py`
+  - `python -m pytest tests/test_agent_core_loop_proof.py -q`
+  - `python -m pytest tests/ -k "tls or evidence_attachment or agent_core_loop" -q`
+  - `python scripts/run_authority_shape_preflight.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json`
+  - `python scripts/run_authority_leak_guard.py --base-ref "2b25f8027e2a7068313caeceffe803bb19c8a065" --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json`
