@@ -73,7 +73,7 @@
         "authority_leak_guard_failure",
         "pytest_selection_missing",
         "schema_validation_failure",
-        "contract_enforcement_failure",
+        "contract_compliance_observation",
         "missing_shard_artifact",
         "invalid_shard_artifact",
         "pr_gate_block",

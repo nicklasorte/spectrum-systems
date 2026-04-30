@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 MAX_ATTEMPTS=2
-KNOWN_CLASSES={"authority_shape_violation","authority_leak_guard_failure","pytest_selection_missing","schema_validation_failure","contract_enforcement_failure","missing_shard_artifact","invalid_shard_artifact","pr_gate_block","dashboard_test_failure","unknown_failure"}
+KNOWN_CLASSES={"authority_shape_violation","authority_leak_guard_failure","pytest_selection_missing","schema_validation_failure","contract_compliance_observation","missing_shard_artifact","invalid_shard_artifact","pr_gate_block","dashboard_test_failure","unknown_failure"}
 AUTO_REPAIR_CLASSES={"authority_shape_violation","authority_leak_guard_failure","pytest_selection_missing","schema_validation_failure"}
 
 
@@ -48,7 +48,7 @@ def observe_failures(pr_number:int, repo:str, head_sha:str, attempt_number:int, 
 def normalize_failure(obs:dict[str,Any])->dict[str,Any]:
     class_name='unknown_failure'; affected=[]
     joined=' '.join(obs.get('reason_codes',[]))
-    mapping=[('authority_shape','authority_shape_violation'),('authority_leak','authority_leak_guard_failure'),('pr_gate','pr_gate_block'),('contract_preflight','contract_enforcement_failure')]
+    mapping=[('authority_shape','authority_shape_violation'),('authority_leak','authority_leak_guard_failure'),('pr_gate','pr_gate_block'),('contract_preflight','contract_compliance_observation')]
     for k,v in mapping:
       if k in joined: class_name=v
     if class_name=='unknown_failure':
