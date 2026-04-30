@@ -147,7 +147,7 @@ def evaluate_test_inventory_integrity(
         "artifact_type": "test_inventory_integrity_result",
         "schema_version": "1.0.0",
         "owner_system": "PRG",
-        "enforcement_system": "SEL",
+        "policy_observation": "SEL",
         "execution_system": "PQX",
         "orchestration_system": "TLC",
         "diagnosis_system": "FRE",
