@@ -13,11 +13,11 @@
   - `tests/` and `apps/dashboard-3ls/__tests__/` (validation)
   - `docs/reviews/` and this file (red-team/final report/traceability)
 - Authority-shape risks:
-  - Accidentally giving MET decision authority (must remain observation-only)
+  - Accidentally giving MET CDE-signal authority (must remain observation-only)
   - Implicit evidence inference from free text (must require artifact refs)
   - Overstating AEX/PQX/EVL/TPA/CDE/SEL ownership language outside canonical registry
 - Required tests/evals:
-  - Contract enforcement + targeted pytest for agent loop/ai_programming/governance
+  - Contract validation + targeted pytest for agent loop/ai_programming/governance
   - Dashboard tests in `apps/dashboard-3ls`
   - Authority preflight command
 - Required schema/artifact updates:

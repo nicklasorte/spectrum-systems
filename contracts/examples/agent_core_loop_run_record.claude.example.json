@@ -47,7 +47,7 @@
       "status": "missing",
       "artifact_refs": [],
       "reason_codes": [
-        "decision_missing"
+        "cde_signal_missing"
       ],
       "confidence": "low"
     },
@@ -55,7 +55,7 @@
       "status": "missing",
       "artifact_refs": [],
       "reason_codes": [
-        "enforcement_missing"
+        "sel_signal_missing"
       ],
       "confidence": "low"
     }
