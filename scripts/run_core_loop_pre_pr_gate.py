@@ -38,13 +38,13 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     checks: list[dict[str, object]] = []
 
-    def add(n: str, owner: str, cmd: str, rc: int, outref: str, fclass: str = "none") -> None:
+    def add(n: str, source: str, cmd: str, rc: int, outref: str, fclass: str = "none") -> None:
         checks.append(
             {
                 "check_name": n,
-                "owner_system": owner,
+                "check_source": source,
                 "command": cmd,
-                "status": "pass" if rc == 0 else "block",
+                "status": "pass" if rc == 0 else "blocked",
                 "output_ref": outref,
                 "failure_class": fclass if rc else "none",
                 "reason_codes": [] if rc == 0 else [fclass],
@@ -74,9 +74,9 @@ def main() -> int:
     add("selected_tests", "EVL", tests_cmd, run(tests_cmd)[0], "outputs/core_loop_pre_pr_gate/selected_tests.log", "selected_tests_failure")
 
     missing = [c["check_name"] for c in checks if not c["output_ref"]]
-    failures = [c["failure_class"] for c in checks if c["status"] == "block"]
+    failures = [c["failure_class"] for c in checks if c["status"] == "blocked"]
     unknown = [f for f in failures if f not in KNOWN]
-    status = "pass" if not failures and not missing else "block"
+    status = "pass" if not failures and not missing else "blocked"
 
     result = {
         "artifact_type": "core_loop_pre_pr_gate_result",
@@ -90,7 +90,7 @@ def main() -> int:
         "changed_files": [],
         "gate_status": status,
         "checks": checks,
-        "first_failed_check": next((c["check_name"] for c in checks if c["status"] == "block"), None),
+        "first_failed_check": next((c["check_name"] for c in checks if c["status"] == "blocked"), None),
         "failure_classes": sorted(set(failures + (["missing_required_artifact"] if missing else []))),
         "source_artifacts_used": [c["output_ref"] for c in checks],
         "emitted_artifacts": [str(out / "core_loop_pre_pr_gate_result.json")],
@@ -101,7 +101,7 @@ def main() -> int:
         "human_review_required": bool(unknown),
     }
     (out / "core_loop_pre_pr_gate_result.json").write_text(json.dumps(result, indent=2) + "\n")
-    return 1 if status == "block" else 0
+    return 1 if status == "blocked" else 0
 
 
 if __name__ == "__main__":

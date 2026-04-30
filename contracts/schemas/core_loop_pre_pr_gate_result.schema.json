@@ -62,7 +62,7 @@
       "enum": [
         "pass",
         "warn",
-        "block"
+        "blocked"
       ]
     },
     "checks": {
@@ -71,7 +71,7 @@
         "type": "object",
         "required": [
           "check_name",
-          "owner_system",
+          "check_source",
           "command",
           "status",
           "output_ref",
@@ -83,23 +83,6 @@
           "check_name": {
             "type": "string"
           },
-          "owner_system": {
-            "enum": [
-              "AEX",
-              "PQX",
-              "EVL",
-              "TPA",
-              "CDE",
-              "SEL",
-              "LIN",
-              "REP",
-              "OBS",
-              "SLO",
-              "PRL",
-              "RIL",
-              "FRE"
-            ]
-          },
           "command": {
             "type": "string"
           },
@@ -107,7 +90,7 @@
             "enum": [
               "pass",
               "warn",
-              "block",
+              "blocked",
               "skipped"
             ]
           },
@@ -125,6 +108,21 @@
           },
           "next_action": {
             "type": "string"
+          },
+          "check_source": {
+            "enum": [
+              "AEX",
+              "PQX",
+              "EVL",
+              "TPA",
+              "LIN",
+              "REP",
+              "OBS",
+              "SLO",
+              "PRL",
+              "RIL",
+              "FRE"
+            ]
           }
         }
       }
