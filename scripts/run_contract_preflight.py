@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -697,7 +698,7 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
     targets: set[str] = set()
     for rel_path in impacted_paths:
         candidate = Path(rel_path)
-        if candidate.name.startswith("test_") and candidate.suffix == ".py":
+        if rel_path.startswith("tests/") and candidate.name.startswith("test_") and candidate.suffix == ".py":
             if (repo_root / rel_path).is_file():
                 targets.add(rel_path)
             continue
@@ -787,10 +788,26 @@ def _resolve_existing_pytest_targets(paths: list[str]) -> list[str]:
     return sorted({path for path in paths if (REPO_ROOT / path).is_file()})
 
 
+def _resolve_pytest_cmd() -> list[str]:
+    """Prefer sys.executable -m pytest (interpreter consistency); fall back to
+    PATH pytest when pytest is not importable via sys.executable."""
+    try:
+        import importlib.util
+        if importlib.util.find_spec("pytest") is not None:
+            return [sys.executable, "-m", "pytest"]
+    except Exception:
+        pass
+    pytest_bin = shutil.which("pytest")
+    return [pytest_bin] if pytest_bin else [sys.executable, "-m", "pytest"]
+
+
+_PYTEST_CMD = _resolve_pytest_cmd()
+
+
 def run_targeted_pytests(paths: list[str], *, execution_log: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     failures: list[dict[str, Any]] = []
     for path in paths:
-        cmd = [sys.executable, "-m", "pytest", "-q", path]
+        cmd = _PYTEST_CMD + ["-q", path]
         result = _run(cmd, cwd=REPO_ROOT)
         if execution_log is not None:
             execution_log.append({"target": path, "command": " ".join(cmd), "returncode": result.returncode})

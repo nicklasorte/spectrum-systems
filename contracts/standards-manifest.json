@@ -4227,6 +4227,19 @@
       "notes": "Legacy executable eval-case specification consumed by eval_engine with trace-linked inputs, expected outputs, scoring rubric, and optional slice/risk metadata for SF-07 coverage reporting."
     },
     {
+      "artifact_type": "eval_case_candidate",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/schemas/eval_case_candidate.schema.json",
+      "notes": "PRL-03 candidate eval case for regression prevention. Not yet promoted. Owned by PRL; promotion authority remains with EVL."
+    },
+    {
       "artifact_type": "eval_coverage_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12644,6 +12657,97 @@
       "last_updated_in": "1.3.143",
       "example_path": "contracts/examples/registry_divergence_report.json",
       "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "prl_repair_candidate",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/schemas/prl_repair_candidate.schema.json",
+      "notes": "PRL-02 bounded repair suggestion. auto_apply is always false. Advisory only. Owned by PRL; consumed advisory-only by FRE and operators."
+    },
+    {
+      "artifact_type": "pr_failure_capture_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/pr_failure_capture_record.schema.json",
+      "notes": "PRL-01 normalized failure capture record produced per parsed CI failure. Consumed by PRL classifier and FRE."
+    },
+    {
+      "artifact_type": "pre_pr_failure_packet",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/pre_pr_failure_packet.schema.json",
+      "notes": "PRL-01 structured failure packet emitted by the pre-PR reliability gate. Owned by PRL."
+    },
+    {
+      "artifact_type": "prl_eval_case",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_eval_case.schema.json",
+      "notes": "PRL-03 promoted eval case derived from classified failure. Owned by PRL; promotion authority with EVL."
+    },
+    {
+      "artifact_type": "prl_eval_generation_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_eval_generation_record.schema.json",
+      "notes": "PRL-03 record of eval case generation run. Owned by PRL."
+    },
+    {
+      "artifact_type": "prl_gate_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_gate_result.schema.json",
+      "notes": "PRL gate decision artifact summarizing pass/block outcome with trace references. Owned by PRL."
+    },
+    {
+      "artifact_type": "prl_lrt_failure_packet",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_lrt_failure_packet.schema.json",
+      "notes": "PRL long-running test failure packet. Owned by PRL."
     },
     {
       "artifact_type": "rel_canary_metrics_breakdown",

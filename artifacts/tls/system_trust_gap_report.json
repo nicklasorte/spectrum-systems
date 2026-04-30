@@ -420,15 +420,15 @@
       "failing_signals": [
         "missing_control",
         "missing_enforcement_signal",
-        "missing_lineage"
+        "missing_lineage",
+        "missing_replay"
       ],
-      "gap_count": 3,
+      "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
         "missing_eval",
         "missing_observability",
         "missing_readiness_evidence",
-        "missing_replay",
         "missing_tests",
         "schema_weakness"
       ],
@@ -493,6 +493,26 @@
         "missing_tests"
       ],
       "system_id": "PRA",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 6,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_control",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "PRL",
       "trust_state": "blocked_signal"
     },
     {

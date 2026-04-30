@@ -32,6 +32,9 @@
   "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py": [
     "tests/test_authority_repair_candidate_generator.py"
   ],
+  "spectrum_systems/modules/runtime/test_inventory_integrity.py": [
+    "tests/test_test_inventory_integrity.py"
+  ],
   "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py": [
     "tests/test_failure_eval_candidate_generator.py"
   ],
@@ -67,6 +70,30 @@
     "tests/test_contracts.py"
   ],
   "contracts/schemas/preflight_block_diagnosis_record.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/standards-manifest.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/eval_case_candidate.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/pr_failure_capture_record.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/pre_pr_failure_packet.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/prl_eval_case.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/prl_eval_generation_record.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/prl_gate_result.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/prl_repair_candidate.schema.json": [
     "tests/test_contracts.py"
   ],
   "artifacts/dashboard_metrics/failure_feedback_record.json": [

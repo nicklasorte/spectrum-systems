@@ -3,6 +3,7 @@ from __future__ import annotations
 import configparser
 import json
 import os
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -80,8 +81,22 @@ def _discover_test_files(repo_root: Path, testpaths: list[str]) -> tuple[list[st
     return sorted(set(discovered)), sorted(set(missing_roots))
 
 
+def _resolve_pytest_cmd() -> list[str]:
+    try:
+        import importlib.util
+        if importlib.util.find_spec("pytest") is not None:
+            return [sys.executable, "-m", "pytest"]
+    except Exception:
+        pass
+    pytest_bin = shutil.which("pytest")
+    return [pytest_bin] if pytest_bin else [sys.executable, "-m", "pytest"]
+
+
+_PYTEST_CMD = _resolve_pytest_cmd()
+
+
 def _run_collect(repo_root: Path, targets: list[str] | None = None, cwd: Path | None = None) -> tuple[int, list[str], str]:
-    command = [sys.executable, "-m", "pytest", "--collect-only", "-q"]
+    command = _PYTEST_CMD + ["--collect-only", "-q"]
     if targets:
         command.extend(targets)
     completed = subprocess.run(command, cwd=str(cwd or repo_root), capture_output=True, text=True, check=False)
@@ -142,7 +157,7 @@ def evaluate_test_inventory_integrity(
         "artifact_type": "test_inventory_integrity_result",
         "schema_version": "1.0.0",
         "owner_system": "PRG",
-        "enforcement_system": "SEL",
+        "policy_observation": "SEL",
         "execution_system": "PQX",
         "orchestration_system": "TLC",
         "diagnosis_system": "FRE",

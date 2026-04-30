@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prl/prl_eval_generation_record.schema.json",
+  "title": "PRL Eval Generation Record",
+  "description": "PRL-03: tracks the full pipeline from failure to eval_case_candidate to prl_eval_case. Owned by PRL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "timestamp",
+    "run_id",
+    "trace_id",
+    "trace_refs",
+    "failure_packet_ref",
+    "candidate_id",
+    "gate_status",
+    "gate_block_reason"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prl_eval_generation_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^prl-gen-[a-f0-9]{16}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": { "type": "string", "minLength": 1 },
+        "related": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "failure_packet_ref": {
+      "type": "string",
+      "pattern": "^pre_pr_failure_packet:.+"
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gated_eval_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gate_status": {
+      "type": "string",
+      "enum": ["advanced", "requires_human_review", "blocked"]
+    },
+    "gate_block_reason": {
+      "type": "string"
+    }
+  }
+}

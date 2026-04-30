@@ -2160,6 +2160,12 @@
         "stability": ""
       },
       {
+        "id": "eval_case_candidate",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "eval_coverage_artifact",
         "node_type": "contract",
         "schema_version": "1.0.0",
@@ -4896,6 +4902,12 @@
         "stability": ""
       },
       {
+        "id": "pr_failure_capture_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "pra_changed_scope_extraction_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
@@ -4933,6 +4945,12 @@
       },
       {
         "id": "pra_system_impact_mapping_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "pre_pr_failure_packet",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -5149,6 +5167,30 @@
       },
       {
         "id": "prioritized_adoption_candidate_set",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_eval_case",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_eval_generation_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_gate_result",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_repair_candidate",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
