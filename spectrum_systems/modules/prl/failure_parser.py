@@ -96,7 +96,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
         re.compile(
             r"policy.mismatch|policy.violation|policy.drift|trust.policy.block"
             r"|tier_drift|tier_indirect|POLICY_MISMATCH"
-            r"|downstream_test_failure|strategy_gate.*BLOCK",
+            r"|downstream_test_failure",
             re.IGNORECASE,
         ),
         "Policy mismatch or violation",

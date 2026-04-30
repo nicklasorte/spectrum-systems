@@ -167,10 +167,12 @@ class TestParseLogLine:
         assert result.failure_class == "policy_mismatch"
 
     def test_preflight_strategy_gate_block(self):
+        # The gate summary line is an outcome, not a root cause. It must not
+        # be classified as policy_mismatch — the actual failure class is
+        # captured on the failure_class line earlier in the same log.
         line = '  "strategy_gate_decision": "BLOCK",'
         result = parse_log_line(line)
-        assert result is not None
-        assert result.failure_class == "policy_mismatch"
+        assert result is None
 
     def test_raw_excerpt_truncated_at_500(self):
         long_line = "authority_shape_violation " + "x" * 600
