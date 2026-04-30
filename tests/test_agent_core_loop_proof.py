@@ -51,3 +51,22 @@ def test_core_loop_complete_true_with_missing_leg_fails():
     x['core_loop_complete']=True
     with pytest.raises(Exception):
         validate_artifact(x,'agent_core_loop_run_record')
+
+
+def test_builder_output_validates_schema():
+    rec=build_agent_core_loop_record('T-1','codex',None)
+    validate_artifact(rec,'agent_core_loop_run_record')
+
+
+def test_repo_mutating_example_keeps_aex_pqx_present_when_true():
+    claude=load_example('agent_core_loop_run_record.claude.example.json')
+    assert claude['repo_mutating'] is True
+    assert claude['loop_legs']['AEX']['status']=='present'
+    assert claude['loop_legs']['PQX']['status']=='present'
+
+
+def test_invalid_leg_status_enum_fails():
+    x=load_example('agent_core_loop_run_record.codex.example.json')
+    x['loop_legs']['AEX']['status']='bad_status'
+    with pytest.raises(Exception):
+        validate_artifact(x,'agent_core_loop_run_record')

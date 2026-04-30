@@ -69,3 +69,20 @@
   - `python -m pytest tests/test_agent_core_loop_proof.py -q`
   - `python scripts/run_authority_shape_preflight.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json`
   - `python scripts/run_authority_leak_guard.py --base-ref "2b25f8027e2a7068313caeceffe803bb19c8a065" --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json`
+
+## Contract mismatch fix
+- Exact failing rule addressed: repo-mutating semantic consistency and cross-surface contract alignment between examples, schema, builder, and tests.
+- Files changed:
+  - `contracts/examples/agent_core_loop_run_record.blocked.example.json`
+  - `tests/test_agent_core_loop_proof.py`
+- Fix preserves fail-closed behavior:
+  - contract remains strict (`present` requires refs; missing statuses require reason codes; core-loop-complete guard remains)
+  - blocked example now explicitly models non-repo-mutating observation-only gap case (`repo_mutating=false`) rather than violating repo-mutating AEX/PQX expectations
+  - builder output is now asserted against schema directly in tests
+- Validation commands run:
+  - `python scripts/run_contract_preflight.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --output-dir outputs/contract_preflight --execution-context pqx_governed --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json`
+  - `python scripts/run_contract_enforcement.py`
+  - `pytest tests/test_agent_core_loop_proof.py -q`
+  - `python scripts/run_authority_shape_preflight.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json`
+  - `python scripts/run_authority_leak_guard.py --base-ref "2b25f8027e2a7068313caeceffe803bb19c8a065" --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json`
+- Final result: contract preflight passed with `status=passed` and `strategy_gate_decision=ALLOW` (no `contract_mismatch` block).

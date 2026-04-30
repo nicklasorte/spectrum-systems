@@ -3,7 +3,7 @@
   "schema_version": "1.0.0",
   "work_item_id": "AGL-01-GAP",
   "agent_type": "unknown",
-  "repo_mutating": true,
+  "repo_mutating": false,
   "source_refs": [
     "artifacts/dashboard_metrics/ai_programming_governed_path_record.json"
   ],
