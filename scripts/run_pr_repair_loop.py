@@ -14,7 +14,7 @@ def main()->int:
  out=Path(a.output_dir);out.mkdir(parents=True,exist_ok=True)
  obs=observe_failures(a.pr_number,a.repo,a.head_ref,a.attempt_number,Path(a.input_dir))
  norm=normalize_failure(obs);cand=build_candidate(norm);auth=prepare_repair_readiness(cand);exe=execute_repair(cand,auth,a.apply_repair);summ=summarize(obs,norm,cand,auth,exe)
- for n,o in [('pr_ci_failure_observation_record.json',obs),('pr_failure_normalization_packet.json',norm),('pr_repair_candidate_record.json',cand),('pr_repair_readiness_record.json',auth),('pr_repair_execution_record.json',exe),('pr_repair_attempt_summary_record.json',summ)]:
+ for n,o in [('pr_ci_failure_observation_record.json',obs),('pr_failure_normalization_packet.json',norm),('pr_repair_candidate_record.json',cand),('pr_repair_control_input_record.json',auth),('pr_repair_execution_record.json',exe),('pr_repair_attempt_summary_record.json',summ)]:
   (out/n).write_text(json.dumps(o,indent=2),encoding='utf-8')
  return 1 if summ['human_review_required'] else 0
 if __name__=='__main__': raise SystemExit(main())

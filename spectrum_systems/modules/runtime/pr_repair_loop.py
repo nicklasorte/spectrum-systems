@@ -75,7 +75,7 @@ def prepare_repair_readiness(candidate:dict[str,Any])->dict[str,Any]:
     status='ready_for_control_review'
     if n>MAX_ATTEMPTS: status='not_ready_for_control_review'
     if candidate['human_review_required']: status='human_review_required'
-    return {'artifact_type':'pr_repair_readiness_record','schema_version':'1.0.0','pr_number':candidate['pr_number'],'repo':candidate['repo'],'head_sha':candidate['head_sha'],'attempt_number':n,'max_attempts':MAX_ATTEMPTS,
+    return {'artifact_type':'pr_repair_control_input_record','schema_version':'1.0.0','pr_number':candidate['pr_number'],'repo':candidate['repo'],'head_sha':candidate['head_sha'],'attempt_number':n,'max_attempts':MAX_ATTEMPTS,
     'source_artifacts_used':candidate['source_artifacts_used'],'trace_refs':candidate['trace_refs'],'reason_codes':candidate['reason_codes'],'authority_scope':'observation_only',
     'repair_readiness_status':status,'authorized_files':candidate['bounded_files'],'repair_candidate_ref':'pr_repair_candidate_record'}
 

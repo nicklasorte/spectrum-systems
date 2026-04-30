@@ -17276,10 +17276,10 @@
     "example": "contracts/examples/pr_repair_candidate_record.json",
     "owner": "PRL"
   },
-  "pr_repair_readiness_record": {
+  "pr_repair_control_input_record": {
     "version": "1.0.0",
-    "schema": "contracts/schemas/pr_repair_readiness_record.schema.json",
-    "example": "contracts/examples/pr_repair_readiness_record.json",
+    "schema": "contracts/schemas/pr_repair_control_input_record.schema.json",
+    "example": "contracts/examples/pr_repair_control_input_record.json",
     "owner": "PRL"
   },
   "pr_repair_execution_record": {
@@ -17293,5 +17293,13 @@
     "schema": "contracts/schemas/pr_repair_attempt_summary_record.schema.json",
     "example": "contracts/examples/pr_repair_attempt_summary_record.json",
     "owner": "PRL"
+  },
+  "pr_repair_authorization_record": {
+    "version": "1.0.0",
+    "schema": "contracts/schemas/pr_repair_authorization_record.schema.json",
+    "example": "contracts/examples/pr_repair_authorization_record.json",
+    "owner": "PRL",
+    "deprecated": true,
+    "notes": "compatibility alias; use pr_repair_control_input_record"
   }
 }
