@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-"""CLP-01: Core Loop Pre-PR Gate runner.
+"""Core Loop Pre-PR Gate runner (CLP-01).
 
 Runs the canonical pre-admission check bundle (authority shape, authority
 leak, contract enforcement, TLS generated artifact freshness, contract
 preflight, selected tests) before a repo-mutating agent slice can be handed
 off as PR-ready. Emits a ``core_loop_pre_pr_gate_result`` artifact.
 
-Authority scope: observation_only. CLP does not approve, certify, promote,
-or enforce. AEX/PQX/EVL/TPA/CDE/SEL retain those authorities.
+This runner performs observation-only pre-PR readiness aggregation. It
+reports the canonical preflight outputs and does not authorize, admit,
+promote, enforce, or decide policy. Policy and admissibility decisions
+remain with TPA. Continuation and closure decisions remain with CDE.
+Enforcement decisions remain with SEL / PRG / GOV per existing repo
+conventions. The artifact emitted by this runner carries the
+``observation_only`` metadata note; the schema pins it via a const
+constraint.
 
 Exit codes
 ----------

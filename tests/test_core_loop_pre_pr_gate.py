@@ -521,3 +521,155 @@ def test_evaluate_gate_pass_for_non_repo_mutating_with_no_checks():
     assert first_failed is None
     assert classes == []
     assert human is False
+
+
+# ---------------------------------------------------------------------------
+# PRL-04 regressions: registry drift validator + system registry guard
+# ---------------------------------------------------------------------------
+
+
+def _registry_text() -> str:
+    return (ROOT / "docs" / "architecture" / "system_registry.md").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_registry_clp_produces_canonical_artifact_name_only():
+    """The CLP produces line must be exactly the canonical artifact name —
+    no parenthetical authority metadata that would corrupt the schema lookup
+    inside the registry drift validator (PRL-04 root cause)."""
+    text = _registry_text()
+    import re
+
+    # Locate the CLP-01 section.
+    section_match = re.search(
+        r"### CLP-01[^\n]*\n(?P<body>.*?)(?=\n### |\Z)", text, flags=re.DOTALL
+    )
+    assert section_match, "CLP-01 section not found in registry"
+    body = section_match.group("body")
+    # Find the **produces:** field and extract sub-bullets only (not other
+    # **section:** entries).
+    produces_match = re.search(
+        r"\n- \*\*produces:\*\*\s*\n((?:  -[^\n]*\n)+)", body
+    )
+    assert produces_match, "CLP **produces:** block not found"
+    produces_block = produces_match.group(1)
+    items = [
+        ln.strip().lstrip("-").strip().strip("`")
+        for ln in produces_block.splitlines()
+        if ln.strip().startswith("-") and not ln.strip().startswith("- **")
+    ]
+    assert items, "CLP produces block has no items"
+    for item in items:
+        assert item == "core_loop_pre_pr_gate_result", (
+            f"CLP produces a non-canonical artifact name: {item!r}. "
+            "PRL-04 regression: parenthetical metadata must not be present."
+        )
+        assert "authority_scope" not in item
+        assert "(" not in item
+        assert ")" not in item
+
+
+def test_registry_drift_validator_finds_clp_schema():
+    """PRL-04 regression: the drift validator must locate
+    contracts/schemas/core_loop_pre_pr_gate_result.schema.json for CLP."""
+    from spectrum_systems.governance.registry_drift_validator import (
+        RegistryDriftValidator,
+    )
+
+    validator = RegistryDriftValidator(repo_root=ROOT)
+    clp = validator.registry.get("CLP")
+    assert clp is not None, "CLP not parsed from registry"
+    assert "core_loop_pre_pr_gate_result" in clp["produces"]
+    is_valid, errors = validator.validate_system("CLP", clp)
+    schema_errors = [e for e in errors if "no schema" in e.lower()]
+    assert not schema_errors, f"unexpected schema errors for CLP: {schema_errors}"
+
+
+def test_registry_drift_clp_schema_path_canonical():
+    """The schema and example for CLP live at the canonical paths."""
+    schema_path = ROOT / "contracts" / "schemas" / "core_loop_pre_pr_gate_result.schema.json"
+    example_path = ROOT / "contracts" / "examples" / "core_loop_pre_pr_gate_result.example.json"
+    assert schema_path.is_file(), schema_path
+    assert example_path.is_file(), example_path
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    assert schema["properties"]["artifact_type"]["const"] == "core_loop_pre_pr_gate_result"
+    example = json.loads(example_path.read_text(encoding="utf-8"))
+    validate_artifact(example, "core_loop_pre_pr_gate_result")
+
+
+def test_standards_manifest_clp_entry_canonical():
+    """The standards manifest must reference the canonical artifact name with
+    no malformed parenthetical fragments."""
+    manifest = json.loads(
+        (ROOT / "contracts" / "standards-manifest.json").read_text(encoding="utf-8")
+    )
+    entries = [
+        e
+        for e in (manifest.get("contracts") or [])
+        if e.get("artifact_type") == "core_loop_pre_pr_gate_result"
+    ]
+    assert len(entries) == 1, entries
+    entry = entries[0]
+    assert entry["schema_path"] == "contracts/schemas/core_loop_pre_pr_gate_result.schema.json"
+    assert entry["example_path"] == "contracts/examples/core_loop_pre_pr_gate_result.example.json"
+    blob = json.dumps(entry)
+    assert "authority_scope: observation_only" not in blob
+    assert "(`authority_scope" not in blob
+    # The artifact_type itself must be exactly the canonical bare name.
+    assert entry["artifact_type"] == "core_loop_pre_pr_gate_result"
+
+
+def test_system_registry_guard_no_shadow_on_clp_runner_script():
+    """PRL-04 regression: scripts/run_core_loop_pre_pr_gate.py must not trip
+    SHADOW_OWNERSHIP_OVERLAP. The header docstring previously combined the
+    word ``authority`` with cluster-words like ``scope`` plus the symbol
+    ``CLP``, which the guard mapped to canonical owner TPA."""
+    from spectrum_systems.modules.governance.system_registry_guard import (
+        evaluate_system_registry_guard,
+        load_guard_policy,
+        parse_system_registry,
+    )
+
+    policy = load_guard_policy(
+        ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
+    )
+    registry_model = parse_system_registry(
+        ROOT / "docs" / "architecture" / "system_registry.md"
+    )
+    result = evaluate_system_registry_guard(
+        repo_root=ROOT,
+        changed_files=[
+            "scripts/run_core_loop_pre_pr_gate.py",
+            "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py",
+            "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+        ],
+        policy=policy,
+        registry_model=registry_model,
+    )
+    diagnostics = result.get("diagnostics") or []
+    shadow = [
+        d
+        for d in diagnostics
+        if d.get("reason_code") == "SHADOW_OWNERSHIP_OVERLAP"
+        and d.get("file") == "scripts/run_core_loop_pre_pr_gate.py"
+    ]
+    assert not shadow, f"unexpected SHADOW_OWNERSHIP_OVERLAP for CLP runner: {shadow}"
+
+
+def test_clp_runner_docstring_keeps_subordination_language():
+    """The CLP runner docstring must explicitly subordinate to TPA/CDE/SEL.
+    Guards the documented authority boundary so a future edit cannot quietly
+    revert to language that implies CLP owns policy/control/enforcement."""
+    text = (ROOT / "scripts" / "run_core_loop_pre_pr_gate.py").read_text(
+        encoding="utf-8"
+    )
+    head = text.split('"""', 2)[1]
+    assert "observation-only" in head.lower()
+    assert "TPA" in head
+    assert "CDE" in head
+    assert "SEL" in head
+    # Forbid the previous wording that triggered SHADOW_OWNERSHIP_OVERLAP.
+    assert "Authority scope: observation_only" not in head
+    # Forbid the malformed "owns policy" or "decides policy" claims.
+    assert "decide policy" not in head.lower() or "does not" in head.lower()

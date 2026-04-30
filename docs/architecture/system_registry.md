@@ -549,25 +549,28 @@ These are important but non-top-level authority families:
 ## Recurring Cross-System Phase Labels (Non-Owner)
 
 ### CLP-01 — Core Loop Pre-PR Gate (Bundle Runner / Evidence Artifact)
-- **classification:** evidence-bundle runner (not a canonical authority owner)
+- **classification:** evidence-bundle runner (observation-only; not a canonical authority owner)
 - **status:** non_owner_evidence_runner
-- **role:** runs the canonical pre-admission check bundle (authority shape, authority leak, contract enforcement, TLS generated artifact freshness, contract preflight, selected tests) before a repo-mutating Codex/Claude slice can be handed off as PR-ready, and emits a `core_loop_pre_pr_gate_result` evidence artifact.
+- **role:** runs the canonical pre-admission check bundle (authority shape, authority leak, contract enforcement, TLS generated artifact freshness, contract preflight, selected tests) before a repo-mutating Codex/Claude slice can be handed off as PR-ready, and emits a `core_loop_pre_pr_gate_result` evidence artifact. CLP-01 is observation-only: it aggregates pre-PR readiness signals and does not make policy, admission, promotion, authorization, continuation, or enforcement decisions. Policy / scope decisions remain with TPA. Continuation / closure decisions remain with CDE. Enforcement decisions remain with SEL/PRG/GOV per existing repo conventions.
 - **owns:**
-  - `core_loop_pre_pr_gate_result`
+  - core_loop_pre_pr_gate_result
 - **consumes:**
-  - changed-file diff
-  - canonical preflight tool outputs (`authority_shape_preflight_result`, `authority_leak_guard_result`, `contract_preflight_result_artifact`, TLS generated artifacts, canonical pytest selection)
+  - core_loop_pre_pr_gate_changed_files
+  - authority_shape_preflight_result
+  - authority_leak_guard_result
+  - contract_preflight_result_artifact
 - **produces:**
-  - `core_loop_pre_pr_gate_result` (`authority_scope: observation_only`)
+  - core_loop_pre_pr_gate_result
 - **downstream consumers (evidence only — CLP does not bind):**
   - **AEX** consumes the gate result as pre-admission evidence.
   - **PQX** consumes it before execution closure / PR-ready handoff.
   - **EVL** consumes the `selected_tests` and `contract_enforcement` check outputs.
-  - **TPA** consumes the authority_shape / authority_leak / contract_preflight check outputs.
-  - **CDE** consumes the final gate result for continue/repair/block decisions.
+  - **TPA** consumes the `authority_shape_preflight_result`, `authority_leak_guard_result`, and `contract_preflight_result_artifact` outputs as the canonical policy/scope owner.
+  - **CDE** consumes the final gate result as the canonical continuation/closure owner.
   - **SEL** consumes it as final compliance input.
   - **PRL** consumes it as upstream pre-PR evidence; treats `gate_status=block` as a structured failure to classify.
   - **AGL** (`agent_core_loop_run_record`) consumes it via the `clp_evidence_artifact` parameter; missing CLP evidence on a repo-mutating slice forces `compliance_status=BLOCK`.
+- **authority_scope (metadata note):** observation_only — applies to every emitted `core_loop_pre_pr_gate_result` instance. The schema pins this value with a const constraint; the field is part of the artifact, not the artifact name.
 - **must_not_do:**
   - own_admission_authority
   - own_execution_authority
