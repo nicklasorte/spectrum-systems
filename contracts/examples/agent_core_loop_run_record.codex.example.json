@@ -1,0 +1,109 @@
+{
+  "artifact_type": "agent_core_loop_run_record",
+  "schema_version": "1.0.0",
+  "work_item_id": "AGL-01-CODEX",
+  "agent_type": "codex",
+  "repo_mutating": true,
+  "source_refs": [
+    "artifacts/dashboard_metrics/ai_programming_governed_path_record.json"
+  ],
+  "changed_surfaces": [
+    "scripts/"
+  ],
+  "loop_legs": {
+    "AEX": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/aex.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "PQX": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/pqx.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "EVL": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/evl.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "TPA": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/tpa.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "CDE": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/cde.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "SEL": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/sel.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    }
+  },
+  "overlays": {
+    "LIN": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/lin.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "REP": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/rep.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "OBS": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/obs.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    },
+    "SLO": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/slo.json"
+      ],
+      "reason_codes": [],
+      "confidence": "high"
+    }
+  },
+  "first_missing_leg": null,
+  "first_failed_leg": null,
+  "core_loop_complete": true,
+  "compliance_status": "PASS",
+  "learning_actions": [],
+  "trace_refs": [
+    "artifacts/trace.json"
+  ],
+  "replay_refs": [
+    "artifacts/replay.json"
+  ],
+  "authority_scope": "observation_only"
+}
