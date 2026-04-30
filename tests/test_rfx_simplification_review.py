@@ -83,3 +83,12 @@ def test_numeric_justification_fields_do_not_raise():
     )
     assert result["artifact_type"] == "rfx_simplification_review_result"
     assert result["recommendations"][0]["recommendation"] == "keep"
+
+
+def test_numeric_name_does_not_raise():
+    # P1 fix: non-string name must not raise AttributeError.
+    result = assess_rfx_simplification(
+        helpers=[{"name": 42, "failure_prevented": "prevents regression", "signal_improved": "", "role": "r"}]
+    )
+    assert result["artifact_type"] == "rfx_simplification_review_result"
+    assert result["recommendations"][0]["recommendation"] == "keep"

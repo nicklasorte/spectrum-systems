@@ -67,7 +67,7 @@ def build_rfx_golden_failure_corpus_v2(
         if not isinstance(c, dict):
             reason.append("rfx_v2_case_malformed_row")
             continue
-        case_id = c.get("id") or ""
+        case_id = str(c.get("id") or "")
         if not case_id:
             reason.append("rfx_v2_case_missing_id")
         elif case_id in seen_ids:

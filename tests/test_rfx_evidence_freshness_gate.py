@@ -97,3 +97,14 @@ def test_mixed_records_malformed_skipped():
     )
     assert "rfx_freshness_malformed_record" in result["reason_codes_emitted"]
     assert result["signals"]["fresh_count"] == 1
+
+
+def test_none_evidence_records_does_not_raise():
+    # P2 fix: None evidence_records must not raise TypeError; must emit rfx_freshness_empty_inputs.
+    result = check_rfx_evidence_freshness(
+        evidence_records=None,
+        reference_time_seconds=_REF_TIME,
+    )
+    assert "rfx_freshness_empty_inputs" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_evidence_freshness_gate_result"
+    assert result["status"] == "stale"

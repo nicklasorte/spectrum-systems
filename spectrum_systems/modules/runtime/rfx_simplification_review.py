@@ -63,7 +63,7 @@ def assess_rfx_simplification(
         if not isinstance(h, dict):
             reason.append("rfx_simplification_malformed_row")
             continue
-        name = (h.get("name") or "").strip()
+        name = str(h.get("name") or "").strip()
         if not name:
             reason.append("rfx_simplification_missing_name")
             continue

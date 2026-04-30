@@ -53,7 +53,7 @@ def check_rfx_evidence_freshness(
         max_age_seconds = 3600.0  # default fallback for reporting
 
     fresh_count = 0
-    for rec in evidence_records:
+    for rec in (evidence_records or []):
         if not isinstance(rec, dict):
             reason.append("rfx_freshness_malformed_record")
             continue
@@ -75,7 +75,7 @@ def check_rfx_evidence_freshness(
         else:
             fresh_count += 1
 
-    total = len(evidence_records)
+    total = len(evidence_records or [])
     unique_reasons = sorted(set(reason))
     return {
         "artifact_type": "rfx_evidence_freshness_gate_result",

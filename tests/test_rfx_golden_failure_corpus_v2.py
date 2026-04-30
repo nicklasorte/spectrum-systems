@@ -132,3 +132,13 @@ def test_mixed_cases_malformed_skipped():
     result = build_rfx_golden_failure_corpus_v2(cases=[_case(), "bad-row"])
     assert "rfx_v2_case_malformed_row" in result["reason_codes_emitted"]
     assert len(result["cases"]) == 1
+
+
+def test_non_hashable_case_id_does_not_raise():
+    # P1 fix: non-hashable case id (list/dict) must not raise TypeError on set membership check.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[{"id": ["not", "hashable"], "trace_ref": "t", "fix_ref": "f",
+                "category": "authority_shape_doc_violation", "expected": "ok", "actual": "ok"}]
+    )
+    assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"
+    assert result["cases"][0]["id"] == "['not', 'hashable']"
