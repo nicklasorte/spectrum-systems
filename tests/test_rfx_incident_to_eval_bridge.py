@@ -150,3 +150,11 @@ def test_string_false_eval_skip_not_treated_as_skip():
     result = build_rfx_incident_to_eval_bridge(incidents=[_incident(eval_skip="false")])
     assert "rfx_bridge_missing_rationale" not in result["reason_codes_emitted"]
     assert result["artifact_type"] == "rfx_incident_to_eval_bridge"
+
+
+def test_non_iterable_incidents_does_not_raise():
+    # P1 fix: truthy non-iterable incidents (e.g. integer 1 from bad deserialization)
+    # must not raise TypeError; must emit rfx_bridge_empty.
+    result = build_rfx_incident_to_eval_bridge(incidents=1)
+    assert "rfx_bridge_empty" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_incident_to_eval_bridge"

@@ -44,6 +44,7 @@ def build_rfx_operator_handbook(
     handbook_entries: list[dict[str, Any]] = []
     seen_codes: set[str] = set()
 
+    reason_code_entries = reason_code_entries if isinstance(reason_code_entries, (list, tuple)) else []
     if not reason_code_entries:
         reason.append("rfx_handbook_empty")
         return {

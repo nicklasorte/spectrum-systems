@@ -120,3 +120,11 @@ def test_numeric_failure_prevented_does_not_raise():
     )
     assert result["artifact_type"] == "rfx_operator_handbook"
     assert result["entries"][0]["failure_prevented"] == "1"
+
+
+def test_non_iterable_reason_code_entries_does_not_raise():
+    # P1 fix: truthy non-iterable entries (e.g. integer 1 from bad deserialization)
+    # must not raise TypeError; must emit rfx_handbook_empty.
+    result = build_rfx_operator_handbook(reason_code_entries=1)
+    assert "rfx_handbook_empty" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_operator_handbook"

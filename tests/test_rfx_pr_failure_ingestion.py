@@ -93,3 +93,11 @@ def test_whitespace_trace_ref_flagged():
     result = ingest_rfx_pr_failures(pr_log_entries=[_entry(trace_ref="   ")])
     assert "rfx_pr_ingestion_missing_trace" in result["reason_codes_emitted"]
     assert result["signals"]["normalized_count"] == 0
+
+
+def test_non_iterable_pr_log_entries_does_not_raise():
+    # P1 fix: truthy non-iterable pr_log_entries (e.g. integer 1 from bad deserialization)
+    # must not raise TypeError; must emit rfx_pr_ingestion_empty.
+    result = ingest_rfx_pr_failures(pr_log_entries=1)
+    assert "rfx_pr_ingestion_empty" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_pr_failure_ingestion_result"

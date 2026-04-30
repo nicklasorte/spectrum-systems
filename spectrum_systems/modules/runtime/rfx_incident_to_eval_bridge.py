@@ -53,6 +53,7 @@ def build_rfx_incident_to_eval_bridge(
     reason: list[str] = []
     candidates: list[dict[str, Any]] = []
 
+    incidents = incidents if isinstance(incidents, (list, tuple)) else []
     if not incidents:
         reason.append("rfx_bridge_empty")
         return {

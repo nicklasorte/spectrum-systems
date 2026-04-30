@@ -50,7 +50,7 @@ def check_rfx_evidence_freshness(
     if not records:
         reason.append("rfx_freshness_empty_inputs")
 
-    if not isinstance(max_age_seconds, (int, float)) or max_age_seconds <= 0:
+    if not isinstance(max_age_seconds, (int, float)) or not math.isfinite(max_age_seconds) or max_age_seconds <= 0:
         reason.append("rfx_freshness_invalid_max_age")
         max_age_seconds = 3600.0  # default fallback for reporting
 

@@ -150,3 +150,26 @@ def test_non_iterable_evidence_records_does_not_raise():
     )
     assert "rfx_freshness_empty_inputs" in result["reason_codes_emitted"]
     assert result["artifact_type"] == "rfx_evidence_freshness_gate_result"
+
+
+def test_nan_max_age_flagged():
+    # P2 fix: float('nan') max_age_seconds must not pass as valid; must emit
+    # rfx_freshness_invalid_max_age since nan comparisons always return False,
+    # which would silently mark all evidence fresh.
+    result = check_rfx_evidence_freshness(
+        evidence_records=[_rec()],
+        reference_time_seconds=_REF_TIME,
+        max_age_seconds=float("nan"),
+    )
+    assert "rfx_freshness_invalid_max_age" in result["reason_codes_emitted"]
+
+
+def test_inf_max_age_flagged():
+    # P2 fix: float('inf') max_age_seconds must not pass as valid; must emit
+    # rfx_freshness_invalid_max_age since an infinite window accepts all evidence.
+    result = check_rfx_evidence_freshness(
+        evidence_records=[_rec()],
+        reference_time_seconds=_REF_TIME,
+        max_age_seconds=float("inf"),
+    )
+    assert "rfx_freshness_invalid_max_age" in result["reason_codes_emitted"]

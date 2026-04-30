@@ -40,6 +40,7 @@ def ingest_rfx_pr_failures(
     reason: list[str] = []
     records: list[dict[str, Any]] = []
 
+    pr_log_entries = pr_log_entries if isinstance(pr_log_entries, (list, tuple)) else []
     if not pr_log_entries:
         reason.append("rfx_pr_ingestion_empty")
         return {
