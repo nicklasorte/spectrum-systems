@@ -112,11 +112,16 @@ def build_rfx_golden_failure_corpus_v2(
                 1 for c in validated if c.get("actual") == c.get("expected")
             ),
             "category_coverage": len(
-                {c.get("category") for c in validated if c.get("category")}
+                {c.get("category") for c in validated
+                 if isinstance(c.get("category"), str) and c.get("category")}
             ),
             "historical_category_coverage_pct": (
                 100.0
-                * len({c.get("category") for c in validated if c.get("category")} & KNOWN_CATEGORIES)
+                * len(
+                    {c.get("category") for c in validated
+                     if isinstance(c.get("category"), str) and c.get("category")}
+                    & KNOWN_CATEGORIES
+                )
                 / len(KNOWN_CATEGORIES)
             ),
         },

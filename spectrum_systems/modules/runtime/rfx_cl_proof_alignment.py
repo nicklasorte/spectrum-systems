@@ -58,12 +58,12 @@ def check_rfx_cl_proof_alignment(
     mismatched_fields: list[str] = []
     extra_authority_fields: list[str] = []
 
-    if not rfx_proof:
+    if not rfx_proof or not isinstance(rfx_proof, dict):
         reason.append("rfx_cl_proof_empty_rfx")
     if not cl_proof_schema or not isinstance(cl_proof_schema, dict):
         reason.append("rfx_cl_proof_empty_cl")
 
-    if not rfx_proof or not cl_proof_schema or not isinstance(cl_proof_schema, dict):
+    if not rfx_proof or not isinstance(rfx_proof, dict) or not cl_proof_schema or not isinstance(cl_proof_schema, dict):
         return {
             "artifact_type": "rfx_cl_proof_alignment_result",
             "schema_version": "1.0.0",

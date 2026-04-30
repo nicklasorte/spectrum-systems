@@ -142,6 +142,13 @@ def test_none_cases_does_not_raise():
     assert result["cases"] == []
 
 
+def test_non_hashable_category_does_not_raise():
+    # P1 fix: a dict/list category must not raise TypeError in set comprehension.
+    result = build_rfx_golden_failure_corpus_v2(cases=[_case(category={"key": "value"})])
+    assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"
+    assert result["signals"]["category_coverage"] == 0
+
+
 def test_non_hashable_case_id_does_not_raise():
     # P1 fix: non-hashable case id (list/dict) must not raise TypeError on set membership check.
     result = build_rfx_golden_failure_corpus_v2(

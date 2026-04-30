@@ -103,6 +103,21 @@ def test_unknown_schema_type_not_silently_aligned():
     assert "status" in result["mismatched_fields"]
 
 
+def test_non_dict_rfx_proof_flagged():
+    # P1 fix: truthy non-dict rfx_proof (e.g. a string) must emit rfx_cl_proof_empty_rfx
+    # instead of crashing with TypeError/AttributeError.
+    result = check_rfx_cl_proof_alignment(rfx_proof="not-a-dict", cl_proof_schema=_CL_SCHEMA)
+    assert "rfx_cl_proof_empty_rfx" in result["reason_codes_emitted"]
+    assert result["status"] == "misaligned"
+
+
+def test_list_rfx_proof_flagged():
+    # P1 fix: list rfx_proof must also emit rfx_cl_proof_empty_rfx without raising.
+    result = check_rfx_cl_proof_alignment(rfx_proof=["a", "b"], cl_proof_schema=_CL_SCHEMA)
+    assert "rfx_cl_proof_empty_rfx" in result["reason_codes_emitted"]
+    assert result["status"] == "misaligned"
+
+
 def test_non_dict_cl_schema_does_not_raise():
     # P1 fix: truthy non-dict cl_proof_schema (e.g. a list) must not raise AttributeError.
     result = check_rfx_cl_proof_alignment(rfx_proof={"status": "ok"}, cl_proof_schema=["not-a-dict"])

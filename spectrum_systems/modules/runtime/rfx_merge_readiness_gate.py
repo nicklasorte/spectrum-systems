@@ -73,7 +73,8 @@ def check_rfx_merge_readiness(
             },
         }
 
-    trace_ref = readiness_record.get("trace_ref") or readiness_record.get("trace_id")
+    trace_ref_raw = readiness_record.get("trace_ref") or readiness_record.get("trace_id")
+    trace_ref = str(trace_ref_raw).strip() if trace_ref_raw is not None else ""
     if not trace_ref:
         reason.append("rfx_merge_missing_trace")
 

@@ -107,3 +107,10 @@ def test_numeric_proof_ref_flagged():
     result = check_rfx_merge_readiness(readiness_record=_ready(rfx_proof_ref=42))
     assert "rfx_merge_missing_proof" in result["reason_codes_emitted"]
     assert result["status"] == "not_ready"
+
+
+def test_whitespace_only_trace_ref_flagged():
+    # P1 fix: whitespace-only trace_ref must be treated as absent.
+    result = check_rfx_merge_readiness(readiness_record=_ready(trace_ref="   "))
+    assert "rfx_merge_missing_trace" in result["reason_codes_emitted"]
+    assert result["status"] == "not_ready"
