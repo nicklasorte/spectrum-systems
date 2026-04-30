@@ -128,3 +128,17 @@ def test_numeric_eval_skip_rationale_does_not_raise():
     assert result["artifact_type"] == "rfx_incident_to_eval_bridge"
     assert "rfx_bridge_missing_rationale" not in result["reason_codes_emitted"]
     assert result["signals"]["skip_with_rationale_count"] == 1
+
+
+def test_whitespace_only_trace_ref_flagged():
+    # P1 fix: whitespace-only trace_ref must be treated as absent.
+    result = build_rfx_incident_to_eval_bridge(incidents=[_incident(trace_ref="   ")])
+    assert "rfx_bridge_missing_trace_ref" in result["reason_codes_emitted"]
+    assert result["eval_candidates"] == []
+
+
+def test_whitespace_only_trace_ref_fails_closed():
+    # P1 fix: whitespace-only trace_ref must produce no eval candidate and status=incomplete.
+    result = build_rfx_incident_to_eval_bridge(incidents=[_incident(trace_ref="   ")])
+    assert "rfx_bridge_no_eval_candidate" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"

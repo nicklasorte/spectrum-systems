@@ -80,3 +80,10 @@ def test_numeric_failure_id_does_not_raise():
     result = build_rfx_failure_replay_packet(failure_record=_full_record(failure_id=42))
     assert result["artifact_type"] == "rfx_failure_replay_packet"
     assert result["failure_id"] == "42"
+
+
+def test_whitespace_only_trace_ref_flagged():
+    # P1 fix: whitespace-only trace_ref must be treated as absent.
+    result = build_rfx_failure_replay_packet(failure_record=_full_record(trace_ref="   "))
+    assert "rfx_replay_missing_trace_ref" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"

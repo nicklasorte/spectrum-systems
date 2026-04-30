@@ -1,6 +1,7 @@
 {
   "artifact_type": "cleanup_candidate_report",
   "schema_version": "1.0.0",
+  "producer_authority": "OBS",
   "report_id": "cleanup-example-1",
   "audit_timestamp": "2026-04-28T12:00:00Z",
   "candidates": [

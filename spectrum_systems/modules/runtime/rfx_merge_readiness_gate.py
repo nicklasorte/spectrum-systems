@@ -79,7 +79,8 @@ def check_rfx_merge_readiness(
 
     missing_proofs: list[str] = []
     for key in _REQUIRED_PROOF_KEYS:
-        if not readiness_record.get(key):
+        val = readiness_record.get(key)
+        if not (isinstance(val, str) and val.strip()):
             reason.append("rfx_merge_missing_proof")
             missing_proofs.append(key)
 

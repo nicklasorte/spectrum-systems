@@ -25,6 +25,7 @@ Reason codes:
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 
@@ -64,7 +65,10 @@ def check_rfx_evidence_freshness(
             missing_ts_ids.append(str(rec_id))
             continue
         try:
-            age = reference_time_seconds - float(ts)
+            ts_float = float(ts)
+            if not math.isfinite(ts_float):
+                raise ValueError("non-finite timestamp")
+            age = reference_time_seconds - ts_float
         except (TypeError, ValueError):
             reason.append("rfx_freshness_missing_timestamp")
             missing_ts_ids.append(str(rec_id))

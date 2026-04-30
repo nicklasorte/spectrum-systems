@@ -108,3 +108,33 @@ def test_none_evidence_records_does_not_raise():
     assert "rfx_freshness_empty_inputs" in result["reason_codes_emitted"]
     assert result["artifact_type"] == "rfx_evidence_freshness_gate_result"
     assert result["status"] == "stale"
+
+
+def test_nan_timestamp_flagged():
+    # P2 fix: NaN float timestamp must not pass as fresh; must emit missing_timestamp.
+    result = check_rfx_evidence_freshness(
+        evidence_records=[{"id": "ev-nan", "timestamp_seconds": float("nan")}],
+        reference_time_seconds=_REF_TIME,
+    )
+    assert "rfx_freshness_missing_timestamp" in result["reason_codes_emitted"]
+    assert result["signals"]["fresh_count"] == 0
+
+
+def test_inf_timestamp_flagged():
+    # P2 fix: inf float timestamp must not pass as fresh; must emit missing_timestamp.
+    result = check_rfx_evidence_freshness(
+        evidence_records=[{"id": "ev-inf", "timestamp_seconds": float("inf")}],
+        reference_time_seconds=_REF_TIME,
+    )
+    assert "rfx_freshness_missing_timestamp" in result["reason_codes_emitted"]
+    assert result["signals"]["fresh_count"] == 0
+
+
+def test_nan_string_timestamp_flagged():
+    # P2 fix: "NaN" string timestamp must not pass as fresh; must emit missing_timestamp.
+    result = check_rfx_evidence_freshness(
+        evidence_records=[{"id": "ev-nanstr", "timestamp_seconds": "NaN"}],
+        reference_time_seconds=_REF_TIME,
+    )
+    assert "rfx_freshness_missing_timestamp" in result["reason_codes_emitted"]
+    assert result["signals"]["fresh_count"] == 0

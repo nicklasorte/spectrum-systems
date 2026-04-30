@@ -76,7 +76,8 @@ def build_rfx_failure_replay_packet(
     if not expected_outcome:
         reason.append("rfx_replay_missing_expected")
 
-    trace_ref = failure_record.get("trace_ref") or failure_record.get("trace_id")
+    trace_ref_raw = failure_record.get("trace_ref") or failure_record.get("trace_id")
+    trace_ref = str(trace_ref_raw).strip() if trace_ref_raw is not None else None
     if not trace_ref:
         reason.append("rfx_replay_missing_trace_ref")
 

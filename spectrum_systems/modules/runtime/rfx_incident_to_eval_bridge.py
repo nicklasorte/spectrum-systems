@@ -83,7 +83,8 @@ def build_rfx_incident_to_eval_bridge(
         if not classification:
             reason.append("rfx_bridge_missing_classification")
 
-        trace_ref = inc.get("trace_ref") or inc.get("trace_id")
+        trace_ref_raw = inc.get("trace_ref") or inc.get("trace_id")
+        trace_ref = str(trace_ref_raw).strip() if trace_ref_raw is not None else ""
         if not trace_ref:
             reason.append("rfx_bridge_missing_trace_ref")
 

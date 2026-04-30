@@ -93,3 +93,17 @@ def test_truthy_string_guard_flagged():
     # P1 fix: any non-True truthy value (e.g., "yes") must also require strict bool True.
     result = check_rfx_merge_readiness(readiness_record=_ready(authority_drift_check="yes"))
     assert "rfx_merge_missing_guard" in result["reason_codes_emitted"]
+
+
+def test_whitespace_only_proof_ref_flagged():
+    # P1 fix: whitespace-only proof ref must not satisfy proof presence check.
+    result = check_rfx_merge_readiness(readiness_record=_ready(rfx_proof_ref="   "))
+    assert "rfx_merge_missing_proof" in result["reason_codes_emitted"]
+    assert result["status"] == "not_ready"
+
+
+def test_numeric_proof_ref_flagged():
+    # P1 fix: a numeric proof ref must not satisfy the string proof presence check.
+    result = check_rfx_merge_readiness(readiness_record=_ready(rfx_proof_ref=42))
+    assert "rfx_merge_missing_proof" in result["reason_codes_emitted"]
+    assert result["status"] == "not_ready"
