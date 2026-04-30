@@ -1,18 +1,19 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "pr_gate_result",
-  "description": "Schema for the final PR Gate orchestrator result artifact.",
+  "description": "Schema for the PR Gate shard aggregator result artifact.",
   "type": "object",
   "required": [
     "artifact_type",
     "schema_version",
-    "gate_name",
     "status",
     "produced_at",
-    "producer_script",
-    "artifact_hash",
-    "base_ref",
-    "head_ref"
+    "authority_scope",
+    "required_shards",
+    "shard_statuses",
+    "blocking_reasons",
+    "parity_status",
+    "trace_refs"
   ],
   "properties": {
     "artifact_type": {
@@ -23,77 +24,35 @@
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
-    "gate_name": {
-      "type": "string",
-      "const": "pr_gate"
-    },
     "status": {
       "type": "string",
-      "enum": ["pass", "allow", "warn", "freeze", "block"]
+      "enum": ["pass", "block"]
     },
     "produced_at": {
       "type": "string",
       "format": "date-time"
     },
-    "producer_script": {
+    "authority_scope": {
       "type": "string"
     },
-    "artifact_hash": {
-      "type": "string",
-      "minLength": 1
-    },
-    "base_ref": {
-      "type": "string",
-      "minLength": 1
-    },
-    "head_ref": {
-      "type": "string",
-      "minLength": 1
-    },
-    "blocking_gate": {
-      "type": "string"
-    },
-    "gate_results": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "object"
-      }
-    },
-    "executed_commands": {
+    "required_shards": {
       "type": "array",
       "items": { "type": "string" }
     },
-    "failure_summary": {
-      "$ref": "#/definitions/failure_summary"
-    }
-  },
-  "definitions": {
-    "failure_summary": {
+    "shard_statuses": {
       "type": "object",
-      "required": [
-        "gate_name",
-        "failure_class",
-        "root_cause",
-        "blocking_reason",
-        "next_action"
-      ],
-      "properties": {
-        "gate_name": { "type": "string" },
-        "failure_class": { "type": "string" },
-        "root_cause": { "type": "string" },
-        "blocking_reason": { "type": "string" },
-        "next_action": { "type": "string" },
-        "affected_files": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "failed_command": { "type": "string" },
-        "artifact_refs": {
-          "type": "array",
-          "items": { "type": "string" }
-        }
-      },
-      "additionalProperties": false
+      "additionalProperties": { "type": "string" }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "parity_status": {
+      "type": "string"
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": { "type": "string" }
     }
   },
   "additionalProperties": false

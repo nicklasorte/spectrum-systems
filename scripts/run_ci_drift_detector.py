@@ -175,7 +175,7 @@ def check_test_gate_mapping(repo_root: Path) -> list[DriftFinding]:
                 "unmapped_test_file",
                 f"Test file {relative!r} has no gate mapping in test_gate_mapping.json",
                 relative,
-                "warn",  # warn not error — new tests are expected
+                "error",
             ))
     return findings
 

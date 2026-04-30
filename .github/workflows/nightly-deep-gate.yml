@@ -43,10 +43,20 @@ jobs:
           python scripts/run_ci_drift_detector.py \
             --output outputs/ci_drift/drift_detection_result.json
 
+      - name: Run certification gate (deep)
+        run: |
+          set -euo pipefail
+          mkdir -p outputs/gates
+          python scripts/run_certification_gate.py \
+            --mode deep \
+            --output-dir outputs/gates
+
       - name: Upload nightly outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: nightly-deep-gate-outputs
           if-no-files-found: warn
-          path: outputs/ci_drift/
+          path: |
+            outputs/ci_drift/
+            outputs/gates/
