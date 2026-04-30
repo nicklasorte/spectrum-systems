@@ -818,14 +818,14 @@
           "docs/governance/authority_shape_preflight.md",
           "docs/governance/ci_gate_ownership_manifest.json",
           "docs/governance/ci_runtime_budget.md",
+          "docs/governance/preflight_required_surface_test_overrides.json",
           "docs/governance/strategy_compliance_hard_gate.md",
           "docs/governance/three_letter_system_policy.json",
           "docs/hop/golden_workflow.md",
           "docs/hop/hop006_issue_extraction_design.md",
           "docs/hop/preflight.md",
           "docs/migration/3ls_migration_guide.md",
-          "docs/migration_guide.md",
-          "docs/operations/3ls_simplified_architecture_runbook.md"
+          "docs/migration_guide.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",

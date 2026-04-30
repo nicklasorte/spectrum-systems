@@ -26,8 +26,8 @@ def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _run(cmd: list[str], cwd: str | None = None) -> tuple[int, str, str]:
-    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+def _run(cmd: list[str], cwd: str | None = None, env: dict | None = None) -> tuple[int, str, str]:
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, env=env)
     return result.returncode, result.stdout, result.stderr
 
 
@@ -263,7 +263,7 @@ def main() -> None:
         "--authority-evidence-ref", "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
     ]
     executed_commands.append(" ".join(cmd))
-    rc, out, err = _run(cmd, cwd=str(repo_root))
+    rc, out, err = _run(cmd, cwd=str(repo_root), env=env)
     details["preflight_exit_code"] = rc
 
     # Validate contract preflight result artifact (canonical trust enforcement)
