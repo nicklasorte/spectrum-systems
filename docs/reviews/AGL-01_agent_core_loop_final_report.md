@@ -104,3 +104,30 @@
   - `python -m pytest tests/ -k "tls or evidence_attachment or agent_core_loop" -q`
   - `python scripts/run_authority_shape_preflight.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json`
   - `python scripts/run_authority_leak_guard.py --base-ref "2b25f8027e2a7068313caeceffe803bb19c8a065" --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json`
+
+## Remaining contract mismatch cleanup
+- Diagnosis artifact status at rerun: `contract_preflight_report.status=passed`; no active `contract_mismatch` block artifacts were produced (`block_bundle` empty in preflight result).
+- Exact mismatch summary from diagnosis surfaces:
+  - failing file: none (resolved)
+  - expected contract rule: fail-closed schema+example+builder alignment
+  - actual value: all evaluated contract/example/producer/consumer failure lists empty
+  - JSON path evidence: `schema_example_failures=[]`, `producer_failures=[]`, `consumer_failures=[]`
+  - repair candidate: none required in this rerun
+- Root cause addressed: residual risk of unsupported upstream artifact shape in builder path; added regression proving unsupported shape emits unknown/missing evidence instead of crashing.
+- Files changed:
+  - `tests/test_agent_core_loop_proof.py`
+  - `docs/reviews/AGL-01_agent_core_loop_final_report.md`
+- Why fix preserves fail-closed behavior:
+  - unsupported source artifacts now explicitly validated as non-crashing and fail-closed (`unknown/missing` + reason_codes + BLOCK for repo-mutating path)
+  - no schema constraints were weakened
+- Regression tests added:
+  - `test_builder_handles_unsupported_source_artifact_shape`
+- Exact commands run:
+  - `python scripts/build_preflight_pqx_wrapper.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --output outputs/contract_preflight/preflight_pqx_task_wrapper.json`
+  - `python scripts/run_contract_preflight.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --output-dir outputs/contract_preflight --execution-context pqx_governed --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json`
+  - `python scripts/run_contract_enforcement.py`
+  - `python -m pytest tests/test_agent_core_loop_proof.py -q`
+  - `python -m pytest tests/ -k "agent_core_loop or contract_preflight or contract" -q`
+  - `python scripts/run_authority_shape_preflight.py --base-ref "9e495b4eb6e1bcc6d3f54741f6eebf468ba2f628" --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json`
+  - `python scripts/run_authority_leak_guard.py --base-ref "2b25f8027e2a7068313caeceffe803bb19c8a065" --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json`
+- Final preflight result: `status=passed`; no `contract_mismatch` failure_class.

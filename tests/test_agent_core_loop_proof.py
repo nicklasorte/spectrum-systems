@@ -70,3 +70,12 @@ def test_invalid_leg_status_enum_fails():
     x['loop_legs']['AEX']['status']='bad_status'
     with pytest.raises(Exception):
         validate_artifact(x,'agent_core_loop_run_record')
+
+
+def test_builder_handles_unsupported_source_artifact_shape(tmp_path):
+    src=tmp_path/'bad.json'
+    src.write_text('"not-an-object"',encoding='utf-8')
+    rec=build_agent_core_loop_record('T-unsupported','codex',str(src))
+    assert rec['loop_legs']['AEX']['status'] in {'unknown','missing'}
+    assert rec['loop_legs']['AEX']['reason_codes']
+    assert rec['compliance_status']=='BLOCK'
