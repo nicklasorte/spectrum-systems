@@ -114,7 +114,7 @@
       "type": "string",
       "enum": [
         "completed",
-        "blocked",
+        "not_ready_for_control_review",
         "failed"
       ]
     }

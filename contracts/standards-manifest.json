@@ -17276,10 +17276,10 @@
     "example": "contracts/examples/pr_repair_candidate_record.json",
     "owner": "PRL"
   },
-  "pr_repair_authorization_record": {
+  "pr_repair_readiness_record": {
     "version": "1.0.0",
-    "schema": "contracts/schemas/pr_repair_authorization_record.schema.json",
-    "example": "contracts/examples/pr_repair_authorization_record.json",
+    "schema": "contracts/schemas/pr_repair_readiness_record.schema.json",
+    "example": "contracts/examples/pr_repair_readiness_record.json",
     "owner": "PRL"
   },
   "pr_repair_execution_record": {

@@ -13,13 +13,13 @@
     "trace_refs",
     "reason_codes",
     "authority_scope",
-    "authorization_status",
+    "repair_readiness_status",
     "authorized_files",
     "repair_candidate_ref"
   ],
   "properties": {
     "artifact_type": {
-      "const": "pr_repair_authorization_record"
+      "const": "pr_repair_readiness_record"
     },
     "schema_version": {
       "const": "1.0.0"
@@ -65,10 +65,10 @@
     "authority_scope": {
       "const": "observation_only"
     },
-    "authorization_status": {
+    "repair_readiness_status": {
       "type": "string",
       "enum": [
-        "allow_repair",
+        "ready_for_control_review",
         "block",
         "human_review_required"
       ]
@@ -84,6 +84,6 @@
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/pr_repair_authorization_record.schema.json",
-  "title": "pr_repair_authorization_record"
+  "$id": "https://spectrum-systems.org/contracts/pr_repair_readiness_record.schema.json",
+  "title": "pr_repair_readiness_record"
 }

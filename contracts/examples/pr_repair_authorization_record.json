@@ -1,5 +1,5 @@
 {
-  "artifact_type": "pr_repair_authorization_record",
+  "artifact_type": "pr_repair_readiness_record",
   "schema_version": "1.0.0",
   "pr_number": 1,
   "repo": "org/repo",
@@ -21,7 +21,7 @@
     "pr_gate:block"
   ],
   "authority_scope": "observation_only",
-  "authorization_status": "allow_repair",
+  "repair_readiness_status": "ready_for_control_review",
   "authorized_files": [
     "docs/architecture/system_registry.md"
   ],

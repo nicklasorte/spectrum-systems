@@ -21,7 +21,7 @@
     "pr_gate:block"
   ],
   "authority_scope": "observation_only",
-  "failure_class": "pr_gate_block",
+  "failure_class": "pr_gate_observation",
   "affected_files": [],
   "next_action": "propose_bounded_repair",
   "human_review_required": false

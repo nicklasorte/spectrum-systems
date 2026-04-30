@@ -70,13 +70,13 @@
       "type": "string",
       "enum": [
         "authority_shape_violation",
-        "authority_leak_guard_failure",
+        "authority_leak_observation",
         "pytest_selection_missing",
         "schema_validation_failure",
         "contract_compliance_observation",
         "missing_shard_artifact",
         "invalid_shard_artifact",
-        "pr_gate_block",
+        "pr_gate_observation",
         "dashboard_test_failure",
         "unknown_failure"
       ]

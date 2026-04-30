@@ -8,7 +8,7 @@ Built governed two-attempt PR repair loop artifacts, deterministic runtime helpe
 
 ## Allowed repair classes
 - authority_shape_violation
-- authority_leak_guard_failure
+- authority_leak_observation
 - pytest_selection_missing
 - schema_validation_failure (examples/fixtures scoped)
 
