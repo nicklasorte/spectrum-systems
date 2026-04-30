@@ -9,6 +9,9 @@ dist/
 __pycache__/
 *.pyc
 
+# Claude Code session directory
+.claude/
+
 # Study runner outputs
 outputs/
 logs/
