@@ -698,7 +698,7 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
     targets: set[str] = set()
     for rel_path in impacted_paths:
         candidate = Path(rel_path)
-        if candidate.name.startswith("test_") and candidate.suffix == ".py":
+        if rel_path.startswith("tests/") and candidate.name.startswith("test_") and candidate.suffix == ".py":
             if (repo_root / rel_path).is_file():
                 targets.add(rel_path)
             continue
