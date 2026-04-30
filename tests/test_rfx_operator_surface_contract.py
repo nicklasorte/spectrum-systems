@@ -104,3 +104,10 @@ def test_mixed_records_malformed_skipped():
     result = validate_rfx_operator_surface(records=[_compact(), "bad-row"])
     assert "rfx_operator_surface_malformed_record" in result["reason_codes_emitted"]
     assert result["signals"]["valid_record_count"] == 1
+
+
+def test_whitespace_only_proof_ref_flagged():
+    # P1 fix: whitespace-only proof_ref must emit rfx_operator_surface_missing_proof_ref.
+    result = validate_rfx_operator_surface(records=[_compact(proof_ref="   ")])
+    assert "rfx_operator_surface_missing_proof_ref" in result["reason_codes_emitted"]
+    assert result["status"] == "invalid"

@@ -105,3 +105,10 @@ def test_numeric_text_does_not_raise():
     result = check_rfx_authority_fixture_safety(fixtures=[_fx(text=12345)])
     assert result["artifact_type"] == "rfx_authority_fixture_safety_result"
     assert result["signals"]["violation_count"] == 0
+
+
+def test_whitespace_only_fixture_id_flagged():
+    # P2 fix: whitespace-only fixture ID must emit rfx_fixture_missing_id.
+    result = check_rfx_authority_fixture_safety(fixtures=[_fx(id="   ")])
+    assert "rfx_fixture_missing_id" in result["reason_codes_emitted"]
+    assert result["status"] == "unsafe"

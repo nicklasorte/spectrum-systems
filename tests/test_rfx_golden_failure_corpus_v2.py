@@ -175,3 +175,9 @@ def test_whitespace_only_category_flagged():
     # P1 fix: whitespace-only category must be treated as absent.
     result = build_rfx_golden_failure_corpus_v2(cases=[_case(category="   ")])
     assert "rfx_v2_case_missing_category" in result["reason_codes_emitted"]
+
+
+def test_whitespace_only_case_id_flagged():
+    # P1 fix: whitespace-only case ID must emit rfx_v2_case_missing_id.
+    result = build_rfx_golden_failure_corpus_v2(cases=[_case(id="   ")])
+    assert "rfx_v2_case_missing_id" in result["reason_codes_emitted"]

@@ -82,7 +82,8 @@ def validate_rfx_operator_surface(
         if not isinstance(rec.get("reason_codes_emitted"), list):
             reason.append("rfx_operator_surface_missing_reason")
             rec_ok = False
-        if not rec.get("proof_ref"):
+        proof_ref_val = rec.get("proof_ref")
+        if not (isinstance(proof_ref_val, str) and proof_ref_val.strip()):
             reason.append("rfx_operator_surface_missing_proof_ref")
             rec_ok = False
         # Check for raw artifact leakage.

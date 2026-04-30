@@ -80,7 +80,7 @@ def check_rfx_authority_fixture_safety(
         if not isinstance(fx, dict):
             reason.append("rfx_fixture_malformed_row")
             continue
-        fx_id = fx.get("id") or ""
+        fx_id = str(fx.get("id") or "").strip()
         if not fx_id:
             reason.append("rfx_fixture_missing_id")
         text = str(fx.get("text") or "")
