@@ -81,12 +81,22 @@ def _discover_test_files(repo_root: Path, testpaths: list[str]) -> tuple[list[st
     return sorted(set(discovered)), sorted(set(missing_roots))
 
 
-def _run_collect(repo_root: Path, targets: list[str] | None = None, cwd: Path | None = None) -> tuple[int, list[str], str]:
+def _resolve_pytest_cmd() -> list[str]:
+    try:
+        import importlib.util
+        if importlib.util.find_spec("pytest") is not None:
+            return [sys.executable, "-m", "pytest"]
+    except Exception:
+        pass
     pytest_bin = shutil.which("pytest")
-    if pytest_bin:
-        command = [pytest_bin, "--collect-only", "-q"]
-    else:
-        command = [sys.executable, "-m", "pytest", "--collect-only", "-q"]
+    return [pytest_bin] if pytest_bin else [sys.executable, "-m", "pytest"]
+
+
+_PYTEST_CMD = _resolve_pytest_cmd()
+
+
+def _run_collect(repo_root: Path, targets: list[str] | None = None, cwd: Path | None = None) -> tuple[int, list[str], str]:
+    command = _PYTEST_CMD + ["--collect-only", "-q"]
     if targets:
         command.extend(targets)
     completed = subprocess.run(command, cwd=str(cwd or repo_root), capture_output=True, text=True, check=False)
