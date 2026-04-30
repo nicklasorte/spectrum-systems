@@ -1,4 +1,43 @@
 {
+  "scripts/sync_from_main.sh": [
+    "tests/test_contracts.py"
+  ],
+  "scripts/run_failure_explanation.py": [
+    "tests/test_failure_explanation.py"
+  ],
+  "scripts/run_historical_replay_validator.py": [
+    "tests/test_historical_replay_validator.py"
+  ],
+  "scripts/run_proof_presence_enforcement.py": [
+    "tests/test_proof_presence_enforcement.py"
+  ],
+  "scripts/run_minimality_sweep.py": [
+    "tests/test_minimality_sweep.py"
+  ],
+  "scripts/run_authority_preflight_expanded.py": [
+    "tests/test_authority_preflight_expanded.py"
+  ],
+  "spectrum_systems/modules/runtime/failure_explanation.py": [
+    "tests/test_failure_explanation.py"
+  ],
+  "spectrum_systems/modules/runtime/historical_replay_validator.py": [
+    "tests/test_historical_replay_validator.py"
+  ],
+  "spectrum_systems/modules/runtime/minimality_sweep.py": [
+    "tests/test_minimality_sweep.py"
+  ],
+  "spectrum_systems/modules/runtime/authority_preflight_expanded.py": [
+    "tests/test_authority_preflight_expanded.py"
+  ],
+  "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py": [
+    "tests/test_authority_repair_candidate_generator.py"
+  ],
+  "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py": [
+    "tests/test_failure_eval_candidate_generator.py"
+  ],
+  "spectrum_systems/governance/proof_presence_enforcement.py": [
+    "tests/test_proof_presence_enforcement.py"
+  ],
   "AGENTS.md": [
     "tests/test_system_registry_guard.py"
   ],
@@ -131,6 +170,18 @@
   ],
   "docs/reviews/MET-18-dashboard-usefulness-fixes.md": [
     "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "spectrum_systems/modules/runtime/pr_test_selection.py": [
+    "tests/test_pr_test_selection_engine.py"
+  ],
+  "scripts/select_pr_test_shard.py": [
+    "tests/test_pr_test_shards.py"
+  ],
+  "scripts/run_pr_gate.py": [
+    "tests/test_pr_gate_parallel.py"
+  ],
+  "scripts/run_ci_drift_detector.py": [
+    "tests/test_ci_drift_detector.py"
   ]
 }
 

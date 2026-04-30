@@ -7,6 +7,164 @@ permissions:
   contents: read
 
 jobs:
+  shard-select:
+    name: shard-select (${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [contract, governance, dashboard, changed_scope]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Resolve preflight refs
+        id: shard-refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "base_ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "head_ref=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            echo "base_ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+            echo "head_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_ref=origin/main" >> "$GITHUB_OUTPUT"
+            echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Select tests for shard
+        id: shard-select
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          GITHUB_BEFORE_SHA: ${{ github.event.before || '' }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p outputs/pr_test_shards/${{ matrix.shard }}
+          python scripts/select_pr_test_shard.py \
+            --mode ci \
+            --shard "${{ matrix.shard }}" \
+            --base-ref "${{ steps.shard-refs.outputs.base_ref }}" \
+            --head-ref "${{ steps.shard-refs.outputs.head_ref }}" \
+            --output "outputs/pr_test_shards/${{ matrix.shard }}/${{ matrix.shard }}_selection.json"
+
+      - name: Run shard tests
+        id: shard-run
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, subprocess, sys, time
+          from pathlib import Path
+
+          shard = "${{ matrix.shard }}"
+          selection_path = Path(f"outputs/pr_test_shards/{shard}/{shard}_selection.json")
+          result_path = Path(f"outputs/pr_test_shards/{shard}/{shard}_result.json")
+          result_path.parent.mkdir(parents=True, exist_ok=True)
+
+          if not selection_path.is_file():
+              sys.exit(f"missing selection artifact: {selection_path}")
+          selection = json.loads(selection_path.read_text(encoding="utf-8"))
+          selected = selection.get("selected_test_files") or []
+          sel_status = selection.get("status", "block")
+
+          start = time.monotonic()
+          commands_run = []
+          failure_summary = None
+          result_status = "pass"
+
+          if sel_status == "empty_allowed" or not selected:
+              result_status = "skipped" if sel_status == "empty_allowed" else "pass"
+          else:
+              cmd = [sys.executable, "-m", "pytest", "-q"] + selected
+              commands_run.append(" ".join(cmd))
+              proc = subprocess.run(cmd, check=False)
+              if proc.returncode != 0:
+                  result_status = "fail"
+                  failure_summary = f"pytest exited {proc.returncode}"
+
+          duration_ms = int((time.monotonic() - start) * 1000)
+          result = {
+              "artifact_type": "pr_test_shard_result",
+              "schema_version": "1.0.0",
+              "shard_name": shard,
+              "status": result_status,
+              "selected_tests": selected,
+              "commands_run": commands_run,
+              "duration_ms": duration_ms,
+              "failure_summary": failure_summary,
+              "artifact_refs": [str(selection_path)],
+              "trace_refs": [],
+              "authority_scope": "observation_only",
+          }
+          result_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+          if result_status in ("fail", "block"):
+              sys.exit(1)
+          PY
+
+      - name: Upload shard outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shard-outputs-${{ matrix.shard }}
+          if-no-files-found: warn
+          path: outputs/pr_test_shards
+
+  pr-gate:
+    name: pr-gate
+    needs: shard-select
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Download all shard outputs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: shard-outputs-*
+          merge-multiple: true
+          path: outputs/pr_test_shards
+
+      - name: Run PR gate aggregator
+        run: |
+          set -euo pipefail
+          mkdir -p outputs/pr_gate
+          python scripts/run_pr_gate.py \
+            --shard-dir outputs/pr_test_shards \
+            --required-shards contract,governance,dashboard,changed_scope \
+            --shard-matrix-result "${{ needs.shard-select.result }}" \
+            --output outputs/pr_gate/pr_gate_result.json
+
+      - name: Upload PR gate result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-gate-result
+          if-no-files-found: warn
+          path: outputs/pr_gate/pr_gate_result.json
+
   pytest:
     name: pytest
     runs-on: ubuntu-latest

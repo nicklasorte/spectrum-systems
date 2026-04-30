@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/proof_presence_enforcement_result.schema.json",
+  "title": "proof_presence_enforcement_result",
+  "description": "GOV gate result: declares whether a PR touching governed surfaces has a valid core_loop_proof / loop_proof_bundle. BLOCK if missing or malformed. Non-decisioning — consumed by CDE for promotion gating.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "result_id",
+    "trace_id",
+    "pr_ref",
+    "governed_surfaces_changed",
+    "proof_required",
+    "proof_found",
+    "proof_valid",
+    "validation_detail",
+    "gate_status",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": { "const": "proof_presence_enforcement_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "result_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "pr_ref": { "type": "string" },
+    "governed_surfaces_changed": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "proof_required": { "type": "boolean" },
+    "proof_found": { "type": "boolean" },
+    "proof_artifact_id": { "type": ["string", "null"] },
+    "proof_valid": { "type": "boolean" },
+    "validation_detail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage_count", "transition_count", "primary_reason_present", "trace_continuity"],
+      "properties": {
+        "stage_count": { "type": ["integer", "null"] },
+        "transition_count": { "type": ["integer", "null"] },
+        "primary_reason_present": { "type": ["boolean", "null"] },
+        "trace_continuity": { "type": ["boolean", "null"] },
+        "failure_reasons": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "gate_status": {
+      "type": "string",
+      "enum": ["pass", "block"]
+    },
+    "block_reason": { "type": ["string", "null"] },
+    "emitted_at": { "type": "string", "format": "date-time" }
+  }
+}

@@ -145,3 +145,28 @@ following recurring failure modes:
 - No measurement artifact extends or shadows ownership.
 - Measurement records are versioned, schema-bound artifacts; non-determinism
   in inputs must be marked via the provenance `simulated` boolean.
+
+## Canonical PR Test Selection Integration (PAR-00-01)
+
+As of PAR-00-01, all 3LS pre-checks that require test coverage must use the canonical
+selector from `spectrum_systems/modules/runtime/pr_test_selection.py`. No 3-letter system
+may implement its own test selector.
+
+### Authority boundaries for shard evidence:
+
+- **AEX**: Before admitting repo-mutating work, require precheck selection for all governed
+  surfaces. Missing governed-surface coverage = admission block.
+- **PQX**: Before bounded execution, require selected test coverage for the execution slice.
+  Missing coverage = execution block.
+- **EVL**: Consume shard results as eval evidence. Missing required shard result = eval block.
+- **TPA**: Consume coverage/shard status as policy evidence. Missing governed-surface coverage
+  = policy block.
+- **CDE**: Do not continue/close/repair without required shard evidence. Missing evidence = block.
+- **SEL**: Treat missing/invalid shard artifacts as non-compliant input. No final allow without
+  complete required shard evidence.
+
+### Shard result authority scope
+
+All shard results carry `authority_scope: "observation_only"`. Shards observe and report;
+they carry no readiness_evidence, no promotion_signal, no enforcement_signal. Canonical authority remains with the system
+declared in `docs/architecture/system_registry.md`.

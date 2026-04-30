@@ -80,6 +80,11 @@ from spectrum_systems.modules.runtime.pytest_selection_integrity import (  # noq
     PytestSelectionIntegrityError,
     evaluate_pytest_selection_integrity,
 )
+from spectrum_systems.modules.runtime.pr_test_selection import (  # noqa: E402
+    is_governed_path as _canonical_is_governed_path,
+    load_override_map as _canonical_load_override_map,
+    resolve_required_tests as _canonical_resolve_required_tests,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -170,22 +175,7 @@ _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     ],
 }
 def _load_required_surface_override_map(repo_root: Path) -> dict[str, list[str]]:
-    merged: dict[str, list[str]] = {path: list(targets) for path, targets in _REQUIRED_SURFACE_TEST_OVERRIDES.items()}
-    override_path = repo_root / "docs" / "governance" / "preflight_required_surface_test_overrides.json"
-    if not override_path.is_file():
-        return merged
-    try:
-        payload = json.loads(override_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return merged
-    if not isinstance(payload, dict):
-        return merged
-    for path, targets in payload.items():
-        if not isinstance(path, str) or not isinstance(targets, list):
-            continue
-        normalized_targets = [str(item) for item in targets if isinstance(item, str) and item.strip()]
-        merged[path] = sorted(set(normalized_targets))
-    return merged
+    return _canonical_load_override_map(repo_root)
 
 
 @dataclass
@@ -287,7 +277,7 @@ def _build_common_provenance(*, source_head_ref: str) -> dict[str, Any]:
 
 
 def _is_governed_changed_path(path: str) -> bool:
-    return any(path.startswith(prefix) for prefix in _GOVERNED_CHANGED_PATH_PREFIXES)
+    return _canonical_is_governed_path(path)
 
 
 def _validate_canonical_ref_path(*, ref: str, expected_suffix: str) -> bool:
@@ -731,30 +721,7 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
 
 
 def resolve_required_surface_tests(repo_root: Path, changed_paths: list[str]) -> dict[str, list[str]]:
-    tests_root = repo_root / "tests"
-    test_files = sorted(path for path in tests_root.rglob("test_*.py") if path.is_file()) if tests_root.is_dir() else []
-    path_to_targets: dict[str, list[str]] = {}
-    override_map = _load_required_surface_override_map(repo_root)
-    for rel_path in changed_paths:
-        targets: set[str] = set()
-        for override in override_map.get(rel_path, []):
-            targets.add(override)
-        candidate = Path(rel_path)
-        if rel_path.startswith("tests/test_") and rel_path.endswith(".py"):
-            targets.add(rel_path)
-        else:
-            needles = {candidate.stem.lower(), candidate.name.lower()}
-            needles = {needle for needle in needles if needle and needle not in {"test", "tests"}}
-            for test_file in test_files:
-                rel_test = test_file.relative_to(repo_root).as_posix()
-                try:
-                    text = test_file.read_text(encoding="utf-8").lower()
-                except (OSError, UnicodeDecodeError):
-                    continue
-                if any(needle in text for needle in needles):
-                    targets.add(rel_test)
-        path_to_targets[rel_path] = sorted(targets)
-    return path_to_targets
+    return _canonical_resolve_required_tests(repo_root, changed_paths)
 
 
 def validate_control_surface_gap_packet_test_expectations(
@@ -821,11 +788,26 @@ def _resolve_existing_pytest_targets(paths: list[str]) -> list[str]:
     return sorted({path for path in paths if (REPO_ROOT / path).is_file()})
 
 
+def _resolve_pytest_cmd() -> list[str]:
+    """Prefer sys.executable -m pytest (interpreter consistency); fall back to
+    PATH pytest when pytest is not importable via sys.executable."""
+    try:
+        import importlib.util
+        if importlib.util.find_spec("pytest") is not None:
+            return [sys.executable, "-m", "pytest"]
+    except Exception:
+        pass
+    pytest_bin = shutil.which("pytest")
+    return [pytest_bin] if pytest_bin else [sys.executable, "-m", "pytest"]
+
+
+_PYTEST_CMD = _resolve_pytest_cmd()
+
+
 def run_targeted_pytests(paths: list[str], *, execution_log: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    _pytest_bin = shutil.which("pytest")
     failures: list[dict[str, Any]] = []
     for path in paths:
-        cmd = [_pytest_bin, "-q", path] if _pytest_bin else [sys.executable, "-m", "pytest", "-q", path]
+        cmd = _PYTEST_CMD + ["-q", path]
         result = _run(cmd, cwd=REPO_ROOT)
         if execution_log is not None:
             execution_log.append({"target": path, "command": " ".join(cmd), "returncode": result.returncode})

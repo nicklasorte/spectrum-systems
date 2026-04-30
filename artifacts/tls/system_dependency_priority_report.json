@@ -1,6 +1,6 @@
 {
   "ambiguous_requested_candidates": [],
-  "generated_at": "2026-04-29T22:19:23Z",
+  "generated_at": "2026-04-30T00:08:40Z",
   "global_ranked_systems": [
     {
       "action": "finish_hardening",
@@ -182,16 +182,16 @@
           "SEL"
         ]
       },
-      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage)",
-      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_replay)",
+      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_replay'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "penalties": [],
       "rank": 5,
-      "score": 162,
+      "score": 172,
       "score_components": {
         "boundary_score": 50,
-        "gap_score": 24,
+        "gap_score": 32,
         "partial_score": 0,
-        "risk_score": 8,
+        "risk_score": 10,
         "spine_weight": 60,
         "unlock_score": 20
       },
@@ -200,7 +200,8 @@
       "trust_gap_signals": [
         "missing_control",
         "missing_enforcement_signal",
-        "missing_lineage"
+        "missing_lineage",
+        "missing_replay"
       ],
       "trust_state": "freeze_signal",
       "unlocks": [
@@ -210,7 +211,7 @@
         "RSM",
         "SLO"
       ],
-      "why_now": "canonical overlay; trust supporting authority; 3 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
+      "why_now": "canonical overlay; trust supporting authority; 4 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
     },
     {
       "action": "finish_hardening",
@@ -2009,16 +2010,16 @@
           "SEL"
         ]
       },
-      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage)",
-      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_replay)",
+      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_replay'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "penalties": [],
       "rank": 5,
-      "score": 162,
+      "score": 172,
       "score_components": {
         "boundary_score": 50,
-        "gap_score": 24,
+        "gap_score": 32,
         "partial_score": 0,
-        "risk_score": 8,
+        "risk_score": 10,
         "spine_weight": 60,
         "unlock_score": 20
       },
@@ -2027,7 +2028,8 @@
       "trust_gap_signals": [
         "missing_control",
         "missing_enforcement_signal",
-        "missing_lineage"
+        "missing_lineage",
+        "missing_replay"
       ],
       "trust_state": "freeze_signal",
       "unlocks": [
@@ -2037,7 +2039,7 @@
         "RSM",
         "SLO"
       ],
-      "why_now": "canonical overlay; trust supporting authority; 3 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
+      "why_now": "canonical overlay; trust supporting authority; 4 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
     },
     {
       "action": "finish_hardening",
@@ -3826,16 +3828,16 @@
           "SEL"
         ]
       },
-      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage)",
-      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_replay)",
+      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_replay'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "penalties": [],
       "rank": 5,
-      "score": 162,
+      "score": 172,
       "score_components": {
         "boundary_score": 50,
-        "gap_score": 24,
+        "gap_score": 32,
         "partial_score": 0,
-        "risk_score": 8,
+        "risk_score": 10,
         "spine_weight": 60,
         "unlock_score": 20
       },
@@ -3844,7 +3846,8 @@
       "trust_gap_signals": [
         "missing_control",
         "missing_enforcement_signal",
-        "missing_lineage"
+        "missing_lineage",
+        "missing_replay"
       ],
       "trust_state": "freeze_signal",
       "unlocks": [
@@ -3854,7 +3857,7 @@
         "RSM",
         "SLO"
       ],
-      "why_now": "canonical overlay; trust supporting authority; 3 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
+      "why_now": "canonical overlay; trust supporting authority; 4 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
     }
   ]
 }

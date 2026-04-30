@@ -693,6 +693,27 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "authority_preflight_failure_packet",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `authority_preflight_failure_packet`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "authority_repair_candidate",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `authority_repair_candidate`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "authority_repair_execution_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `authority_repair_execution_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "autonomy_decision_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `autonomy_decision_record`.",
@@ -2563,6 +2584,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "eval_candidate_registry",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `eval_candidate_registry`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "eval_canonicalization_policy",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `eval_canonicalization_policy`.",
@@ -3100,6 +3128,13 @@
       "artifact_type": "failure_eval_case",
       "artifact_class": "review",
       "description": "Governed artifact for contract `failure_eval_case`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "failure_explanation_packet",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `failure_explanation_packet`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -6578,6 +6613,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "proof_presence_enforcement_result",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `proof_presence_enforcement_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "provenance_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `provenance_record`.",
@@ -7456,6 +7498,13 @@
       "artifact_type": "replay_result",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `replay_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "replay_validation_report",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `replay_validation_report`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -10260,6 +10309,36 @@
       ]
     },
     {
+      "contract_name": "authority_preflight_failure_packet",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "authority_preflight_failure_packet"
+      ]
+    },
+    {
+      "contract_name": "authority_repair_candidate",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "authority_repair_candidate"
+      ]
+    },
+    {
+      "contract_name": "authority_repair_execution_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "authority_repair_execution_record"
+      ]
+    },
+    {
       "contract_name": "autonomy_decision_record",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -12882,6 +12961,16 @@
       ]
     },
     {
+      "contract_name": "eval_candidate_registry",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "eval_candidate_registry"
+      ]
+    },
+    {
       "contract_name": "eval_canonicalization_policy",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -13643,6 +13732,16 @@
       ],
       "related_artifact_types": [
         "failure_eval_case"
+      ]
+    },
+    {
+      "contract_name": "failure_explanation_packet",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "failure_explanation_packet"
       ]
     },
     {
@@ -18543,6 +18642,16 @@
       ]
     },
     {
+      "contract_name": "proof_presence_enforcement_result",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "proof_presence_enforcement_result"
+      ]
+    },
+    {
       "contract_name": "provenance_record",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -19792,6 +19901,16 @@
       ],
       "related_artifact_types": [
         "replay_result"
+      ]
+    },
+    {
+      "contract_name": "replay_validation_report",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "replay_validation_report"
       ]
     },
     {
@@ -23186,6 +23305,27 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "authority_preflight_failure_packet",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "authority_preflight_failure_packet"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "authority_repair_candidate",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "authority_repair_candidate"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "authority_repair_execution_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "authority_repair_execution_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "autonomy_decision_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -25020,6 +25160,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "eval_candidate_registry",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "eval_candidate_registry"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "eval_canonicalization_policy",
       "relation": "governed_by",
       "to_type": "contract",
@@ -25556,6 +25703,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "failure_eval_case"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "failure_explanation_packet",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "failure_explanation_packet"
     },
     {
       "from_type": "artifact",
@@ -28975,6 +29129,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "proof_presence_enforcement_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "proof_presence_enforcement_result"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "provenance_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -29847,6 +30008,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "replay_result"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "replay_validation_report",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "replay_validation_report"
     },
     {
       "from_type": "artifact",
@@ -32370,6 +32538,27 @@
     },
     {
       "from_type": "contract",
+      "from_id": "authority_preflight_failure_packet",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "authority_preflight_failure_packet"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "authority_repair_candidate",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "authority_repair_candidate"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "authority_repair_execution_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "authority_repair_execution_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "autonomy_decision_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -34204,6 +34393,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "eval_candidate_registry",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "eval_candidate_registry"
+    },
+    {
+      "from_type": "contract",
       "from_id": "eval_canonicalization_policy",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -34740,6 +34936,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "failure_eval_case"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "failure_explanation_packet",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "failure_explanation_packet"
     },
     {
       "from_type": "contract",
@@ -38159,6 +38362,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "proof_presence_enforcement_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "proof_presence_enforcement_result"
+    },
+    {
+      "from_type": "contract",
       "from_id": "provenance_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -39031,6 +39241,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "replay_result"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "replay_validation_report",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "replay_validation_report"
     },
     {
       "from_type": "contract",

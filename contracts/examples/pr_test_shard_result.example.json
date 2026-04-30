@@ -1,0 +1,20 @@
+{
+  "artifact_type": "pr_test_shard_result",
+  "schema_version": "1.0.0",
+  "shard_name": "contract",
+  "status": "pass",
+  "selected_tests": [
+    "tests/contracts/test_pr_test_shard_result_schema.py",
+    "tests/contracts/test_contract_schema_compliance.py"
+  ],
+  "commands_run": [
+    "python -m pytest -q tests/contracts/test_pr_test_shard_result_schema.py tests/contracts/test_contract_schema_compliance.py"
+  ],
+  "duration_ms": 3142,
+  "failure_summary": null,
+  "artifact_refs": [],
+  "trace_refs": [
+    "PAR-00-01"
+  ],
+  "authority_scope": "observation_only"
+}
