@@ -211,8 +211,7 @@ def main() -> None:
                     str(exc),
                     f"Fix or regenerate {_SMOKE_BASELINE_PATH}",
                     [str(baseline_path)],
-                    str(baseline_path),
-                    [],
+                    [str(baseline_path)],
                     output_dir,
                 )
             fallback_targets = baseline.get("suite_targets") or []
