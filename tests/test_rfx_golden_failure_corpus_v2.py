@@ -246,3 +246,15 @@ def test_bytes_registered_case_ids_rejected_as_container():
         registered_case_ids=b"99",
     )
     assert "rfx_v2_case_unregistered" in result["reason_codes_emitted"]
+
+
+def test_category_with_trailing_whitespace_counts_in_coverage():
+    # P2 fix: a category like "authority_shape_doc_violation " (trailing space)
+    # must be normalized before intersection with KNOWN_CATEGORIES, so it counts
+    # toward historical_category_coverage_pct rather than being silently dropped.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[_case(category="authority_shape_doc_violation ")]
+    )
+    assert result["signals"]["category_coverage"] == 1
+    # Coverage pct is (1 known intersect / 10 known) * 100 = 10.0
+    assert result["signals"]["historical_category_coverage_pct"] == 10.0

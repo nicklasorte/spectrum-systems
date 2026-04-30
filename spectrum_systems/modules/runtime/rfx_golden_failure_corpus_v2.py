@@ -101,14 +101,15 @@ def build_rfx_golden_failure_corpus_v2(
         if not (isinstance(fix_ref_val, str) and fix_ref_val.strip()):
             reason.append("rfx_v2_case_missing_fix_ref")
         category_val = c.get("category")
-        if not (isinstance(category_val, str) and category_val.strip()):
+        category_normalized = category_val.strip() if isinstance(category_val, str) else None
+        if not category_normalized:
             reason.append("rfx_v2_case_missing_category")
         if c.get("actual") != c.get("expected"):
             reason.append("rfx_v2_outcome_mismatch")
 
         validated.append({
             "id": case_id,
-            "category": c.get("category"),
+            "category": category_normalized,
             "description": c.get("description", ""),
             "trace_ref": c.get("trace_ref"),
             "fix_ref": c.get("fix_ref"),

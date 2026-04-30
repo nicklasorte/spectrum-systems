@@ -123,3 +123,39 @@ def test_nested_set_inputs_packet_id_is_stable():
     pid1 = _stable_packet_id("fid", {"tags": {"b", "a"}, "val": 1})
     pid2 = _stable_packet_id("fid", {"tags": {"b", "a"}, "val": 1})
     assert pid1 == pid2
+
+
+def test_explicit_empty_dict_inputs_treated_as_supplied():
+    # P2 fix: reproduction_inputs={} is an explicit "no parameterized inputs"
+    # signal — it's present, just empty. Must NOT emit rfx_replay_missing_inputs.
+    result = build_rfx_failure_replay_packet(
+        failure_record=_full_record(reproduction_inputs={})
+    )
+    assert "rfx_replay_missing_inputs" not in result["reason_codes_emitted"]
+
+
+def test_explicit_empty_list_inputs_treated_as_supplied():
+    # P2 fix: reproduction_inputs=[] (empty list) is an explicit "no inputs" value.
+    # Must not be flagged as missing.
+    result = build_rfx_failure_replay_packet(
+        failure_record=_full_record(reproduction_inputs=[])
+    )
+    assert "rfx_replay_missing_inputs" not in result["reason_codes_emitted"]
+
+
+def test_missing_reproduction_inputs_key_still_flagged():
+    # P2 fix regression guard: a record with NEITHER "reproduction_inputs" nor
+    # "inputs" key must still emit rfx_replay_missing_inputs.
+    rec = _full_record()
+    rec.pop("reproduction_inputs", None)
+    rec.pop("inputs", None)
+    result = build_rfx_failure_replay_packet(failure_record=rec)
+    assert "rfx_replay_missing_inputs" in result["reason_codes_emitted"]
+
+
+def test_none_reproduction_inputs_still_flagged():
+    # P2 fix regression guard: explicit None must still flag missing.
+    result = build_rfx_failure_replay_packet(
+        failure_record=_full_record(reproduction_inputs=None)
+    )
+    assert "rfx_replay_missing_inputs" in result["reason_codes_emitted"]
