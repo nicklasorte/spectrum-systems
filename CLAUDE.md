@@ -230,8 +230,8 @@ Rules:
 - CLP `gate_status=warn` permits PR-ready only if every warn reason code is
   in `docs/governance/core_loop_pre_pr_gate_policy.json` →
   `allowed_warn_reason_codes`.
-- CLP is observation-only. AEX owns admission, PQX owns execution closure,
-  TPA owns policy, CDE owns continuation/closure, SEL owns final compliance.
+- CLP supplies observation-only pre-PR evidence; canonical ownership stays
+  with the systems declared in `docs/architecture/system_registry.md`.
 
 ## References
 

@@ -30,8 +30,8 @@ observations only. Canonical ownership is unchanged from
 | CDE    | continuation / closure signal              |
 | SEL    | final gate signal                          |
 
-CLP-02 only emits structured PR-ready evidence; downstream owners act on
-it via their own canonical signals.
+CLP-02 only produces structured pre-PR evidence; downstream canonical
+systems consume it via their own signals.
 
 ## AEX expectation
 

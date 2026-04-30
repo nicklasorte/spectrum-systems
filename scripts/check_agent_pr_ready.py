@@ -73,22 +73,24 @@ def _parse_args() -> argparse.Namespace:
         default="auto",
         choices=["auto", "true", "false"],
         help=(
-            "Override repo-mutating detection. Default 'auto' uses the CLP "
-            "result's repo_mutating field; if no CLP result is present, "
-            "defaults to true (fail-closed)."
+            "Force a repo-mutating value instead of reading the value from "
+            "the supplied core_loop_pre_pr_gate_result. Default 'auto' "
+            "reads core_loop_pre_pr_gate_result.repo_mutating; when no "
+            "result is supplied, the evaluator falls back to true "
+            "(fail-closed)."
         ),
     )
     return parser.parse_args()
 
 
-def _resolve_repo_mutating(override: str, clp_result: dict | None) -> bool | None:
-    if override == "true":
+def _resolve_repo_mutating(directive: str, clp_result: dict | None) -> bool | None:
+    if directive == "true":
         return True
-    if override == "false":
+    if directive == "false":
         return False
     if clp_result is not None and isinstance(clp_result.get("repo_mutating"), bool):
         return bool(clp_result["repo_mutating"])
-    # Caller-provided "auto" with no CLP result: leave None so the evaluator
+    # Caller-provided "auto" with no result file: leave None so the evaluator
     # applies its fail-closed default.
     return None
 
