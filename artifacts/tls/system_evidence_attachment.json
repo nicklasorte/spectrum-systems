@@ -84,8 +84,7 @@
           "spectrum_systems/modules/runtime/chx_runtime.py",
           "spectrum_systems/modules/runtime/context_governed_flow.py",
           "spectrum_systems/modules/runtime/cvx_runtime.py",
-          "spectrum_systems/modules/runtime/dep_runtime.py",
-          "spectrum_systems/modules/runtime/dex_runtime.py"
+          "spectrum_systems/modules/runtime/dep_runtime.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -593,9 +592,7 @@
           "spectrum_systems/modules/runtime/bne02_full_wave.py",
           "spectrum_systems/modules/runtime/chaos_failure_intelligence.py",
           "spectrum_systems/modules/runtime/control_chain_invariants.py",
-          "spectrum_systems/modules/runtime/control_integration.py",
-          "spectrum_systems/modules/runtime/control_loop.py",
-          "spectrum_systems/modules/runtime/control_loop_chaos.py"
+          "spectrum_systems/modules/runtime/control_integration.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -637,9 +634,7 @@
           "tests/test_authority_shape_preflight.py",
           "tests/test_certification_integrity.py",
           "tests/test_chaos_fail_closed.py",
-          "tests/test_clx_all_01_redteam.py",
-          "tests/test_contracts.py",
-          "tests/test_control_executor.py"
+          "tests/test_clx_all_01_redteam.py"
         ]
       },
       "evidence_count": 110,
@@ -728,10 +723,7 @@
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
           "spectrum_systems/modules/runtime/recovery_orchestrator.py",
           "spectrum_systems/modules/runtime/repair_prompt_generator.py",
-          "spectrum_systems/modules/runtime/review_parsing_engine.py",
-          "spectrum_systems/modules/runtime/review_signal_classifier.py",
-          "spectrum_systems/modules/runtime/rfx_flow_integration.py",
-          "spectrum_systems/modules/runtime/rfx_route_guard.py"
+          "spectrum_systems/modules/runtime/review_parsing_engine.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -772,8 +764,7 @@
           "tests/test_rfx_route_guard.py",
           "tests/test_roadmap_execution.py",
           "tests/test_roadmap_expansion_contracts.py",
-          "tests/test_rqx_redteam_orchestrator.py",
-          "tests/test_rwa_runtime_wiring.py"
+          "tests/test_rqx_redteam_orchestrator.py"
         ]
       },
       "evidence_count": 109,
@@ -1154,7 +1145,7 @@
           "tests/test_wpg_precedent.py"
         ]
       },
-      "evidence_count": 96,
+      "evidence_count": 98,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JDX"
@@ -1239,7 +1230,7 @@
           "tests/tls_dependency_graph/conftest.py"
         ]
       },
-      "evidence_count": 62,
+      "evidence_count": 64,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JSX"
@@ -1325,9 +1316,7 @@
           "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
           "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py",
           "spectrum_systems/modules/runtime/rfx_flow_integration.py",
-          "spectrum_systems/modules/runtime/rfx_integrity_bundle.py",
-          "spectrum_systems/modules/runtime/rfx_observability_replay_consistency.py",
-          "spectrum_systems/modules/runtime/rfx_route_guard.py"
+          "spectrum_systems/modules/runtime/rfx_integrity_bundle.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1453,8 +1442,7 @@
           "spectrum_systems/modules/runtime/artifact_lineage.py",
           "spectrum_systems/modules/runtime/control_surface_manifest.py",
           "spectrum_systems/modules/runtime/decision_gating.py",
-          "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py",
-          "spectrum_systems/modules/runtime/governed_execution_kernel.py"
+          "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -1605,8 +1593,7 @@
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
           "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
-          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
-          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py"
+          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1650,8 +1637,7 @@
           "tests/test_rfx_error_budget_governance.py",
           "tests/test_rfx_flow_integration.py",
           "tests/test_rfx_loop_04_06_red_team.py",
-          "tests/test_rfx_loop_07_08_chaos.py",
-          "tests/test_rfx_observability_replay_consistency.py"
+          "tests/test_rfx_loop_07_08_chaos.py"
         ]
       },
       "evidence_count": 111,
@@ -1856,9 +1842,9 @@
           "spectrum_systems/modules/observability/failure_trace.py",
           "spectrum_systems/modules/orchestration/pqx_step_harness.py",
           "spectrum_systems/modules/pqx_backbone.py",
-          "spectrum_systems/modules/prompt_queue/queue_state_machine.py",
-          "spectrum_systems/modules/prompt_queue/review_trigger_policy.py",
-          "spectrum_systems/modules/review_fix_execution_loop.py"
+          "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/prl/repair_generator.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -2312,10 +2298,7 @@
           "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
           "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
-          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py",
-          "spectrum_systems/modules/runtime/rfx_failure_profile.py",
-          "spectrum_systems/modules/runtime/rfx_flow_integration.py",
-          "spectrum_systems/modules/runtime/rfx_integrity_bundle.py"
+          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -2353,9 +2336,7 @@
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_flow_integration.py",
           "tests/test_rfx_integrity_bundle.py",
-          "tests/test_rfx_loop_04_06_red_team.py",
-          "tests/test_rfx_loop_07_08_chaos.py",
-          "tests/test_rfx_memory_persistence_handoff.py"
+          "tests/test_rfx_loop_04_06_red_team.py"
         ]
       },
       "evidence_count": 105,
@@ -3143,8 +3124,7 @@
           "spectrum_systems/modules/runtime/authority_repair_engine.py",
           "spectrum_systems/modules/runtime/cal_runtime.py",
           "spectrum_systems/modules/runtime/cax.py",
-          "spectrum_systems/modules/runtime/chx_runtime.py",
-          "spectrum_systems/modules/runtime/context_governed_flow.py"
+          "spectrum_systems/modules/runtime/chx_runtime.py"
         ],
         "review_actions": [],
         "reviews": [],
