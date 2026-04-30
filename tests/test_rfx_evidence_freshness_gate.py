@@ -173,3 +173,29 @@ def test_inf_max_age_flagged():
         max_age_seconds=float("inf"),
     )
     assert "rfx_freshness_invalid_max_age" in result["reason_codes_emitted"]
+
+
+def test_nan_reference_time_flagged():
+    # P2 fix: float('nan') reference_time_seconds must emit rfx_freshness_invalid_reference_time;
+    # nan arithmetic makes age comparisons always False, causing fail-open.
+    result = check_rfx_evidence_freshness(
+        evidence_records=[_rec()],
+        reference_time_seconds=float("nan"),
+        max_age_seconds=3600.0,
+    )
+    assert "rfx_freshness_invalid_reference_time" in result["reason_codes_emitted"]
+    assert result["signals"]["fresh_count"] == 0
+    assert result["status"] == "stale"
+
+
+def test_neg_inf_reference_time_flagged():
+    # P2 fix: float('-inf') reference_time_seconds must emit rfx_freshness_invalid_reference_time;
+    # age = -inf - ts = -inf, so -inf > max_age is False, causing fail-open.
+    result = check_rfx_evidence_freshness(
+        evidence_records=[_rec()],
+        reference_time_seconds=float("-inf"),
+        max_age_seconds=3600.0,
+    )
+    assert "rfx_freshness_invalid_reference_time" in result["reason_codes_emitted"]
+    assert result["signals"]["fresh_count"] == 0
+    assert result["status"] == "stale"

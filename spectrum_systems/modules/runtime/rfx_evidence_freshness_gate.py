@@ -16,11 +16,12 @@ Signal improved: evidence freshness compliance rate; stale-input detection
 coverage.
 
 Reason codes:
-  rfx_freshness_missing_timestamp  — evidence record lacks a timestamp
-  rfx_freshness_stale              — evidence record is older than the max age
-  rfx_freshness_empty_inputs       — no evidence records supplied
-  rfx_freshness_invalid_max_age    — max_age_seconds is missing or non-positive
-  rfx_freshness_malformed_record   — evidence record is not a dict
+  rfx_freshness_missing_timestamp      — evidence record lacks a timestamp
+  rfx_freshness_stale                  — evidence record is older than the max age
+  rfx_freshness_empty_inputs           — no evidence records supplied
+  rfx_freshness_invalid_max_age        — max_age_seconds is missing or non-positive
+  rfx_freshness_invalid_reference_time — reference_time_seconds is missing or non-finite
+  rfx_freshness_malformed_record       — evidence record is not a dict
 """
 
 from __future__ import annotations
@@ -54,6 +55,10 @@ def check_rfx_evidence_freshness(
         reason.append("rfx_freshness_invalid_max_age")
         max_age_seconds = 3600.0  # default fallback for reporting
 
+    invalid_reference_time = not isinstance(reference_time_seconds, (int, float)) or not math.isfinite(reference_time_seconds)
+    if invalid_reference_time:
+        reason.append("rfx_freshness_invalid_reference_time")
+
     fresh_count = 0
     for rec in records:
         if not isinstance(rec, dict):
@@ -69,11 +74,15 @@ def check_rfx_evidence_freshness(
             ts_float = float(ts)
             if not math.isfinite(ts_float):
                 raise ValueError("non-finite timestamp")
-            age = reference_time_seconds - ts_float
         except (TypeError, ValueError):
             reason.append("rfx_freshness_missing_timestamp")
             missing_ts_ids.append(str(rec_id))
             continue
+        if invalid_reference_time:
+            reason.append("rfx_freshness_stale")
+            stale_ids.append(str(rec_id))
+            continue
+        age = reference_time_seconds - ts_float
         if age > max_age_seconds:
             reason.append("rfx_freshness_stale")
             stale_ids.append(str(rec_id))
