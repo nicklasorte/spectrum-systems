@@ -61,6 +61,8 @@ def build_capture_record(
         "failure_class": classification.failure_class,
         "normalized_message": parsed.normalized_message,
         "raw_excerpt": parsed.raw_excerpt[:200],
+        "file_refs": sorted(parsed.file_refs),
+        "exit_code": parsed.exit_code,
         "source": source,
         "run_id": run_id,
         "trace_id": trace_id,

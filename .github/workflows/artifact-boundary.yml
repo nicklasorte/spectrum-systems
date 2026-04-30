@@ -212,7 +212,11 @@ jobs:
               if isinstance(obj, dict):
                   return {k: normalize(v) for k, v in sorted(obj.items()) if k not in VOLATILE}
               if isinstance(obj, list):
-                  return [normalize(x) for x in obj]
+                  items = [normalize(x) for x in obj]
+                  try:
+                      return sorted(items, key=lambda x: json.dumps(x, sort_keys=True) if not isinstance(x, (str, int, float, bool, type(None))) else str(x))
+                  except TypeError:
+                      return items
               return obj
 
           mismatches = []

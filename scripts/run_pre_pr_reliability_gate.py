@@ -127,6 +127,7 @@ def _build_gate_result(
         "failure_count": len(failure_packet_refs),
         "failure_classes_sorted": sorted(set(failure_classes)),
         "failure_packet_refs_sorted": sorted(failure_packet_refs),
+        "blocking_reasons_sorted": sorted(blocking_reasons),
     }
     artifact_id = deterministic_id(
         prefix="prl-gate",
@@ -347,7 +348,7 @@ def main() -> int:
         nargs=argparse.REMAINDER,
         help="Additional arguments passed to pytest (use -- before pytest flags)",
     )
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     run_id = args.run_id or _new_run_id()
     trace_id = args.trace_id or _new_trace_id()
@@ -356,6 +357,8 @@ def main() -> int:
     pytest_args = args.pytest_args or []
     if pytest_args and pytest_args[0] == "--":
         pytest_args = pytest_args[1:]
+    # Prepend any flags argparse treated as unknown (e.g. -v, -x, -k "expr")
+    pytest_args = unknown_args + pytest_args
 
     try:
         gate_result = run_gate(
