@@ -28,6 +28,123 @@
   ],
   "contracts": [
     {
+      "artifact_type": "3ls_failure_recurrence_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_failure_recurrence_record.example.json",
+      "notes": "SMA-01 v2: repeated CI/system failure measurement. Observation only."
+    },
+    {
+      "artifact_type": "3ls_handoff_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_handoff_record.example.json",
+      "notes": "SMA-01 v2: system-to-system handoff measurement. Observation only."
+    },
+    {
+      "artifact_type": "3ls_loop_run_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_loop_run_record.example.json",
+      "notes": "SMA-01 v2: canonical loop completion measurement (AEX -> PQX -> EVL -> TPA -> CDE -> SEL). Observation only."
+    },
+    {
+      "artifact_type": "3ls_operator_debuggability_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_operator_debuggability_record.example.json",
+      "notes": "SMA-01 v2: operator debuggability measurement. Are failures understandable from a single artifact?"
+    },
+    {
+      "artifact_type": "3ls_replayability_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_replayability_record.example.json",
+      "notes": "SMA-01 v2: replayability and determinism measurement per system."
+    },
+    {
+      "artifact_type": "3ls_scope_risk_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_scope_risk_record.example.json",
+      "notes": "SMA-01 v2: change scope and blast-radius measurement. Observation only; does not gate or enforce."
+    },
+    {
+      "artifact_type": "3ls_surface_coverage_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_surface_coverage_record.example.json",
+      "notes": "SMA-01 v2: changed-surface to test-target mapping coverage. Detects pytest_selection_missing class failures early."
+    },
+    {
+      "artifact_type": "3ls_system_measurement_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_system_measurement_record.example.json",
+      "notes": "SMA-01 v2: per-system measurement and observability record. Observation only; does not grant authority or perform enforcement."
+    },
+    {
+      "artifact_type": "3ls_trust_gap_closure_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMA-01-V2",
+      "last_updated_in": "SMA-01-V2",
+      "example_path": "contracts/examples/3ls_trust_gap_closure_record.example.json",
+      "notes": "SMA-01 v2: per-system trust gap closure measurement integrating with artifacts/tls/*."
+    },
+    {
       "artifact_type": "abstention_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -312,6 +429,45 @@
       "last_updated_in": "1.0.45",
       "example_path": "contracts/examples/ai_model_response.json",
       "notes": "HS-X1 canonical response artifact for structured-generation enforcement outcome, target-schema linkage, and fail-closed normalization status."
+    },
+    {
+      "artifact_type": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_governance_rollup_record.example.json",
+      "notes": "AEX-PQX-01: aggregate rollup of AI programming governance evidence. Produced by build_ai_programming_governance_rollup.py. Dashboard reads this artifact; does not compute compliance client-side."
+    },
+    {
+      "artifact_type": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_loop_violation_record.example.json",
+      "notes": "AEX-PQX-01: records a specific governance loop violation for a repo-mutating AI programming work item. MET observation only; does not claim enforcement (SEL) or decision (CDE) authority."
+    },
+    {
+      "artifact_type": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_work_item_record.example.json",
+      "notes": "AEX-PQX-01: per-work-item evidence record for AI programming contributions (Codex, Claude). MET observation only. Fail-closed: repo_mutating=true requires AEX and PQX. present requires artifact_refs. partial/missing/unknown requires reason_codes."
     },
     {
       "artifact_type": "ail_ai_pattern_mining_record",
@@ -794,6 +950,45 @@
       "last_updated_in": "1.3.92",
       "example_path": "contracts/examples/async_wait_record.json",
       "notes": "HR-B canonical async wait continuity artifact with deterministic timeout policy linkage."
+    },
+    {
+      "artifact_type": "authority_preflight_failure_packet",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated": "2026-04-29T19:00:33+00:00",
+      "owner": "AEX",
+      "notes": "CLX-ALL-01 Phase 1: Advisory diagnostic packet from authority_preflight_expanded. Non-owning."
+    },
+    {
+      "artifact_type": "authority_repair_candidate",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated": "2026-04-29T19:00:33+00:00",
+      "owner": "FRE",
+      "notes": "CLX-ALL-01 Phase 1: Bounded repair candidate from authority preflight failures. Requires CDE authorization."
+    },
+    {
+      "artifact_type": "authority_repair_execution_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated": "2026-04-29T19:00:33+00:00",
+      "owner": "PQX",
+      "notes": "CLX-ALL-01 Phase 1: PQX record of applied authority repair. Emitted only after CDE authorization."
     },
     {
       "artifact_type": "autonomy_decision_record",
@@ -2780,6 +2975,19 @@
       "notes": "ENF-01 required precondition artifact proving alignment to execution\u2192evaluation\u2192control\u2192enforcement loop."
     },
     {
+      "artifact_type": "core_loop_pre_pr_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "CLP-01",
+      "last_updated_in": "CLP-01",
+      "example_path": "contracts/examples/core_loop_pre_pr_gate_result.example.json",
+      "notes": "Core loop pre-PR gate bundle result. Observation only."
+    },
+    {
       "artifact_type": "core_system_integration_validation",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -3458,6 +3666,19 @@
       "last_updated_in": "1.9.1",
       "example_path": "contracts/examples/dataset_lineage_record.json",
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "debuggability_assessment_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-C",
+      "last_updated_in": "RGE-C",
+      "example_path": "contracts/examples/debuggability_assessment_record.json",
+      "notes": "RGE Principle 3 assessment. Returns gaps for rewrite - never silently passes."
     },
     {
       "artifact_type": "debuggability_record",
@@ -4199,6 +4420,19 @@
       "last_updated_in": "1.3.89",
       "example_path": "contracts/examples/eval_candidate_artifact.json",
       "notes": "BATCH-MB-01 deterministic failure-to-eval candidate artifact; no execution/mutation authority."
+    },
+    {
+      "artifact_type": "eval_candidate_registry",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated": "2026-04-29T19:00:33+00:00",
+      "owner": "EVL",
+      "notes": "CLX-ALL-01 Phase 3: GOV-managed registry of failure-derived eval candidates. Schema-bound only."
     },
     {
       "artifact_type": "eval_canonicalization_policy",
@@ -5194,6 +5428,19 @@
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
       "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+    },
+    {
+      "artifact_type": "failure_explanation_packet",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated": "2026-04-29T19:00:33+00:00",
+      "owner": "OBS",
+      "notes": "CLX-ALL-01 Phase 5: Rich debuggability packet attached to all BLOCK/FREEZE outcomes."
     },
     {
       "artifact_type": "failure_learning_record_artifact",
@@ -8049,6 +8296,19 @@
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
+      "artifact_type": "loop_contribution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-B",
+      "last_updated_in": "RGE-B",
+      "example_path": "contracts/examples/loop_contribution_record.json",
+      "notes": "RGE Principle 2 gate output. Fail-closed on drift or saturation."
+    },
+    {
       "artifact_type": "maintain_cycle_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -9340,6 +9600,19 @@
       "notes": "CHK multi-session handoff artifact with blockers and next slice."
     },
     {
+      "artifact_type": "phase_justification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-A",
+      "last_updated_in": "RGE-A",
+      "example_path": "contracts/examples/phase_justification_record.json",
+      "notes": "RGE Principle 1 gate output. Fail-closed on missing justification."
+    },
+    {
       "artifact_type": "phase_registry",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -10147,6 +10420,19 @@
       "notes": "B10 planning-only deterministic triage rack-and-stack artifact translating governed review and fix-gate outcomes into bounded insertion/defer/block recommendations without auto-execution."
     },
     {
+      "artifact_type": "pr_failure_capture_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/pr_failure_capture_record.schema.json",
+      "notes": "PRL-01 normalized failure capture record produced per parsed CI failure. Consumed by PRL classifier and FRE."
+    },
+    {
       "artifact_type": "pr_test_shard_result",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -10249,6 +10535,19 @@
       "last_updated_in": "PRA-NSX-PRG-001",
       "example_path": "contracts/examples/pra_system_impact_mapping_record.json",
       "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "pre_pr_failure_packet",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/pre_pr_failure_packet.schema.json",
+      "notes": "PRL-01 structured failure packet emitted by the pre-PR reliability gate. Owned by PRL."
     },
     {
       "artifact_type": "precedent_conflict_record",
@@ -10721,6 +11020,71 @@
       "last_updated_in": "1.3.123",
       "example_path": "contracts/examples/prioritized_adoption_candidate_set.json",
       "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prl_eval_case",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_eval_case.schema.json",
+      "notes": "PRL-03 promoted eval case derived from classified failure. Owned by PRL; promotion authority with EVL."
+    },
+    {
+      "artifact_type": "prl_eval_generation_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_eval_generation_record.schema.json",
+      "notes": "PRL-03 record of eval case generation run. Owned by PRL."
+    },
+    {
+      "artifact_type": "prl_gate_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_gate_result.schema.json",
+      "notes": "PRL gate decision artifact summarizing pass/block outcome with trace references. Owned by PRL."
+    },
+    {
+      "artifact_type": "prl_lrt_failure_packet",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_lrt_failure_packet.schema.json",
+      "notes": "PRL long-running test failure packet. Owned by PRL."
+    },
+    {
+      "artifact_type": "prl_repair_candidate",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/schemas/prl_repair_candidate.schema.json",
+      "notes": "PRL-02 bounded repair suggestion. auto_apply is always false. Advisory only. Owned by PRL; consumed advisory-only by FRE and operators."
     },
     {
       "artifact_type": "prm_ai_prompt_admissibility_result",
@@ -11479,6 +11843,19 @@
       "last_updated_in": "1.9.1",
       "example_path": "contracts/examples/prompt_version.json",
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "proof_presence_enforcement_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated": "2026-04-29T19:00:33+00:00",
+      "owner": "GOV",
+      "notes": "CLX-ALL-01 Phase 2: Gate result for core_loop_proof presence on PRs touching governed surfaces."
     },
     {
       "artifact_type": "provenance_record",
@@ -12659,97 +13036,6 @@
       "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
-      "artifact_type": "prl_repair_candidate",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated_in": "1.3.152",
-      "example_path": "contracts/schemas/prl_repair_candidate.schema.json",
-      "notes": "PRL-02 bounded repair suggestion. auto_apply is always false. Advisory only. Owned by PRL; consumed advisory-only by FRE and operators."
-    },
-    {
-      "artifact_type": "pr_failure_capture_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated_in": "1.3.152",
-      "schema_path": "contracts/schemas/pr_failure_capture_record.schema.json",
-      "notes": "PRL-01 normalized failure capture record produced per parsed CI failure. Consumed by PRL classifier and FRE."
-    },
-    {
-      "artifact_type": "pre_pr_failure_packet",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated_in": "1.3.152",
-      "schema_path": "contracts/schemas/pre_pr_failure_packet.schema.json",
-      "notes": "PRL-01 structured failure packet emitted by the pre-PR reliability gate. Owned by PRL."
-    },
-    {
-      "artifact_type": "prl_eval_case",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated_in": "1.3.152",
-      "schema_path": "contracts/schemas/prl_eval_case.schema.json",
-      "notes": "PRL-03 promoted eval case derived from classified failure. Owned by PRL; promotion authority with EVL."
-    },
-    {
-      "artifact_type": "prl_eval_generation_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated_in": "1.3.152",
-      "schema_path": "contracts/schemas/prl_eval_generation_record.schema.json",
-      "notes": "PRL-03 record of eval case generation run. Owned by PRL."
-    },
-    {
-      "artifact_type": "prl_gate_result",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated_in": "1.3.152",
-      "schema_path": "contracts/schemas/prl_gate_result.schema.json",
-      "notes": "PRL gate decision artifact summarizing pass/block outcome with trace references. Owned by PRL."
-    },
-    {
-      "artifact_type": "prl_lrt_failure_packet",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated_in": "1.3.152",
-      "schema_path": "contracts/schemas/prl_lrt_failure_packet.schema.json",
-      "notes": "PRL long-running test failure packet. Owned by PRL."
-    },
-    {
       "artifact_type": "rel_canary_metrics_breakdown",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -13205,6 +13491,19 @@
       "last_updated_in": "1.0.64",
       "example_path": "contracts/examples/replay_result.json",
       "notes": "BAG deterministic canonical trust-loop replay artifact with required embedded observability_metrics, error_budget_status, and alert_trigger attachments plus deterministic artifact identity for authoritative replay-only signal consumption."
+    },
+    {
+      "artifact_type": "replay_validation_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated": "2026-04-29T19:00:33+00:00",
+      "owner": "REP",
+      "notes": "CLX-ALL-01 Phase 4: Historical PR replay backtest report. Fails on mismatch or non-determinism."
     },
     {
       "artifact_type": "repo_review_snapshot",
@@ -13677,6 +13976,97 @@
       "last_updated_in": "1.3.140",
       "example_path": "contracts/examples/revision_plan_artifact.json",
       "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
+      "artifact_type": "rge_amendment_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-H",
+      "last_updated_in": "RGE-H",
+      "example_path": "contracts/examples/rge_amendment_record.json",
+      "notes": "RGE self-amender judgment record. 1.1.0 wires roadmap_adjustment_engine: adds derived_adjustments, derived_adjustment_count, derivation_status, derivation_error."
+    },
+    {
+      "artifact_type": "rge_analysis_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-E",
+      "last_updated_in": "RGE-E",
+      "example_path": "contracts/examples/rge_analysis_record.json",
+      "notes": "RGE Wave-0 repo audit snapshot. 1.1.0 adds wave_status, entropy_vectors, rge_can_operate, rge_max_autonomy, fragile_point_signals (AST-derived)."
+    },
+    {
+      "artifact_type": "rge_recursion_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-J",
+      "last_updated_in": "RGE-J",
+      "example_path": "contracts/examples/rge_recursion_record.json",
+      "notes": "RGE recursion governor audit record."
+    },
+    {
+      "artifact_type": "rge_redteam_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-G",
+      "last_updated_in": "RGE-G",
+      "example_path": "contracts/examples/rge_redteam_record.json",
+      "notes": "RGE red-team six-check output. 1.1.0 routes findings via rqx_redteam_orchestrator (rqx_routing per finding) and adds must_fix/warn split (must_fix_count, warn_count, roadmap_approved)."
+    },
+    {
+      "artifact_type": "rge_roadmap_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-F",
+      "last_updated_in": "RGE-F",
+      "example_path": "contracts/examples/rge_roadmap_record.json",
+      "notes": "RGE candidate roadmap, content-addressed."
+    },
+    {
+      "artifact_type": "rge_run_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-K",
+      "last_updated_in": "RGE-K",
+      "example_path": "contracts/examples/rge_run_record.json",
+      "notes": "RGE top-level end-to-end run record."
+    },
+    {
+      "artifact_type": "rge_trust_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-I",
+      "last_updated_in": "RGE-I",
+      "example_path": "contracts/examples/rge_trust_record.json",
+      "notes": "RGE trust bootstrapper per-recommendation record. 1.1.0 adds phase_id/phase_name attribution and decision_counts (accepted/rejected/overridden/unknown/total)."
     },
     {
       "artifact_type": "ril_ai_cost_runaway_red_team_report",
@@ -16879,383 +17269,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "phase_justification_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-A",
-      "last_updated_in": "RGE-A",
-      "example_path": "contracts/examples/phase_justification_record.json",
-      "notes": "RGE Principle 1 gate output. Fail-closed on missing justification."
-    },
-    {
-      "artifact_type": "loop_contribution_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-B",
-      "last_updated_in": "RGE-B",
-      "example_path": "contracts/examples/loop_contribution_record.json",
-      "notes": "RGE Principle 2 gate output. Fail-closed on drift or saturation."
-    },
-    {
-      "artifact_type": "debuggability_assessment_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-C",
-      "last_updated_in": "RGE-C",
-      "example_path": "contracts/examples/debuggability_assessment_record.json",
-      "notes": "RGE Principle 3 assessment. Returns gaps for rewrite - never silently passes."
-    },
-    {
-      "artifact_type": "rge_analysis_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-E",
-      "last_updated_in": "RGE-E",
-      "example_path": "contracts/examples/rge_analysis_record.json",
-      "notes": "RGE Wave-0 repo audit snapshot. 1.1.0 adds wave_status, entropy_vectors, rge_can_operate, rge_max_autonomy, fragile_point_signals (AST-derived)."
-    },
-    {
-      "artifact_type": "rge_roadmap_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-F",
-      "last_updated_in": "RGE-F",
-      "example_path": "contracts/examples/rge_roadmap_record.json",
-      "notes": "RGE candidate roadmap, content-addressed."
-    },
-    {
-      "artifact_type": "rge_redteam_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-G",
-      "last_updated_in": "RGE-G",
-      "example_path": "contracts/examples/rge_redteam_record.json",
-      "notes": "RGE red-team six-check output. 1.1.0 routes findings via rqx_redteam_orchestrator (rqx_routing per finding) and adds must_fix/warn split (must_fix_count, warn_count, roadmap_approved)."
-    },
-    {
-      "artifact_type": "rge_amendment_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-H",
-      "last_updated_in": "RGE-H",
-      "example_path": "contracts/examples/rge_amendment_record.json",
-      "notes": "RGE self-amender judgment record. 1.1.0 wires roadmap_adjustment_engine: adds derived_adjustments, derived_adjustment_count, derivation_status, derivation_error."
-    },
-    {
-      "artifact_type": "rge_trust_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-I",
-      "last_updated_in": "RGE-I",
-      "example_path": "contracts/examples/rge_trust_record.json",
-      "notes": "RGE trust bootstrapper per-recommendation record. 1.1.0 adds phase_id/phase_name attribution and decision_counts (accepted/rejected/overridden/unknown/total)."
-    },
-    {
-      "artifact_type": "rge_recursion_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-J",
-      "last_updated_in": "RGE-J",
-      "example_path": "contracts/examples/rge_recursion_record.json",
-      "notes": "RGE recursion governor audit record."
-    },
-    {
-      "artifact_type": "rge_run_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "RGE-K",
-      "last_updated_in": "RGE-K",
-      "example_path": "contracts/examples/rge_run_record.json",
-      "notes": "RGE top-level end-to-end run record."
-    },
-    {
-      "artifact_type": "3ls_system_measurement_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_system_measurement_record.example.json",
-      "notes": "SMA-01 v2: per-system measurement and observability record. Observation only; does not grant authority or perform enforcement."
-    },
-    {
-      "artifact_type": "3ls_loop_run_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_loop_run_record.example.json",
-      "notes": "SMA-01 v2: canonical loop completion measurement (AEX -> PQX -> EVL -> TPA -> CDE -> SEL). Observation only."
-    },
-    {
-      "artifact_type": "3ls_handoff_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_handoff_record.example.json",
-      "notes": "SMA-01 v2: system-to-system handoff measurement. Observation only."
-    },
-    {
-      "artifact_type": "3ls_surface_coverage_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_surface_coverage_record.example.json",
-      "notes": "SMA-01 v2: changed-surface to test-target mapping coverage. Detects pytest_selection_missing class failures early."
-    },
-    {
-      "artifact_type": "3ls_failure_recurrence_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_failure_recurrence_record.example.json",
-      "notes": "SMA-01 v2: repeated CI/system failure measurement. Observation only."
-    },
-    {
-      "artifact_type": "3ls_trust_gap_closure_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_trust_gap_closure_record.example.json",
-      "notes": "SMA-01 v2: per-system trust gap closure measurement integrating with artifacts/tls/*."
-    },
-    {
-      "artifact_type": "3ls_replayability_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_replayability_record.example.json",
-      "notes": "SMA-01 v2: replayability and determinism measurement per system."
-    },
-    {
-      "artifact_type": "3ls_scope_risk_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_scope_risk_record.example.json",
-      "notes": "SMA-01 v2: change scope and blast-radius measurement. Observation only; does not gate or enforce."
-    },
-    {
-      "artifact_type": "3ls_operator_debuggability_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "SMA-01-V2",
-      "last_updated_in": "SMA-01-V2",
-      "example_path": "contracts/examples/3ls_operator_debuggability_record.example.json",
-      "notes": "SMA-01 v2: operator debuggability measurement. Are failures understandable from a single artifact?"
-    },
-    {
-      "artifact_type": "ai_programming_work_item_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "AEX-PQX-01",
-      "last_updated_in": "AEX-PQX-01",
-      "example_path": "contracts/examples/ai_programming_work_item_record.example.json",
-      "notes": "AEX-PQX-01: per-work-item evidence record for AI programming contributions (Codex, Claude). MET observation only. Fail-closed: repo_mutating=true requires AEX and PQX. present requires artifact_refs. partial/missing/unknown requires reason_codes."
-    },
-    {
-      "artifact_type": "ai_programming_governance_rollup_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "AEX-PQX-01",
-      "last_updated_in": "AEX-PQX-01",
-      "example_path": "contracts/examples/ai_programming_governance_rollup_record.example.json",
-      "notes": "AEX-PQX-01: aggregate rollup of AI programming governance evidence. Produced by build_ai_programming_governance_rollup.py. Dashboard reads this artifact; does not compute compliance client-side."
-    },
-    {
-      "artifact_type": "ai_programming_loop_violation_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "AEX-PQX-01",
-      "last_updated_in": "AEX-PQX-01",
-      "example_path": "contracts/examples/ai_programming_loop_violation_record.example.json",
-      "notes": "AEX-PQX-01: records a specific governance loop violation for a repo-mutating AI programming work item. MET observation only; does not claim enforcement (SEL) or decision (CDE) authority."
-    },
-    {
-      "artifact_type": "authority_preflight_failure_packet",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated": "2026-04-29T19:00:33+00:00",
-      "owner": "AEX",
-      "notes": "CLX-ALL-01 Phase 1: Advisory diagnostic packet from authority_preflight_expanded. Non-owning."
-    },
-    {
-      "artifact_type": "authority_repair_candidate",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated": "2026-04-29T19:00:33+00:00",
-      "owner": "FRE",
-      "notes": "CLX-ALL-01 Phase 1: Bounded repair candidate from authority preflight failures. Requires CDE authorization."
-    },
-    {
-      "artifact_type": "authority_repair_execution_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated": "2026-04-29T19:00:33+00:00",
-      "owner": "PQX",
-      "notes": "CLX-ALL-01 Phase 1: PQX record of applied authority repair. Emitted only after CDE authorization."
-    },
-    {
-      "artifact_type": "proof_presence_enforcement_result",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated": "2026-04-29T19:00:33+00:00",
-      "owner": "GOV",
-      "notes": "CLX-ALL-01 Phase 2: Gate result for core_loop_proof presence on PRs touching governed surfaces."
-    },
-    {
-      "artifact_type": "failure_explanation_packet",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated": "2026-04-29T19:00:33+00:00",
-      "owner": "OBS",
-      "notes": "CLX-ALL-01 Phase 5: Rich debuggability packet attached to all BLOCK/FREEZE outcomes."
-    },
-    {
-      "artifact_type": "replay_validation_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated": "2026-04-29T19:00:33+00:00",
-      "owner": "REP",
-      "notes": "CLX-ALL-01 Phase 4: Historical PR replay backtest report. Fails on mismatch or non-determinism."
-    },
-    {
-      "artifact_type": "eval_candidate_registry",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.152",
-      "last_updated": "2026-04-29T19:00:33+00:00",
-      "owner": "EVL",
-      "notes": "CLX-ALL-01 Phase 3: GOV-managed registry of failure-derived eval candidates. Schema-bound only."
     }
   ]
 }

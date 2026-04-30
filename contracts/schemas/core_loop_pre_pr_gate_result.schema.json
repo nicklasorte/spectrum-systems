@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "core_loop_pre_pr_gate_result",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_id",
+    "work_item_id",
+    "agent_type",
+    "repo_mutating",
+    "base_ref",
+    "head_ref",
+    "changed_files",
+    "gate_status",
+    "checks",
+    "failure_classes",
+    "source_artifacts_used",
+    "emitted_artifacts",
+    "required_follow_up",
+    "trace_refs",
+    "replay_refs",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "core_loop_pre_pr_gate_result"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "gate_id": {
+      "type": "string"
+    },
+    "work_item_id": {
+      "type": "string"
+    },
+    "agent_type": {
+      "enum": [
+        "codex",
+        "claude",
+        "other",
+        "unknown"
+      ]
+    },
+    "repo_mutating": {
+      "type": "boolean"
+    },
+    "base_ref": {
+      "type": "string"
+    },
+    "head_ref": {
+      "type": "string"
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "gate_status": {
+      "enum": [
+        "pass",
+        "warn",
+        "block"
+      ]
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "check_name",
+          "owner_system",
+          "command",
+          "status",
+          "output_ref",
+          "failure_class",
+          "reason_codes",
+          "next_action"
+        ],
+        "properties": {
+          "check_name": {
+            "type": "string"
+          },
+          "owner_system": {
+            "enum": [
+              "AEX",
+              "PQX",
+              "EVL",
+              "TPA",
+              "CDE",
+              "SEL",
+              "LIN",
+              "REP",
+              "OBS",
+              "SLO",
+              "PRL",
+              "RIL",
+              "FRE"
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "warn",
+              "block",
+              "skipped"
+            ]
+          },
+          "output_ref": {
+            "type": "string"
+          },
+          "failure_class": {
+            "type": "string"
+          },
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "next_action": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "first_failed_check": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "failure_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "human_review_required": {
+      "type": "boolean"
+    },
+    "source_artifacts_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "emitted_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_follow_up": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    }
+  }
+}

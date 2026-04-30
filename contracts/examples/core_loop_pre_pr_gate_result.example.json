@@ -1,0 +1,26 @@
+{
+  "artifact_type": "core_loop_pre_pr_gate_result",
+  "schema_version": "1.0.0",
+  "gate_id": "clp-01",
+  "work_item_id": "CLP-01",
+  "agent_type": "codex",
+  "repo_mutating": true,
+  "base_ref": "main",
+  "head_ref": "HEAD",
+  "changed_files": [
+    "scripts/run_core_loop_pre_pr_gate.py"
+  ],
+  "gate_status": "pass",
+  "checks": [],
+  "first_failed_check": null,
+  "failure_classes": [],
+  "human_review_required": false,
+  "source_artifacts_used": [],
+  "emitted_artifacts": [
+    "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json"
+  ],
+  "required_follow_up": [],
+  "trace_refs": [],
+  "replay_refs": [],
+  "authority_scope": "observation_only"
+}
