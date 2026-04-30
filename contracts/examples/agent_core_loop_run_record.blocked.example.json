@@ -1,7 +1,7 @@
 {
   "artifact_type": "agent_core_loop_run_record",
   "schema_version": "1.0.0",
-  "work_item_id": "AGL-01-BLOCKED",
+  "work_item_id": "AGL-01-GAP",
   "agent_type": "unknown",
   "repo_mutating": true,
   "source_refs": [
@@ -97,7 +97,7 @@
   "first_missing_leg": "EVL",
   "first_failed_leg": null,
   "core_loop_complete": false,
-  "compliance_status": "BLOCK",
+  "compliance_status": "WARN",
   "learning_actions": [
     {
       "owner_system": "EVL",

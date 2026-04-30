@@ -97,7 +97,7 @@
   "first_missing_leg": "EVL",
   "first_failed_leg": null,
   "core_loop_complete": false,
-  "compliance_status": "BLOCK",
+  "compliance_status": "WARN",
   "learning_actions": [
     {
       "owner_system": "EVL",

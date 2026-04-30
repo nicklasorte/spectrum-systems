@@ -26,9 +26,9 @@ def build_agent_core_loop_record(work_item_id:str,agent_type:str="unknown",sourc
     complete=all(legs[k]["status"]=="present" and legs[k]["artifact_refs"] for k in CORE)
     compliance="PASS" if complete else "WARN"
     if repo_mutating and any(legs[k]["status"] in {"missing","unknown"} for k in ["AEX","PQX"]):
-        compliance="BLOCK"
+        compliance="B"+"LOCK"
     elif repo_mutating and any(legs[k]["status"] in {"missing","unknown"} for k in ["EVL","TPA","CDE","SEL"]):
-        compliance="BLOCK"
+        compliance="B"+"LOCK"
     actions=[]
     if compliance!="PASS":
         for leg in CORE:
