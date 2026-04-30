@@ -109,7 +109,7 @@ def check_rfx_cl_proof_alignment(
 
     # Check for authority-claiming fields added by RFX but not in CL schema.
     for field in rfx_proof:
-        if field not in cl_proof_schema and _is_authority_field(field):
+        if field not in cl_proof_schema and isinstance(field, str) and _is_authority_field(field):
             reason.append("rfx_cl_proof_extra_authority_field")
             extra_authority_fields.append(field)
 

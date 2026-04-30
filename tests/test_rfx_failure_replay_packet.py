@@ -89,6 +89,15 @@ def test_whitespace_only_trace_ref_flagged():
     assert result["status"] == "incomplete"
 
 
+def test_falsy_expected_outcome_not_flagged_missing():
+    # P2 fix: falsy but present expected_outcome (False, 0, "") must not emit
+    # rfx_replay_missing_expected — only None/absent should be flagged.
+    result = build_rfx_failure_replay_packet(
+        failure_record=_full_record(expected_outcome=False)
+    )
+    assert "rfx_replay_missing_expected" not in result["reason_codes_emitted"]
+
+
 def test_non_json_serializable_inputs_does_not_raise():
     # P1 fix: sets/datetimes in reproduction_inputs must not raise TypeError.
     result = build_rfx_failure_replay_packet(

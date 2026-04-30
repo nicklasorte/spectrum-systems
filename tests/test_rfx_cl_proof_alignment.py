@@ -137,6 +137,17 @@ def test_non_string_schema_type_does_not_raise():
     assert result["artifact_type"] == "rfx_cl_proof_alignment_result"
 
 
+def test_non_string_proof_key_does_not_raise():
+    # P1 fix: non-string rfx_proof key (e.g. integer) must not raise AttributeError
+    # in _is_authority_field (which calls field.lower()); must emit misaligned cleanly.
+    result = check_rfx_cl_proof_alignment(
+        rfx_proof={1: "value", "status": "ok"},
+        cl_proof_schema={"status": "str"},
+    )
+    assert result["artifact_type"] == "rfx_cl_proof_alignment_result"
+    assert result["status"] == "aligned"
+
+
 def test_type_mismatch_does_not_inflate_alignment_rate():
     # P2 fix: type-mismatched fields must not count toward present_count / alignment_rate.
     schema = {"status": "str", "count": "int"}
