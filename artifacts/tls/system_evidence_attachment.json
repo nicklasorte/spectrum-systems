@@ -44,6 +44,7 @@
           "docs/architecture/system_registry_reduction_decision.md",
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/rca_guide.md",
+          "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
           "docs/review-actions/PLAN-AFX-02-ARTIFACT-SPINE-2026-04-09.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
@@ -56,8 +57,7 @@
           "docs/review-actions/PLAN-BATCH-AEX-FIX-03-2026-04-09.md",
           "docs/review-actions/PLAN-BATCH-AEX-FIX-04-2026-04-09.md",
           "docs/review-actions/PLAN-BATCH-AEX-FIX-05-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-06-2026-04-09.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-07-2026-04-09.md"
+          "docs/review-actions/PLAN-BATCH-AEX-FIX-06-2026-04-09.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -102,6 +102,7 @@
           "scripts/replay_aex_admission.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_ops_master_01.py",
           "scripts/run_repair_latency_24_01.py",
@@ -139,7 +140,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 119,
+      "evidence_count": 120,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -600,6 +601,7 @@
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_done_certification.py",
           "scripts/run_eval_ci_gate.py",
           "scripts/run_rax_redteam_arch_01.py",
@@ -635,7 +637,7 @@
           "tests/test_clx_all_01_redteam.py"
         ]
       },
-      "evidence_count": 110,
+      "evidence_count": 111,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -1319,6 +1321,7 @@
           "schemas/artifact-bus-message.schema.json"
         ],
         "scripts": [
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/validate_system_registry.py",
           "scripts/validate_system_registry_boundaries.py"
         ],
@@ -1350,7 +1353,7 @@
           "tests/test_oc_closure_decision_packet.py"
         ]
       },
-      "evidence_count": 104,
+      "evidence_count": 105,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "LIN"
@@ -2263,7 +2266,7 @@
           "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
           "docs/reviews/AEX-TRUST-01_final_report.md",
           "docs/reviews/AEX-TRUST-01_root_cause.md",
-          "docs/reviews/CLX_ALL_01_delivery_report.md"
+          "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md"
         ],
         "modules": [
           "spectrum_systems/aex/admission_replay.py",
@@ -3130,6 +3133,7 @@
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_contract_preflight.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_ops_master_01.py",
           "scripts/run_repair_latency_24_01.py",
           "scripts/run_repair_standardization_24_01.py",
@@ -3170,7 +3174,7 @@
           "tests/test_governed_preflight_remediation_loop.py"
         ]
       },
-      "evidence_count": 118,
+      "evidence_count": 119,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"
