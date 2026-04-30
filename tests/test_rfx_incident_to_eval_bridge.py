@@ -142,3 +142,11 @@ def test_whitespace_only_trace_ref_fails_closed():
     result = build_rfx_incident_to_eval_bridge(incidents=[_incident(trace_ref="   ")])
     assert "rfx_bridge_no_eval_candidate" in result["reason_codes_emitted"]
     assert result["status"] == "incomplete"
+
+
+def test_string_false_eval_skip_not_treated_as_skip():
+    # P2 fix: serialized string "false" from JSON must not be treated as eval_skip=True;
+    # only a literal True boolean must trigger the skip path.
+    result = build_rfx_incident_to_eval_bridge(incidents=[_incident(eval_skip="false")])
+    assert "rfx_bridge_missing_rationale" not in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_incident_to_eval_bridge"

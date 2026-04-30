@@ -95,7 +95,8 @@ def check_rfx_authority_fixture_safety(
                 "fixture_id": fx_id,
                 "matched_phrases": matched,
             })
-        if fx.get("claims_dynamic") and not fx.get("dynamic_proof_ref"):
+        dynamic_ref = fx.get("dynamic_proof_ref")
+        if fx.get("claims_dynamic") and not (isinstance(dynamic_ref, str) and dynamic_ref.strip()):
             reason.append("rfx_fixture_dynamic_check_missing")
 
     total = len(fixtures)

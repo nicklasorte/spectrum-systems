@@ -112,3 +112,13 @@ def test_whitespace_only_fixture_id_flagged():
     result = check_rfx_authority_fixture_safety(fixtures=[_fx(id="   ")])
     assert "rfx_fixture_missing_id" in result["reason_codes_emitted"]
     assert result["status"] == "unsafe"
+
+
+def test_whitespace_only_dynamic_proof_ref_flagged():
+    # P1 fix: whitespace-only dynamic_proof_ref must be treated as absent and
+    # emit rfx_fixture_dynamic_check_missing, not silently pass.
+    result = check_rfx_authority_fixture_safety(
+        fixtures=[_fx(claims_dynamic=True, dynamic_proof_ref="   ")]
+    )
+    assert "rfx_fixture_dynamic_check_missing" in result["reason_codes_emitted"]
+    assert result["status"] == "unsafe"
