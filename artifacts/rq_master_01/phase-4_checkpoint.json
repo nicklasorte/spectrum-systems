@@ -1,7 +1,7 @@
 {
   "artifact_type": "phase_checkpoint",
   "batch_id": "RQ-MASTER-01",
-  "generated_at": "2026-04-30T00:59:43Z",
+  "generated_at": "2026-04-30T05:32:23Z",
   "phase_id": "PHASE-4",
   "intent": "Guidance hardening",
   "slices": [

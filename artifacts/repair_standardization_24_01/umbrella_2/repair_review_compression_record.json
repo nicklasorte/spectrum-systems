@@ -2,7 +2,7 @@
   "artifact_type": "repair_review_compression_record",
   "slice_id": "RS-10",
   "owner": "RQX",
-  "generated_at": "2026-04-30T00:59:25Z",
+  "generated_at": "2026-04-30T05:32:00Z",
   "review_loop_execution_only": true,
   "compressed_for_classes": [
     "schema_patch"

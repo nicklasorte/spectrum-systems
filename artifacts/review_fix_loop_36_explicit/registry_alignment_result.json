@@ -1,7 +1,7 @@
 {
   "artifact_type": "registry_alignment_result",
   "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
-  "generated_at": "2026-04-30T00:59:27Z",
+  "generated_at": "2026-04-30T05:32:03Z",
   "authorities": [
     "README.md",
     "docs/architecture/system_registry.md",

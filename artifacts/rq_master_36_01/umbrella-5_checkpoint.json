@@ -1,7 +1,7 @@
 {
   "artifact_type": "rq_master_umbrella_checkpoint",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-30T01:00:08Z",
+  "generated_at": "2026-04-30T05:32:25Z",
   "umbrella_id": "UMBRELLA-5",
   "umbrella_name": "CONTROL_CLOSURE",
   "intent": "Execute CONTROL_CLOSURE with serial hard checkpoint enforcement",
