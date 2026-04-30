@@ -31,3 +31,23 @@ def test_builder_blocks_missing_aex_pqx():
     rec=build_agent_core_loop_record('X','codex',None)
     assert rec['compliance_status']=='BLOCK'
     assert rec['loop_legs']['AEX']['status'] in {'unknown','missing'}
+
+
+def test_safe_reason_codes_present_in_examples():
+    blocked=load_example('agent_core_loop_run_record.blocked.example.json')
+    assert 'cde_signal_missing' in blocked['loop_legs']['CDE']['reason_codes']
+    assert 'sel_signal_missing' in blocked['loop_legs']['SEL']['reason_codes']
+
+
+def test_missing_leg_without_reason_codes_fails():
+    x=load_example('agent_core_loop_run_record.claude.example.json')
+    x['loop_legs']['EVL']['reason_codes']=[]
+    with pytest.raises(Exception):
+        validate_artifact(x,'agent_core_loop_run_record')
+
+
+def test_core_loop_complete_true_with_missing_leg_fails():
+    x=load_example('agent_core_loop_run_record.claude.example.json')
+    x['core_loop_complete']=True
+    with pytest.raises(Exception):
+        validate_artifact(x,'agent_core_loop_run_record')
