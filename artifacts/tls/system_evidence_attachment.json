@@ -368,6 +368,7 @@
           "tests/test_3ls_phase6_integration.py",
           "tests/test_3ls_phase7_final_lock.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_core_loop_proof.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
@@ -377,8 +378,7 @@
           "tests/test_certification.py",
           "tests/test_certification_judgment_40_explicit.py",
           "tests/test_closure_continuation_pipeline_workflow.py",
-          "tests/test_closure_decision_engine.py",
-          "tests/test_clx_all_01_redteam.py"
+          "tests/test_closure_decision_engine.py"
         ]
       },
       "evidence_count": 119,
@@ -628,11 +628,11 @@
           "tests/prl/test_eval_generator.py",
           "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase2_context_eval.py",
+          "tests/test_agent_core_loop_proof.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_authority_shape_preflight.py",
           "tests/test_certification_integrity.py",
-          "tests/test_chaos_fail_closed.py",
-          "tests/test_clx_all_01_redteam.py"
+          "tests/test_chaos_fail_closed.py"
         ]
       },
       "evidence_count": 110,
@@ -2745,6 +2745,7 @@
           "tests/test_3ls_phase5_release_budget.py",
           "tests/test_aex_authority_shape_regression.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_core_loop_proof.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
@@ -2757,8 +2758,7 @@
           "tests/test_control_surface_enforcement.py",
           "tests/test_control_surface_gap_extractor.py",
           "tests/test_control_surface_obedience.py",
-          "tests/test_d3l_maturity_report.py",
-          "tests/test_d3l_mvp_graph.py"
+          "tests/test_d3l_maturity_report.py"
         ]
       },
       "evidence_count": 126,
