@@ -100,3 +100,18 @@ def test_non_iterable_helpers_does_not_raise():
     result = assess_rfx_simplification(helpers=1)
     assert "rfx_simplification_empty_input" in result["reason_codes_emitted"]
     assert result["artifact_type"] == "rfx_simplification_review_result"
+
+
+def test_unjustified_with_duplicate_role_keeps_fold_recommendation():
+    # P2 fix: a helper that is both unjustified AND role-duplicated must keep
+    # recommendation="fold_or_deprecate" (stronger signal) rather than being
+    # downgraded to "consolidate". signals.fold_candidates depends on this.
+    result = assess_rfx_simplification(helpers=[
+        _helper(name="rfx_a", role="same_role"),
+        {"name": "rfx_b", "failure_prevented": "", "signal_improved": "", "role": "same_role"},
+    ])
+    recs = {r["name"]: r["recommendation"] for r in result["recommendations"]}
+    assert recs["rfx_b"] == "fold_or_deprecate"
+    assert result["signals"]["fold_candidates"] == 1
+    assert "rfx_simplification_no_justification" in result["reason_codes_emitted"]
+    assert "rfx_simplification_duplicate_role" in result["reason_codes_emitted"]

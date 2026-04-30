@@ -84,7 +84,8 @@ def assess_rfx_simplification(
             prior = role_index.get(role)
             if prior and prior != name:
                 reason.append("rfx_simplification_duplicate_role")
-                rec = "consolidate"
+                if rec != "fold_or_deprecate":
+                    rec = "consolidate"
             role_index[role] = name
 
         recommendations.append({
