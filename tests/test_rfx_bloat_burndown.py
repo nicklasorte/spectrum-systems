@@ -117,3 +117,14 @@ def test_non_iterable_helpers_does_not_raise():
     result = build_rfx_bloat_burndown_report(helpers=1)
     assert "rfx_bloat_empty_input" in result["reason_codes_emitted"]
     assert result["artifact_type"] == "rfx_bloat_burndown_report"
+
+
+def test_superseded_with_duplicate_responsibility_keeps_remove_action():
+    # P2 fix: a helper that is both superseded_by and shares a duplicate
+    # responsibility must retain action="remove" (not be downgraded to "consolidate").
+    result = build_rfx_bloat_burndown_report(helpers=[
+        _helper(name="rfx_a", responsibility="same_role"),
+        _helper(name="rfx_b", responsibility="same_role", superseded_by="rfx_a"),
+    ])
+    actions = {c["name"]: c["action"] for c in result["consolidation_candidates"]}
+    assert actions.get("rfx_b") == "remove"

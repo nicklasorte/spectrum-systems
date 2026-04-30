@@ -226,3 +226,23 @@ def test_string_registered_id_matches_numeric_case_id():
         registered_case_ids={"1"},
     )
     assert "rfx_v2_case_unregistered" not in result["reason_codes_emitted"]
+
+
+def test_string_registered_case_ids_rejected_as_container():
+    # P1 fix: registered_case_ids="c1" must NOT iterate as chars {"c","1"};
+    # strings are not valid registry containers and must trigger unregistered.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[_case(id="c")],
+        registered_case_ids="c1",
+    )
+    assert "rfx_v2_case_unregistered" in result["reason_codes_emitted"]
+
+
+def test_bytes_registered_case_ids_rejected_as_container():
+    # P1 fix: registered_case_ids=b"c1" must not be split into bytes;
+    # treat as invalid container.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[_case(id="99")],
+        registered_case_ids=b"99",
+    )
+    assert "rfx_v2_case_unregistered" in result["reason_codes_emitted"]

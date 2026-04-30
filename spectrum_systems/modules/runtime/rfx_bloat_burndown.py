@@ -95,7 +95,8 @@ def build_rfx_bloat_burndown_report(
             if prior and prior != name:
                 reason.append("rfx_bloat_duplicate_responsibility")
                 tags.append("duplicate_responsibility")
-                action = "consolidate"
+                if action != "remove":
+                    action = "consolidate"
             else:
                 responsibility_index[responsibility] = name
 

@@ -69,10 +69,14 @@ def build_rfx_golden_failure_corpus_v2(
     _registered_check = registered_case_ids is not None
     _normalized_registered: frozenset[str] | None = None
     if _registered_check:
-        try:
-            _normalized_registered = frozenset(str(rid).strip() for rid in registered_case_ids)
-        except TypeError:
-            _normalized_registered = None  # non-iterable → all cases unregistered
+        if isinstance(registered_case_ids, (str, bytes)):
+            # strings/bytes iterate as chars/ints; reject as invalid registry container.
+            _normalized_registered = None
+        else:
+            try:
+                _normalized_registered = frozenset(str(rid).strip() for rid in registered_case_ids)
+            except TypeError:
+                _normalized_registered = None  # non-iterable → all cases unregistered
 
     for c in cases:
         if not isinstance(c, dict):
