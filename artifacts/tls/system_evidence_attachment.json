@@ -102,7 +102,6 @@
           "scripts/replay_aex_admission.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
-          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_ops_master_01.py",
           "scripts/run_repair_latency_24_01.py",
@@ -140,7 +139,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 120,
+      "evidence_count": 119,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -602,7 +601,6 @@
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
-          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_done_certification.py",
           "scripts/run_eval_ci_gate.py",
           "scripts/run_rax_redteam_arch_01.py",
@@ -638,7 +636,7 @@
           "tests/test_chaos_fail_closed.py"
         ]
       },
-      "evidence_count": 111,
+      "evidence_count": 110,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -870,6 +868,7 @@
         ],
         "scripts": [
           "scripts/run_contract_enforcement.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/validate_system_registry.py"
         ],
         "tests": [
@@ -900,7 +899,7 @@
           "tests/test_nx_registry_red_team.py"
         ]
       },
-      "evidence_count": 108,
+      "evidence_count": 109,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
