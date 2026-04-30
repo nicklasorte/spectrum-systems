@@ -126,6 +126,17 @@ def test_non_dict_cl_schema_does_not_raise():
     assert result["status"] == "misaligned"
 
 
+def test_non_string_schema_type_does_not_raise():
+    # P1 fix: non-string/unhashable type label (e.g. a list) in cl_proof_schema must not
+    # raise TypeError from _TYPE_MAP.get(); must emit rfx_cl_proof_unknown_schema_type.
+    result = check_rfx_cl_proof_alignment(
+        rfx_proof={"field": "value"},
+        cl_proof_schema={"field": ["int"]},
+    )
+    assert "rfx_cl_proof_unknown_schema_type" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_cl_proof_alignment_result"
+
+
 def test_type_mismatch_does_not_inflate_alignment_rate():
     # P2 fix: type-mismatched fields must not count toward present_count / alignment_rate.
     schema = {"status": "str", "count": "int"}

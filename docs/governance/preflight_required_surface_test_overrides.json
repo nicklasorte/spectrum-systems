@@ -63,6 +63,9 @@
   "contracts/governance/authority_shape_vocabulary.json": [
     "tests/test_contracts.py"
   ],
+  "contracts/examples/cleanup_candidate_report.json": [
+    "tests/test_contracts.py"
+  ],
   "contracts/examples/preflight_block_diagnosis_record.json": [
     "tests/test_contracts.py"
   ],

@@ -92,7 +92,7 @@ def check_rfx_cl_proof_alignment(
         else:
             type_valid = True
             if expected_type_name != "any":
-                expected_type = _TYPE_MAP.get(expected_type_name)
+                expected_type = _TYPE_MAP.get(expected_type_name) if isinstance(expected_type_name, str) else None
                 if expected_type is None:
                     reason.append("rfx_cl_proof_unknown_schema_type")
                     mismatched_fields.append(field)
