@@ -79,3 +79,15 @@ def test_builder_handles_unsupported_source_artifact_shape(tmp_path):
     assert rec['loop_legs']['AEX']['status'] in {'unknown','missing'}
     assert rec['loop_legs']['AEX']['reason_codes']
     assert rec['compliance_status']=='BLOCK'
+
+
+def test_preflight_override_includes_contract_tests_for_agent_core_loop_schemas():
+    import json
+    overrides=json.loads((ROOT/'docs'/'governance'/'preflight_required_surface_test_overrides.json').read_text())
+    for schema in [
+        'contracts/schemas/agent_core_loop_run_record.schema.json',
+        'contracts/schemas/agent_core_loop_run_record.blocked.schema.json',
+        'contracts/schemas/agent_core_loop_run_record.claude.schema.json',
+        'contracts/schemas/agent_core_loop_run_record.codex.schema.json',
+    ]:
+        assert 'tests/test_contracts.py' in overrides.get(schema, [])

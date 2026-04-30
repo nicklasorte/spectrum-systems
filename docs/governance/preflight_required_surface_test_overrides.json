@@ -1,78 +1,80 @@
 {
-  "scripts/sync_from_main.sh": [
-    "tests/test_contracts.py"
-  ],
-  "scripts/run_failure_explanation.py": [
-    "tests/test_failure_explanation.py"
-  ],
-  "scripts/run_historical_replay_validator.py": [
-    "tests/test_historical_replay_validator.py"
-  ],
-  "scripts/run_proof_presence_enforcement.py": [
-    "tests/test_proof_presence_enforcement.py"
-  ],
-  "scripts/run_minimality_sweep.py": [
-    "tests/test_minimality_sweep.py"
-  ],
-  "scripts/run_authority_preflight_expanded.py": [
-    "tests/test_authority_preflight_expanded.py"
-  ],
-  "spectrum_systems/modules/runtime/failure_explanation.py": [
-    "tests/test_failure_explanation.py"
-  ],
-  "spectrum_systems/modules/runtime/historical_replay_validator.py": [
-    "tests/test_historical_replay_validator.py"
-  ],
-  "spectrum_systems/modules/runtime/minimality_sweep.py": [
-    "tests/test_minimality_sweep.py"
-  ],
-  "spectrum_systems/modules/runtime/authority_preflight_expanded.py": [
-    "tests/test_authority_preflight_expanded.py"
-  ],
-  "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py": [
-    "tests/test_authority_repair_candidate_generator.py"
-  ],
-  "spectrum_systems/modules/runtime/test_inventory_integrity.py": [
-    "tests/test_test_inventory_integrity.py"
-  ],
-  "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py": [
-    "tests/test_failure_eval_candidate_generator.py"
-  ],
-  "spectrum_systems/governance/proof_presence_enforcement.py": [
-    "tests/test_proof_presence_enforcement.py"
-  ],
   "AGENTS.md": [
     "tests/test_system_registry_guard.py"
   ],
   "CLAUDE.md": [
     "tests/test_system_registry_guard.py"
   ],
-  "docs/governance/pytest_pr_selection_integrity_policy.json": [
-    "tests/test_pytest_selection_integrity.py",
-    "tests/test_governance_doc_preflight_selection_mapping.py"
+  "apps/dashboard-3ls/app/api/intelligence/route.ts": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
   ],
-  "docs/governance/preflight_required_surface_test_overrides.json": [
-    "tests/test_contract_preflight.py"
+  "apps/dashboard-3ls/app/page.tsx": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
   ],
-  "spectrum_systems/modules/runtime/ai_adapter.py": [
-    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  "artifacts/dashboard_cases/case_cert_incomplete_001.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
   ],
-  "spectrum_systems/modules/runtime/task_registry.py": [
-    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  "artifacts/dashboard_cases/case_eval_gap_001.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
   ],
-  "spectrum_systems/modules/runtime/eval_slice_runner.py": [
-    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  "artifacts/dashboard_cases/case_index_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
   ],
-  "contracts/governance/authority_shape_vocabulary.json": [
-    "tests/test_contracts.py"
+  "artifacts/dashboard_cases/case_replay_gap_001.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/ai_programming_governed_path_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/eval_candidate_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/eval_materialization_path_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/failure_explanation_packets.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/failure_feedback_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/fallback_reduction_plan_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/feedback_loop_snapshot.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/governance_violation_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/override_audit_log_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/policy_candidate_signal_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/replay_lineage_hardening_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
   ],
   "contracts/examples/preflight_block_diagnosis_record.json": [
     "tests/test_contracts.py"
   ],
-  "contracts/schemas/preflight_block_diagnosis_record.schema.json": [
+  "contracts/governance/authority_shape_vocabulary.json": [
     "tests/test_contracts.py"
   ],
-  "contracts/standards-manifest.json": [
+  "contracts/schemas/agent_core_loop_run_record.blocked.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/agent_core_loop_run_record.claude.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/agent_core_loop_run_record.codex.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/agent_core_loop_run_record.schema.json": [
     "tests/test_contracts.py"
   ],
   "contracts/schemas/eval_case_candidate.schema.json": [
@@ -82,6 +84,9 @@
     "tests/test_contracts.py"
   ],
   "contracts/schemas/pre_pr_failure_packet.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/preflight_block_diagnosis_record.schema.json": [
     "tests/test_contracts.py"
   ],
   "contracts/schemas/prl_eval_case.schema.json": [
@@ -96,59 +101,15 @@
   "contracts/schemas/prl_repair_candidate.schema.json": [
     "tests/test_contracts.py"
   ],
-  "artifacts/dashboard_metrics/failure_feedback_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
+  "contracts/standards-manifest.json": [
+    "tests/test_contracts.py"
   ],
-  "artifacts/dashboard_metrics/eval_candidate_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
+  "docs/governance/preflight_required_surface_test_overrides.json": [
+    "tests/test_contract_preflight.py"
   ],
-  "artifacts/dashboard_metrics/policy_candidate_signal_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/feedback_loop_snapshot.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/failure_explanation_packets.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/override_audit_log_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/eval_materialization_path_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/replay_lineage_hardening_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/fallback_reduction_plan_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/ai_programming_governed_path_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_metrics/governance_violation_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_cases/case_index_record.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_cases/case_eval_gap_001.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_cases/case_replay_gap_001.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "artifacts/dashboard_cases/case_cert_incomplete_001.json": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "apps/dashboard-3ls/app/api/intelligence/route.ts": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
-  ],
-  "apps/dashboard-3ls/app/page.tsx": [
-    "tests/metrics/test_met_04_18_contract_selection.py"
+  "docs/governance/pytest_pr_selection_integrity_policy.json": [
+    "tests/test_pytest_selection_integrity.py",
+    "tests/test_governance_doc_preflight_selection_mapping.py"
   ],
   "docs/reviews/MET-04-18-final-integration-review.md": [
     "tests/metrics/test_met_04_18_contract_selection.py"
@@ -174,17 +135,67 @@
   "docs/reviews/MET-18-dashboard-usefulness-fixes.md": [
     "tests/metrics/test_met_04_18_contract_selection.py"
   ],
-  "spectrum_systems/modules/runtime/pr_test_selection.py": [
-    "tests/test_pr_test_selection_engine.py"
+  "scripts/run_authority_preflight_expanded.py": [
+    "tests/test_authority_preflight_expanded.py"
   ],
-  "scripts/select_pr_test_shard.py": [
-    "tests/test_pr_test_shards.py"
+  "scripts/run_ci_drift_detector.py": [
+    "tests/test_ci_drift_detector.py"
+  ],
+  "scripts/run_failure_explanation.py": [
+    "tests/test_failure_explanation.py"
+  ],
+  "scripts/run_historical_replay_validator.py": [
+    "tests/test_historical_replay_validator.py"
+  ],
+  "scripts/run_minimality_sweep.py": [
+    "tests/test_minimality_sweep.py"
   ],
   "scripts/run_pr_gate.py": [
     "tests/test_pr_gate_parallel.py"
   ],
-  "scripts/run_ci_drift_detector.py": [
-    "tests/test_ci_drift_detector.py"
+  "scripts/run_proof_presence_enforcement.py": [
+    "tests/test_proof_presence_enforcement.py"
+  ],
+  "scripts/select_pr_test_shard.py": [
+    "tests/test_pr_test_shards.py"
+  ],
+  "scripts/sync_from_main.sh": [
+    "tests/test_contracts.py"
+  ],
+  "spectrum_systems/governance/proof_presence_enforcement.py": [
+    "tests/test_proof_presence_enforcement.py"
+  ],
+  "spectrum_systems/modules/runtime/ai_adapter.py": [
+    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  ],
+  "spectrum_systems/modules/runtime/authority_preflight_expanded.py": [
+    "tests/test_authority_preflight_expanded.py"
+  ],
+  "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py": [
+    "tests/test_authority_repair_candidate_generator.py"
+  ],
+  "spectrum_systems/modules/runtime/eval_slice_runner.py": [
+    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  ],
+  "spectrum_systems/modules/runtime/failure_eval_candidate_generator.py": [
+    "tests/test_failure_eval_candidate_generator.py"
+  ],
+  "spectrum_systems/modules/runtime/failure_explanation.py": [
+    "tests/test_failure_explanation.py"
+  ],
+  "spectrum_systems/modules/runtime/historical_replay_validator.py": [
+    "tests/test_historical_replay_validator.py"
+  ],
+  "spectrum_systems/modules/runtime/minimality_sweep.py": [
+    "tests/test_minimality_sweep.py"
+  ],
+  "spectrum_systems/modules/runtime/pr_test_selection.py": [
+    "tests/test_pr_test_selection_engine.py"
+  ],
+  "spectrum_systems/modules/runtime/task_registry.py": [
+    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  ],
+  "spectrum_systems/modules/runtime/test_inventory_integrity.py": [
+    "tests/test_test_inventory_integrity.py"
   ]
 }
-
