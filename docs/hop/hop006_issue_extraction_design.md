@@ -1,8 +1,18 @@
 # HOP-006 — Hard Workflow Design: Transcript → Issue/Risk/Action Extraction
 
-Status: design (HOP-006A). No runtime, no schemas, no eval cases land with
-this document. Implementation only proceeds if the GO recommendation in
-section 12 holds after red-team review.
+Status: design (HOP-006A); schema/baseline slice implemented (HOP-006B1).
+
+HOP-006B1 delivered:
+- `contracts/schemas/hop/harness_extraction_signal.schema.json` (artifact type
+  `hop_harness_extraction_signal`, advisory_only: const true, delegates_to JSX/EVL)
+- `spectrum_systems/modules/hop/extraction_baseline_harness.py` (keyword-based
+  single-turn baseline; confidence_signal=medium, ambiguity_signal=none)
+- Schema registered in `spectrum_systems/modules/hop/schemas.py`
+- Unit tests in `tests/hop/test_extraction_baseline.py`
+
+HOP authority boundaries are unchanged. No trials, no proposer mutations,
+no runtime execution. The GO recommendation in section 12 applies to further
+slices (eval cases, sandbox config, ceiling meta-tests).
 
 Owner-surface: HOP (advisory support only). Canonical owners (REL/GOV/CDE/
 JSX/SEL) are not extended. Every artifact this workflow produces is an

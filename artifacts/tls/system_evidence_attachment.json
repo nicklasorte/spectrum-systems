@@ -578,6 +578,7 @@
           "spectrum_systems/modules/governance/fail_closed_exhaustive_test.py",
           "spectrum_systems/modules/governance/policy_enforcement_integrity.py",
           "spectrum_systems/modules/hop/ai_failure_mapper.py",
+          "spectrum_systems/modules/hop/extraction_baseline_harness.py",
           "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/failure_trace.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
@@ -589,8 +590,7 @@
           "spectrum_systems/modules/runtime/control_chain_invariants.py",
           "spectrum_systems/modules/runtime/control_integration.py",
           "spectrum_systems/modules/runtime/control_loop.py",
-          "spectrum_systems/modules/runtime/control_loop_chaos.py",
-          "spectrum_systems/modules/runtime/control_surface_manifest.py"
+          "spectrum_systems/modules/runtime/control_loop_chaos.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -616,6 +616,7 @@
           "tests/fixtures/roadmaps/aut_reg_05a/sva_recovery_checkpoint.json",
           "tests/fixtures/trust_regression_pack/README.md",
           "tests/hop/test_ai_failure_mapper.py",
+          "tests/hop/test_extraction_baseline.py",
           "tests/integration/e2e-pipeline.test.ts",
           "tests/metrics/test_ai_programming_governance_rollup.py",
           "tests/metrics/test_ai_programming_governed_path_dashboard.py",
@@ -631,8 +632,7 @@
           "tests/test_chaos_fail_closed.py",
           "tests/test_clx_all_01_redteam.py",
           "tests/test_contracts.py",
-          "tests/test_control_executor.py",
-          "tests/test_control_integration.py"
+          "tests/test_control_executor.py"
         ]
       },
       "evidence_count": 110,
@@ -970,6 +970,7 @@
           "spectrum_systems/modules/hop/eval_factory.py",
           "spectrum_systems/modules/hop/evaluator.py",
           "spectrum_systems/modules/hop/experience_store.py",
+          "spectrum_systems/modules/hop/extraction_baseline_harness.py",
           "spectrum_systems/modules/hop/failure_analysis.py",
           "spectrum_systems/modules/hop/frontier.py",
           "spectrum_systems/modules/hop/mutation_policy.py",
@@ -981,8 +982,7 @@
           "spectrum_systems/modules/hop/promotion_readiness.py",
           "spectrum_systems/modules/hop/proposer.py",
           "spectrum_systems/modules/hop/rollback_signals.py",
-          "spectrum_systems/modules/hop/safety_checks.py",
-          "spectrum_systems/modules/hop/sandbox.py"
+          "spectrum_systems/modules/hop/safety_checks.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1011,6 +1011,7 @@
           "tests/hop/test_evaluator.py",
           "tests/hop/test_experience_store.py",
           "tests/hop/test_experience_store_concurrency.py",
+          "tests/hop/test_extraction_baseline.py",
           "tests/hop/test_failure_analysis.py",
           "tests/hop/test_fix_pass.py",
           "tests/hop/test_frontier.py",
@@ -1020,8 +1021,7 @@
           "tests/hop/test_integration_pipeline.py",
           "tests/hop/test_mutation_policy.py",
           "tests/hop/test_optimization_loop.py",
-          "tests/hop/test_patterns.py",
-          "tests/hop/test_phase2_red_team.py"
+          "tests/hop/test_patterns.py"
         ]
       },
       "evidence_count": 107,
@@ -1199,6 +1199,7 @@
         ],
         "modules": [
           "spectrum_systems/modules/governance/judgment_store.py",
+          "spectrum_systems/modules/hop/extraction_baseline_harness.py",
           "spectrum_systems/modules/runtime/jsx.py",
           "spectrum_systems/modules/runtime/judgment_engine.py",
           "spectrum_systems/modules/runtime/judgment_learning.py",
@@ -1214,6 +1215,7 @@
           "scripts/validate_system_registry.py"
         ],
         "tests": [
+          "tests/hop/test_extraction_baseline.py",
           "tests/test_3ls_phase3_judgment_policy.py",
           "tests/test_contract_enforcement.py",
           "tests/test_contracts.py",

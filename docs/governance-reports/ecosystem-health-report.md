@@ -1,25 +1,25 @@
 # Ecosystem Health Report
 
-Generated: 2026-04-29T23:31:55Z  
+Generated: 2026-04-29T23:48:17Z  
 Sources: `ecosystem/ecosystem-registry.json`, `governance/reports/contract-dependency-graph.json`, `artifacts/policy-engine-report.json`
 
-**Overall Health**: ⚠️ `WARNING`
+**Overall Health**: ✅ `HEALTHY`
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
 | Total Repos Inspected | 15 |
-| Overall Health | ⚠️ warning |
+| Overall Health | ✅ healthy |
 
 ## Governance Compliance
 
 | Status | Count |
 |--------|-------|
-| ✅ compliant | 12 |
+| ✅ compliant | 15 |
 | ❌ fail | 0 |
 | ⚠️ partial | 0 |
-| ⚠️ warning | 3 |
+| ⚠️ warning | 0 |
 
 ## Contract Alignment
 
@@ -51,12 +51,12 @@ Sources: `ecosystem/ecosystem-registry.json`, `governance/reports/contract-depen
 | `docx-comment-injection-engine` | Layer 3 | docx-comment-injection-engine | ✅ compliant | ✅ pass | ✅ compliant | ✅ compliant | L10 |
 | `governed-prompt-queue` | Layer 4 | governed-prompt-queue | ✅ compliant | ✅ pass | ✅ compliant | ❌ missing | L6 |
 | `knowledge-graph-engine` | Layer 3 | knowledge-graph-engine | ✅ compliant | ✅ pass | ✅ compliant | ❌ missing | L6 |
-| `meeting-minutes-engine` | Layer 3 | meeting-minutes-engine | ⚠️ warning | ✅ pass | ✅ compliant | ✅ compliant | L9 |
+| `meeting-minutes-engine` | Layer 3 | meeting-minutes-engine | ✅ compliant | ✅ pass | ✅ compliant | ✅ compliant | L9 |
 | `slide-intelligence-engine` | Layer 3 | slide-intelligence-engine | ✅ compliant | ✅ pass | ✅ compliant | ❌ missing | L6 |
 | `spectrum-pipeline-engine` | Layer 4 | spectrum-pipeline-engine | ✅ compliant | ✅ pass | ✅ compliant | ❌ missing | L8 |
-| `spectrum-program-advisor` | Layer 5 | spectrum-program-advisor | ⚠️ warning | ✅ pass | ✅ compliant | ⚠️ partial | L9 |
+| `spectrum-program-advisor` | Layer 5 | spectrum-program-advisor | ✅ compliant | ✅ pass | ✅ compliant | ⚠️ partial | L9 |
 | `spectrum-study-compiler` | Layer 3 | spectrum-study-compiler | ✅ compliant | ✅ pass | ✅ compliant | ❌ missing | L7 |
-| `spectrum-systems` | Layer 2 | — | ⚠️ warning | 🏛 governance-repo | ✅ compliant | ✅ compliant | L8 |
+| `spectrum-systems` | Layer 2 | — | ✅ compliant | 🏛 governance-repo | ✅ compliant | ✅ compliant | L8 |
 | `study-artifact-generator` | Layer 3 | study-artifact-generator | ✅ compliant | ✅ pass | ✅ compliant | ✅ compliant | L9 |
 | `system-factory` | Layer 1 | system-factory | ✅ compliant | ✅ pass | ✅ compliant | ✅ compliant | L9 |
 | `tlc` | Layer 2 | — | ✅ compliant | 🏛 governance-repo | ✅ compliant | ✅ compliant | L7 |
