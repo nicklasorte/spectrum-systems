@@ -1,0 +1,125 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "pr_number",
+    "repo",
+    "head_sha",
+    "attempt_number",
+    "max_attempts",
+    "source_artifacts_used",
+    "trace_refs",
+    "reason_codes",
+    "authority_scope",
+    "files_changed",
+    "commands_run",
+    "tests_run",
+    "pqx_execution_ref",
+    "evl_result_refs",
+    "authority_preflight_refs",
+    "tests_weakened",
+    "skipped_required_gate",
+    "status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "pr_repair_execution_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "pr_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "repo": {
+      "type": "string"
+    },
+    "head_sha": {
+      "type": "string"
+    },
+    "attempt_number": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "max_attempts": {
+      "const": 2
+    },
+    "source_artifacts_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    },
+    "files_changed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tests_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pqx_execution_ref": {
+      "type": "string"
+    },
+    "evl_result_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_preflight_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tests_weakened": {
+      "const": false
+    },
+    "skipped_required_gate": {
+      "const": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "blocked",
+        "failed"
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pr_repair_execution_record.schema.json",
+  "title": "pr_repair_execution_record"
+}

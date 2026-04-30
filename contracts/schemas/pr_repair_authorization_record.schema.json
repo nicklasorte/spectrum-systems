@@ -1,0 +1,89 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "pr_number",
+    "repo",
+    "head_sha",
+    "attempt_number",
+    "max_attempts",
+    "source_artifacts_used",
+    "trace_refs",
+    "reason_codes",
+    "authority_scope",
+    "authorization_status",
+    "authorized_files",
+    "repair_candidate_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "pr_repair_authorization_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "pr_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "repo": {
+      "type": "string"
+    },
+    "head_sha": {
+      "type": "string"
+    },
+    "attempt_number": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "max_attempts": {
+      "const": 2
+    },
+    "source_artifacts_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    },
+    "authorization_status": {
+      "type": "string",
+      "enum": [
+        "allow_repair",
+        "block",
+        "human_review_required"
+      ]
+    },
+    "authorized_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "repair_candidate_ref": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pr_repair_authorization_record.schema.json",
+  "title": "pr_repair_authorization_record"
+}

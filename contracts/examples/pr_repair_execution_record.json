@@ -1,0 +1,41 @@
+{
+  "artifact_type": "pr_repair_execution_record",
+  "schema_version": "1.0.0",
+  "pr_number": 1,
+  "repo": "org/repo",
+  "head_sha": "abc",
+  "attempt_number": 1,
+  "max_attempts": 2,
+  "source_artifacts_used": [
+    "outputs/pr_gate/pr_gate_result.json"
+  ],
+  "trace_refs": [
+    "AEX",
+    "PQX",
+    "EVL",
+    "TPA",
+    "CDE",
+    "SEL"
+  ],
+  "reason_codes": [
+    "pr_gate:block"
+  ],
+  "authority_scope": "observation_only",
+  "files_changed": [],
+  "commands_run": [],
+  "tests_run": [
+    "pytest -q"
+  ],
+  "pqx_execution_ref": "PQX:1",
+  "evl_result_refs": [
+    "EVL:1"
+  ],
+  "authority_preflight_refs": [
+    "TPA:1",
+    "CDE:1",
+    "SEL:1"
+  ],
+  "tests_weakened": false,
+  "skipped_required_gate": false,
+  "status": "blocked"
+}

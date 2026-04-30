@@ -17257,5 +17257,41 @@
       "owner": "EVL",
       "notes": "CLX-ALL-01 Phase 3: GOV-managed registry of failure-derived eval candidates. Schema-bound only."
     }
-  ]
+  ],
+  "pr_ci_failure_observation_record": {
+    "version": "1.0.0",
+    "schema": "contracts/schemas/pr_ci_failure_observation_record.schema.json",
+    "example": "contracts/examples/pr_ci_failure_observation_record.json",
+    "owner": "PRL"
+  },
+  "pr_failure_normalization_packet": {
+    "version": "1.0.0",
+    "schema": "contracts/schemas/pr_failure_normalization_packet.schema.json",
+    "example": "contracts/examples/pr_failure_normalization_packet.json",
+    "owner": "PRL"
+  },
+  "pr_repair_candidate_record": {
+    "version": "1.0.0",
+    "schema": "contracts/schemas/pr_repair_candidate_record.schema.json",
+    "example": "contracts/examples/pr_repair_candidate_record.json",
+    "owner": "PRL"
+  },
+  "pr_repair_authorization_record": {
+    "version": "1.0.0",
+    "schema": "contracts/schemas/pr_repair_authorization_record.schema.json",
+    "example": "contracts/examples/pr_repair_authorization_record.json",
+    "owner": "PRL"
+  },
+  "pr_repair_execution_record": {
+    "version": "1.0.0",
+    "schema": "contracts/schemas/pr_repair_execution_record.schema.json",
+    "example": "contracts/examples/pr_repair_execution_record.json",
+    "owner": "PRL"
+  },
+  "pr_repair_attempt_summary_record": {
+    "version": "1.0.0",
+    "schema": "contracts/schemas/pr_repair_attempt_summary_record.schema.json",
+    "example": "contracts/examples/pr_repair_attempt_summary_record.json",
+    "owner": "PRL"
+  }
 }

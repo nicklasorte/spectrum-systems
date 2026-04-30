@@ -1,0 +1,40 @@
+{
+  "artifact_type": "pr_repair_candidate_record",
+  "schema_version": "1.0.0",
+  "pr_number": 1,
+  "repo": "org/repo",
+  "head_sha": "abc",
+  "attempt_number": 1,
+  "max_attempts": 2,
+  "source_artifacts_used": [
+    "outputs/pr_gate/pr_gate_result.json"
+  ],
+  "trace_refs": [
+    "AEX",
+    "PQX",
+    "EVL",
+    "TPA",
+    "CDE",
+    "SEL"
+  ],
+  "reason_codes": [
+    "pr_gate:block"
+  ],
+  "authority_scope": "observation_only",
+  "failure_class": "authority_shape_violation",
+  "bounded_files": [
+    "docs/architecture/system_registry.md"
+  ],
+  "forbidden_files": [
+    "contracts/schemas"
+  ],
+  "allowed_operations": [
+    "update_text_only"
+  ],
+  "tests_required": [
+    "pytest -q"
+  ],
+  "risk_level": "low",
+  "human_review_required": false,
+  "repair_plan": "bounded"
+}

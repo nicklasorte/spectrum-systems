@@ -1,0 +1,29 @@
+{
+  "artifact_type": "pr_repair_authorization_record",
+  "schema_version": "1.0.0",
+  "pr_number": 1,
+  "repo": "org/repo",
+  "head_sha": "abc",
+  "attempt_number": 1,
+  "max_attempts": 2,
+  "source_artifacts_used": [
+    "outputs/pr_gate/pr_gate_result.json"
+  ],
+  "trace_refs": [
+    "AEX",
+    "PQX",
+    "EVL",
+    "TPA",
+    "CDE",
+    "SEL"
+  ],
+  "reason_codes": [
+    "pr_gate:block"
+  ],
+  "authority_scope": "observation_only",
+  "authorization_status": "allow_repair",
+  "authorized_files": [
+    "docs/architecture/system_registry.md"
+  ],
+  "repair_candidate_ref": "pr_repair_candidate_record:1"
+}
