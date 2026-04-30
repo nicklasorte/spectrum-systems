@@ -2,7 +2,7 @@
   "artifact_type": "fast_path_tpa_slice_artifact",
   "slice_id": "RL-05",
   "owner": "TPA",
-  "generated_at": "2026-04-29T19:28:57Z",
+  "generated_at": "2026-04-29T20:28:22Z",
   "admissibility": "allow",
   "scope": "bounded_patch_only",
   "complexity_budget": "small"

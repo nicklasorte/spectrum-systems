@@ -28,6 +28,7 @@ REQUIRED_HOP_SCHEMAS = {
     "hop_harness_failure_hypothesis",
     "hop_harness_eval_case",
     "hop_harness_faq_output",
+    "hop_harness_extraction_signal",
 }
 
 

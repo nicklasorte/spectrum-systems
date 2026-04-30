@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-29T19:28:37Z",
+  "generated_at": "2026-04-29T20:27:58Z",
   "nodes": {
     "repositories": [
       {
@@ -547,6 +547,24 @@
       },
       {
         "id": "async_wait_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "authority_preflight_failure_packet",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "authority_repair_candidate",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "authority_repair_execution_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -2124,6 +2142,12 @@
         "stability": ""
       },
       {
+        "id": "eval_candidate_registry",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "eval_canonicalization_policy",
         "node_type": "contract",
         "schema_version": "1.0.0",
@@ -2577,6 +2601,12 @@
         "id": "failure_eval_case",
         "node_type": "contract",
         "schema_version": "1.1.0",
+        "stability": ""
+      },
+      {
+        "id": "failure_explanation_packet",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
         "stability": ""
       },
       {
@@ -5472,6 +5502,12 @@
         "stability": ""
       },
       {
+        "id": "proof_presence_enforcement_result",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "provenance_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
@@ -6219,6 +6255,12 @@
         "id": "replay_result",
         "node_type": "contract",
         "schema_version": "1.2.0",
+        "stability": ""
+      },
+      {
+        "id": "replay_validation_report",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
         "stability": ""
       },
       {

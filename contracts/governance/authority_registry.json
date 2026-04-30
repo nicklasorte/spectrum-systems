@@ -156,6 +156,7 @@
       "spectrum_systems/modules/runtime/roadmap_signal_steering.py": ["block", "freeze"],
       "spectrum_systems/modules/runtime/github_pr_autofix_contract_preflight.py": ["allow", "block"],
       "contracts/examples/preflight_block_diagnosis_record.json": ["allow", "block"],
+      "spectrum_systems/modules/runtime/failure_explanation.py": ["block", "freeze"],
       "contracts/examples/ai_programming_work_item_record.example.json": ["block"],
       "spectrum_systems/modules/runtime/pr_test_selection.py": ["block"],
       "scripts/select_pr_test_shard.py": ["block"],

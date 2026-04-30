@@ -1,6 +1,6 @@
 {
   "artifact_type": "review_report",
-  "generated_at": "2026-04-29T19:29:44Z",
+  "generated_at": "2026-04-29T20:29:20Z",
   "registry_cross_check": {
     "ar_01_ar_03_projection_only": "pass",
     "ar_02_orchestration_only": "pass",

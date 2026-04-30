@@ -80,6 +80,9 @@ flowchart TD
   art_artifact_validation_decision["artifact_validation_decision\ncoordination"]
   art_assumption_register["assumption_register\nwork"]
   art_async_wait_record["async_wait_record\ngovernance"]
+  art_authority_preflight_failure_packet["authority_preflight_failure_packet\ngovernance"]
+  art_authority_repair_candidate["authority_repair_candidate\ngovernance"]
+  art_authority_repair_execution_record["authority_repair_execution_record\ngovernance"]
   art_autonomy_decision_record["autonomy_decision_record\ncoordination"]
   art_autonomy_expansion_gate_result["autonomy_expansion_gate_result\ncoordination"]
   art_autonomy_policy["autonomy_policy\ncoordination"]
@@ -346,6 +349,7 @@ flowchart TD
   art_eval_adoption_decision_artifact["eval_adoption_decision_artifact\ncoordination"]
   art_eval_auto_generation_quality_result["eval_auto_generation_quality_result\ncoordination"]
   art_eval_candidate_artifact["eval_candidate_artifact\ncoordination"]
+  art_eval_candidate_registry["eval_candidate_registry\ngovernance"]
   art_eval_canonicalization_policy["eval_canonicalization_policy\ncoordination"]
   art_eval_case["eval_case\nreview"]
   art_eval_coverage_artifact["eval_coverage_artifact\ncoordination"]
@@ -422,6 +426,7 @@ flowchart TD
   art_failure_derived_eval_case["failure_derived_eval_case\ncoordination"]
   art_failure_diagnosis_artifact["failure_diagnosis_artifact\ncoordination"]
   art_failure_eval_case["failure_eval_case\nreview"]
+  art_failure_explanation_packet["failure_explanation_packet\ngovernance"]
   art_failure_learning_record_artifact["failure_learning_record_artifact\ncoordination"]
   art_failure_packet["failure_packet\ngovernance"]
   art_failure_pattern_record["failure_pattern_record\ncoordination"]
@@ -909,6 +914,7 @@ flowchart TD
   art_prompt_rollout_record["prompt_rollout_record\ngovernance"]
   art_prompt_spec["prompt_spec\ngovernance"]
   art_prompt_version["prompt_version\ngovernance"]
+  art_proof_presence_enforcement_result["proof_presence_enforcement_result\ngovernance"]
   art_provenance_record["provenance_record\ncoordination"]
   art_prx_ai_precedent_retrieval_record["prx_ai_precedent_retrieval_record\ngovernance"]
   art_prx_precedent_bundle["prx_precedent_bundle\ncoordination"]
@@ -1034,6 +1040,7 @@ flowchart TD
   art_replay_execution_record["replay_execution_record\ncoordination"]
   art_replay_integrity_record["replay_integrity_record\ngovernance"]
   art_replay_result["replay_result\ncoordination"]
+  art_replay_validation_report["replay_validation_report\ngovernance"]
   art_repo_review_snapshot["repo_review_snapshot\nreview"]
   art_required_check_alignment_audit_result["required_check_alignment_audit_result\ncoordination"]
   art_required_eval_registry["required_eval_registry\ncoordination"]
@@ -1399,6 +1406,9 @@ flowchart TD
   con_artifact_validation_decision["artifact_validation_decision\ncontract"]
   con_assumption_register["assumption_register\ncontract"]
   con_async_wait_record["async_wait_record\ncontract"]
+  con_authority_preflight_failure_packet["authority_preflight_failure_packet\ncontract"]
+  con_authority_repair_candidate["authority_repair_candidate\ncontract"]
+  con_authority_repair_execution_record["authority_repair_execution_record\ncontract"]
   con_autonomy_decision_record["autonomy_decision_record\ncontract"]
   con_autonomy_expansion_gate_result["autonomy_expansion_gate_result\ncontract"]
   con_autonomy_policy["autonomy_policy\ncontract"]
@@ -1661,6 +1671,7 @@ flowchart TD
   con_eval_adoption_decision_artifact["eval_adoption_decision_artifact\ncontract"]
   con_eval_auto_generation_quality_result["eval_auto_generation_quality_result\ncontract"]
   con_eval_candidate_artifact["eval_candidate_artifact\ncontract"]
+  con_eval_candidate_registry["eval_candidate_registry\ncontract"]
   con_eval_canonicalization_policy["eval_canonicalization_policy\ncontract"]
   con_eval_case["eval_case\ncontract"]
   con_eval_coverage_artifact["eval_coverage_artifact\ncontract"]
@@ -1737,6 +1748,7 @@ flowchart TD
   con_failure_derived_eval_case["failure_derived_eval_case\ncontract"]
   con_failure_diagnosis_artifact["failure_diagnosis_artifact\ncontract"]
   con_failure_eval_case["failure_eval_case\ncontract"]
+  con_failure_explanation_packet["failure_explanation_packet\ncontract"]
   con_failure_learning_record_artifact["failure_learning_record_artifact\ncontract"]
   con_failure_packet["failure_packet\ncontract"]
   con_failure_pattern_record["failure_pattern_record\ncontract"]
@@ -2219,6 +2231,7 @@ flowchart TD
   con_prompt_rollout_record["prompt_rollout_record\ncontract"]
   con_prompt_spec["prompt_spec\ncontract"]
   con_prompt_version["prompt_version\ncontract"]
+  con_proof_presence_enforcement_result["proof_presence_enforcement_result\ncontract"]
   con_provenance_record["provenance_record\ncontract"]
   con_prx_ai_precedent_retrieval_record["prx_ai_precedent_retrieval_record\ncontract"]
   con_prx_precedent_bundle["prx_precedent_bundle\ncontract"]
@@ -2344,6 +2357,7 @@ flowchart TD
   con_replay_execution_record["replay_execution_record\ncontract"]
   con_replay_integrity_record["replay_integrity_record\ncontract"]
   con_replay_result["replay_result\ncontract"]
+  con_replay_validation_report["replay_validation_report\ncontract"]
   con_repo_review_snapshot["repo_review_snapshot\ncontract"]
   con_required_check_alignment_audit_result["required_check_alignment_audit_result\ncontract"]
   con_required_eval_registry["required_eval_registry\ncontract"]
@@ -2704,6 +2718,9 @@ flowchart TD
   art_artifact_validation_decision -. governed_by .-> con_artifact_validation_decision
   art_assumption_register -. governed_by .-> con_assumption_register
   art_async_wait_record -. governed_by .-> con_async_wait_record
+  art_authority_preflight_failure_packet -. governed_by .-> con_authority_preflight_failure_packet
+  art_authority_repair_candidate -. governed_by .-> con_authority_repair_candidate
+  art_authority_repair_execution_record -. governed_by .-> con_authority_repair_execution_record
   art_autonomy_decision_record -. governed_by .-> con_autonomy_decision_record
   art_autonomy_expansion_gate_result -. governed_by .-> con_autonomy_expansion_gate_result
   art_autonomy_policy -. governed_by .-> con_autonomy_policy
@@ -2966,6 +2983,7 @@ flowchart TD
   art_eval_adoption_decision_artifact -. governed_by .-> con_eval_adoption_decision_artifact
   art_eval_auto_generation_quality_result -. governed_by .-> con_eval_auto_generation_quality_result
   art_eval_candidate_artifact -. governed_by .-> con_eval_candidate_artifact
+  art_eval_candidate_registry -. governed_by .-> con_eval_candidate_registry
   art_eval_canonicalization_policy -. governed_by .-> con_eval_canonicalization_policy
   art_eval_case -. governed_by .-> con_eval_case
   art_eval_coverage_artifact -. governed_by .-> con_eval_coverage_artifact
@@ -3042,6 +3060,7 @@ flowchart TD
   art_failure_derived_eval_case -. governed_by .-> con_failure_derived_eval_case
   art_failure_diagnosis_artifact -. governed_by .-> con_failure_diagnosis_artifact
   art_failure_eval_case -. governed_by .-> con_failure_eval_case
+  art_failure_explanation_packet -. governed_by .-> con_failure_explanation_packet
   art_failure_learning_record_artifact -. governed_by .-> con_failure_learning_record_artifact
   art_failure_packet -. governed_by .-> con_failure_packet
   art_failure_pattern_record -. governed_by .-> con_failure_pattern_record
@@ -3524,6 +3543,7 @@ flowchart TD
   art_prompt_rollout_record -. governed_by .-> con_prompt_rollout_record
   art_prompt_spec -. governed_by .-> con_prompt_spec
   art_prompt_version -. governed_by .-> con_prompt_version
+  art_proof_presence_enforcement_result -. governed_by .-> con_proof_presence_enforcement_result
   art_provenance_record -. governed_by .-> con_provenance_record
   art_prx_ai_precedent_retrieval_record -. governed_by .-> con_prx_ai_precedent_retrieval_record
   art_prx_precedent_bundle -. governed_by .-> con_prx_precedent_bundle
@@ -3649,6 +3669,7 @@ flowchart TD
   art_replay_execution_record -. governed_by .-> con_replay_execution_record
   art_replay_integrity_record -. governed_by .-> con_replay_integrity_record
   art_replay_result -. governed_by .-> con_replay_result
+  art_replay_validation_report -. governed_by .-> con_replay_validation_report
   art_repo_review_snapshot -. governed_by .-> con_repo_review_snapshot
   art_required_check_alignment_audit_result -. governed_by .-> con_required_check_alignment_audit_result
   art_required_eval_registry -. governed_by .-> con_required_eval_registry
@@ -4009,6 +4030,9 @@ flowchart TD
   con_artifact_validation_decision -->|validates| art_artifact_validation_decision
   con_assumption_register -->|validates| art_assumption_register
   con_async_wait_record -->|validates| art_async_wait_record
+  con_authority_preflight_failure_packet -->|validates| art_authority_preflight_failure_packet
+  con_authority_repair_candidate -->|validates| art_authority_repair_candidate
+  con_authority_repair_execution_record -->|validates| art_authority_repair_execution_record
   con_autonomy_decision_record -->|validates| art_autonomy_decision_record
   con_autonomy_expansion_gate_result -->|validates| art_autonomy_expansion_gate_result
   con_autonomy_policy -->|validates| art_autonomy_policy
@@ -4271,6 +4295,7 @@ flowchart TD
   con_eval_adoption_decision_artifact -->|validates| art_eval_adoption_decision_artifact
   con_eval_auto_generation_quality_result -->|validates| art_eval_auto_generation_quality_result
   con_eval_candidate_artifact -->|validates| art_eval_candidate_artifact
+  con_eval_candidate_registry -->|validates| art_eval_candidate_registry
   con_eval_canonicalization_policy -->|validates| art_eval_canonicalization_policy
   con_eval_case -->|validates| art_eval_case
   con_eval_coverage_artifact -->|validates| art_eval_coverage_artifact
@@ -4347,6 +4372,7 @@ flowchart TD
   con_failure_derived_eval_case -->|validates| art_failure_derived_eval_case
   con_failure_diagnosis_artifact -->|validates| art_failure_diagnosis_artifact
   con_failure_eval_case -->|validates| art_failure_eval_case
+  con_failure_explanation_packet -->|validates| art_failure_explanation_packet
   con_failure_learning_record_artifact -->|validates| art_failure_learning_record_artifact
   con_failure_packet -->|validates| art_failure_packet
   con_failure_pattern_record -->|validates| art_failure_pattern_record
@@ -4829,6 +4855,7 @@ flowchart TD
   con_prompt_rollout_record -->|validates| art_prompt_rollout_record
   con_prompt_spec -->|validates| art_prompt_spec
   con_prompt_version -->|validates| art_prompt_version
+  con_proof_presence_enforcement_result -->|validates| art_proof_presence_enforcement_result
   con_provenance_record -->|validates| art_provenance_record
   con_prx_ai_precedent_retrieval_record -->|validates| art_prx_ai_precedent_retrieval_record
   con_prx_precedent_bundle -->|validates| art_prx_precedent_bundle
@@ -4954,6 +4981,7 @@ flowchart TD
   con_replay_execution_record -->|validates| art_replay_execution_record
   con_replay_integrity_record -->|validates| art_replay_integrity_record
   con_replay_result -->|validates| art_replay_result
+  con_replay_validation_report -->|validates| art_replay_validation_report
   con_repo_review_snapshot -->|validates| art_repo_review_snapshot
   con_required_check_alignment_audit_result -->|validates| art_required_check_alignment_audit_result
   con_required_eval_registry -->|validates| art_required_eval_registry
