@@ -187,3 +187,14 @@ def test_whitespace_only_category_not_counted_in_coverage():
     # P2 fix: whitespace-only category must not inflate category_coverage signal.
     result = build_rfx_golden_failure_corpus_v2(cases=[_case(category="   ")])
     assert result["signals"]["category_coverage"] == 0
+
+
+def test_non_container_registered_case_ids_does_not_raise():
+    # P1 fix: truthy non-container registered_case_ids (e.g. integer 1 from bad
+    # deserialization) must not raise TypeError; must emit rfx_v2_case_unregistered.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[_case(id="c1")],
+        registered_case_ids=1,
+    )
+    assert "rfx_v2_case_unregistered" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"

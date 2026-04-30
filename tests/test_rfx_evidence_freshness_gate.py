@@ -138,3 +138,15 @@ def test_nan_string_timestamp_flagged():
     )
     assert "rfx_freshness_missing_timestamp" in result["reason_codes_emitted"]
     assert result["signals"]["fresh_count"] == 0
+
+
+def test_non_iterable_evidence_records_does_not_raise():
+    # P1 fix: truthy non-iterable evidence_records (e.g. integer 1 from bad
+    # deserialization) must not raise TypeError; must emit rfx_freshness_empty_inputs
+    # and return a valid artifact.
+    result = check_rfx_evidence_freshness(
+        evidence_records=1,
+        reference_time_seconds=_REF_TIME,
+    )
+    assert "rfx_freshness_empty_inputs" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_evidence_freshness_gate_result"

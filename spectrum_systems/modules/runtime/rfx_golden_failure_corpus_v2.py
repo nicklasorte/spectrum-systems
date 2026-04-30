@@ -74,7 +74,10 @@ def build_rfx_golden_failure_corpus_v2(
             reason.append("rfx_v2_duplicate_case_id")
         else:
             # Only check registration when registered_case_ids was explicitly supplied.
-            if registered_case_ids is not None and case_id not in registered_case_ids:
+            if registered_case_ids is not None and (
+                not isinstance(registered_case_ids, (set, frozenset, list, tuple))
+                or case_id not in registered_case_ids
+            ):
                 reason.append("rfx_v2_case_unregistered")
         seen_ids.add(case_id)
 
