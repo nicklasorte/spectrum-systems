@@ -126,7 +126,7 @@ declared in `docs/architecture/system_registry.md`.
   every `AGENTS.md` and `CLAUDE.md` in the repo either inherits from
   the root rule or includes its own AGENT-INSTR-01 reference.
 
-### OBS-01 — AGENT-INSTR-01 enforcement is instruction-only
+### OBS-01 — AGENT-INSTR-01 surface is instruction-only
 - **Observation:** AGENT-INSTR-01 is a docs/instruction hardening
   slice. Runtime fail-closed behavior already lives in APR / M3L / APU
   / CLP. The instruction text does not introduce new runtime gates;
