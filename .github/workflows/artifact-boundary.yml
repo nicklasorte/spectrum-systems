@@ -150,6 +150,10 @@ jobs:
       - validate-orchestration-boundaries
       - system-registry-guard
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -310,8 +314,8 @@ jobs:
             outputs/contract_preflight/system_registry_guard_result.json
             outputs/contract_preflight/contract_preflight_diagnosis_bundle.md
 
-      - name: Post preflight diagnosis to PR comment on failure
-        if: failure() && github.event_name == 'pull_request'
+      - name: Post preflight diagnosis to PR + step summary on failure
+        if: failure()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -319,13 +323,20 @@ jobs:
         shell: bash
         run: |
           set +e
+          ls -la outputs/contract_preflight/ 2>&1 | head -30
           {
             echo "## governed-contract-preflight failure diagnosis"
             echo
-            echo "Commit: \`${{ github.event.pull_request.head.sha }}\`"
+            echo "Commit: \`${{ github.sha }}\`"
             echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "Event: \`${{ github.event_name }}\`"
             echo
-            echo "### contract_preflight_result_artifact.json (control_signal + status)"
+            echo "### outputs/contract_preflight/ directory listing"
+            echo '```'
+            ls -la outputs/contract_preflight/ 2>&1 | head -30
+            echo '```'
+            echo
+            echo "### contract_preflight_result_artifact.json (top-level signal)"
             echo '```json'
             python -c 'import json; d=json.load(open("outputs/contract_preflight/contract_preflight_result_artifact.json")); print(json.dumps({"preflight_status":d.get("preflight_status"),"control_signal":d.get("control_signal"),"recommended_repair_area":d.get("recommended_repair_area"),"control_surface_gap_status":d.get("control_surface_gap_status"),"pytest_execution":d.get("pytest_execution")}, indent=2))' 2>&1 | head -200
             echo '```'
@@ -360,6 +371,8 @@ jobs:
                 "ref_context": d.get("ref_context"),
                 "changed_path_detection": d.get("changed_path_detection"),
                 "impact": d.get("impact"),
+                "bootstrap_failures": d.get("bootstrap_failures"),
+                "secondary_exception": (d.get("secondary_exception") or "")[:1500] if isinstance(d.get("secondary_exception"), str) else d.get("secondary_exception"),
             }, indent=2)[:8000])
             ' 2>&1 | head -300
             echo '```'
@@ -375,12 +388,18 @@ jobs:
                 print()
             ' 2>&1 | head -200
             echo '```'
-          } > /tmp/preflight_diag_comment.md
-          # Truncate to GitHub's comment limit
-          head -c 60000 /tmp/preflight_diag_comment.md > /tmp/preflight_diag_comment_truncated.md
-          gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" \
-            -F body=@/tmp/preflight_diag_comment_truncated.md \
-            || echo "(failed to post diagnosis comment; continuing)"
+          } > /tmp/preflight_diag_comment.md 2>&1
+          # Always emit to step summary (visible on Actions page, no perms needed)
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            cat /tmp/preflight_diag_comment.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          # Try to comment on PR if event is pull_request (best-effort)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            head -c 60000 /tmp/preflight_diag_comment.md > /tmp/preflight_diag_comment_truncated.md
+            gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" \
+              -F body=@/tmp/preflight_diag_comment_truncated.md \
+              2>&1 | head -20 || echo "(failed to post diagnosis comment; see step summary)"
+          fi
 
   run-pytest:
     needs:
