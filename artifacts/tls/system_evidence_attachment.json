@@ -698,6 +698,7 @@
           "docs/review-actions/2026-04-05-fre-final-verification-actions.md",
           "docs/review-actions/2026-04-05-fre-recovery-system-review-actions.md",
           "docs/review-actions/2026-04-12-cde-001-build-plan.md",
+          "docs/review-actions/PAR-CI-01_fix_actions.md",
           "docs/review-actions/PLAN-AFX-02-ARTIFACT-SPINE-2026-04-09.md",
           "docs/review-actions/PLAN-BATCH-CDE-01-2026-04-06.md",
           "docs/review-actions/PLAN-BATCH-CTX-A-2026-04-09.md",
@@ -707,8 +708,7 @@
           "docs/review-actions/PLAN-BATCH-FRE-02-2026-04-05.md",
           "docs/review-actions/PLAN-BATCH-FRE-03-2026-04-05.md",
           "docs/review-actions/PLAN-BATCH-FRE-04-2026-04-05.md",
-          "docs/review-actions/PLAN-BATCH-GHA-07-2026-04-06.md",
-          "docs/review-actions/PLAN-BATCH-GHA-08-2026-04-07.md"
+          "docs/review-actions/PLAN-BATCH-GHA-07-2026-04-06.md"
         ],
         "modules": [
           "spectrum_systems/dashboard/backend/health_calculator.py",
@@ -2032,6 +2032,7 @@
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
+          "docs/review-actions/PAR-CI-01_fix_actions.md",
           "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
           "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md",
           "docs/reviews/APR-01_redteam.md",
@@ -2090,7 +2091,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 63,
+      "evidence_count": 64,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"

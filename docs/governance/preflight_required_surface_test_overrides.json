@@ -1,4 +1,9 @@
 {
+  ".github/workflows/pr-pytest.yml": [
+    "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
+    "tests/test_agent_pr_precheck_workflow_parity.py",
+    "tests/test_pr_test_shards.py"
+  ],
   "AGENTS.md": [
     "tests/test_system_registry_guard.py"
   ],

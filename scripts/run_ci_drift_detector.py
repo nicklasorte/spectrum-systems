@@ -206,7 +206,15 @@ def _check_missing_shard_result_example(repo_root: Path) -> list[dict[str, Any]]
 def _check_workflow_bypasses_canonical_selector(repo_root: Path) -> list[dict[str, Any]]:
     """Check 5: workflow_bypasses_canonical_selector.
 
-    Verify that .github/workflows/pr-pytest.yml references select_pr_test_shard.py.
+    Verify that .github/workflows/pr-pytest.yml references one of the
+    canonical shard runner / selector wrapper paths. Either of these is
+    accepted because both share the canonical selector module
+    ``spectrum_systems.modules.runtime.pr_test_selection``:
+
+    * ``scripts/run_pr_test_shards.py`` — canonical PAR-BATCH-01 shard
+      runner. Preferred, and used by APR.
+    * ``scripts/select_pr_test_shard.py`` — legacy single-shard selector
+      wrapper (still tested directly).
     """
     workflow_path = repo_root / ".github" / "workflows" / "pr-pytest.yml"
     if not workflow_path.is_file():
@@ -230,15 +238,21 @@ def _check_workflow_bypasses_canonical_selector(repo_root: Path) -> list[dict[st
                 "detail": f"Could not read pr-pytest.yml: {exc}",
             }
         ]
-    if "select_pr_test_shard.py" not in content:
+    if (
+        "scripts/run_pr_test_shards.py" not in content
+        and "scripts/select_pr_test_shard.py" not in content
+    ):
         return [
             {
                 "check": "workflow_bypasses_canonical_selector",
                 "severity": "warn",
                 "detail": (
-                    ".github/workflows/pr-pytest.yml does not reference "
-                    "'select_pr_test_shard.py'.  The workflow should invoke the "
-                    "canonical shard selector so that shard selection is governed."
+                    ".github/workflows/pr-pytest.yml does not reference any "
+                    "canonical shard runner / selector wrapper "
+                    "('scripts/run_pr_test_shards.py' or "
+                    "'scripts/select_pr_test_shard.py').  The workflow must "
+                    "invoke the canonical selector so that shard selection "
+                    "is governed."
                 ),
             }
         ]

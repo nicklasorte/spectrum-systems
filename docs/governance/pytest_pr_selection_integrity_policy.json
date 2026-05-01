@@ -45,6 +45,14 @@
       ]
     },
     {
+      "path_prefix": ".github/workflows/pr-pytest.yml",
+      "required_test_targets": [
+        "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
+        "tests/test_agent_pr_precheck_workflow_parity.py",
+        "tests/test_pr_test_shards.py"
+      ]
+    },
+    {
       "path_prefix": "artifacts/dashboard_metrics/",
       "required_test_targets": [
         "tests/metrics/test_met_04_18_contract_selection.py"
