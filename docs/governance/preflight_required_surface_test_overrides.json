@@ -239,5 +239,19 @@
   "contracts/examples/agent_pr_precheck_result.example.json": [
     "tests/test_contracts.py",
     "tests/test_agent_pr_precheck.py"
+  ],
+  "scripts/build_agent_3ls_path_measurement.py": [
+    "tests/test_agent_3ls_path_measurement.py"
+  ],
+  "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py": [
+    "tests/test_agent_3ls_path_measurement.py"
+  ],
+  "contracts/schemas/agent_3ls_path_measurement_record.schema.json": [
+    "tests/test_contracts.py",
+    "tests/test_agent_3ls_path_measurement.py"
+  ],
+  "contracts/examples/agent_3ls_path_measurement_record.example.json": [
+    "tests/test_contracts.py",
+    "tests/test_agent_3ls_path_measurement.py"
   ]
 }

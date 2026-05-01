@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-29T20:27:58Z",
+  "generated_at": "2026-05-01T15:16:27Z",
   "nodes": {
     "repositories": [
       {
@@ -288,6 +288,18 @@
         "stability": ""
       },
       {
+        "id": "agent_3ls_path_measurement_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "agent_core_loop_run_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "agent_execution_trace",
         "node_type": "contract",
         "schema_version": "1.11.0",
@@ -295,6 +307,24 @@
       },
       {
         "id": "agent_failure_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "agent_pr_precheck_result",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "agent_pr_ready_result",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "agent_pr_update_ready_result",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -1477,6 +1507,12 @@
       },
       {
         "id": "core_loop_alignment_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "core_loop_pre_pr_gate_result",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -4908,6 +4944,12 @@
         "stability": ""
       },
       {
+        "id": "pr_test_shard_result",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "pra_changed_scope_extraction_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
@@ -5185,6 +5227,12 @@
       },
       {
         "id": "prl_gate_result",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_lrt_failure_packet",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

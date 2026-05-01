@@ -61,6 +61,14 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from spectrum_systems.contracts import validate_artifact  # noqa: E402
+from spectrum_systems.modules.runtime.agent_3ls_path_measurement import (  # noqa: E402
+    DEFAULT_OUTPUT_REL_PATH as M3L_DEFAULT_OUTPUT_REL_PATH,
+    build_agent_3ls_path_measurement_record,
+    load_agl_record,
+    load_apu_result,
+    load_clp_result,
+    write_measurement_record,
+)
 from spectrum_systems.modules.runtime.pr_test_selection import (  # noqa: E402
     classify_changed_path,
     load_override_map,
@@ -734,6 +742,7 @@ def build_agent_pr_precheck_result(
     trace_refs: list[str] | None = None,
     replay_refs: list[str] | None = None,
     policy_ref: str | None = None,
+    m3l_path_measurement_ref: str | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
     if agent_type not in {"codex", "claude", "unknown_ai_agent"}:
@@ -780,6 +789,7 @@ def build_agent_pr_precheck_result(
         "trace_refs": list(trace_refs or []),
         "replay_refs": list(replay_refs or []),
         "policy_ref": policy_ref,
+        "m3l_path_measurement_ref": m3l_path_measurement_ref,
         "authority_scope": "observation_only",
     }
 
@@ -1005,6 +1015,38 @@ def main() -> int:
         authority_artifact_refs=authority_refs,
         selected_test_refs=selected_test_refs,
     )
+
+    # M3L-02 — emit a measurement-only ``agent_3ls_path_measurement_record``
+    # that aggregates the just-built APR result with any available CLP / APU /
+    # AGL artifacts. The measurement is observation-only; it never recomputes
+    # gates or claims authority.
+    m3l_output_path = (REPO_ROOT / M3L_DEFAULT_OUTPUT_REL_PATH).resolve()
+    clp_path_abs = (REPO_ROOT / clp_ref).resolve() if clp_ref else None
+    apu_path_abs = (REPO_ROOT / apu_ref).resolve() if apu_ref else None
+    default_agl_rel = "outputs/agent_core_loop/agent_core_loop_run_record.json"
+    agl_path_abs = (REPO_ROOT / default_agl_rel).resolve()
+    m3l_clp = load_clp_result(clp_path_abs) if clp_path_abs is not None else None
+    m3l_apu = load_apu_result(apu_path_abs) if apu_path_abs is not None else None
+    m3l_agl = load_agl_record(agl_path_abs) if agl_path_abs.is_file() else None
+    measurement_record = build_agent_3ls_path_measurement_record(
+        work_item_id=args.work_item_id,
+        agent_type=args.agent_type,
+        repo_mutating=repo_mutating,
+        apr_result=artifact,
+        clp_result=m3l_clp,
+        apu_result=m3l_apu,
+        agl_record=m3l_agl,
+        apr_result_ref=str(output_path.relative_to(REPO_ROOT)),
+        clp_result_ref=clp_ref,
+        apu_result_ref=apu_ref,
+        agl_record_ref=default_agl_rel if m3l_agl is not None else None,
+    )
+    validate_artifact(measurement_record, "agent_3ls_path_measurement_record")
+    write_measurement_record(measurement_record, m3l_output_path)
+    artifact["m3l_path_measurement_ref"] = str(
+        m3l_output_path.relative_to(REPO_ROOT)
+    )
+
     validate_artifact(artifact, "agent_pr_precheck_result")
     output_path.write_text(json.dumps(artifact, indent=2) + "\n", encoding="utf-8")
 

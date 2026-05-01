@@ -17296,6 +17296,14 @@
       "example_path": "contracts/examples/agent_pr_precheck_result.example.json",
       "artifact_class": "coordination",
       "introduced_in": "APR-01"
+    },
+    {
+      "artifact_type": "agent_3ls_path_measurement_record",
+      "schema_version": "1.0.0",
+      "schema_path": "contracts/schemas/agent_3ls_path_measurement_record.schema.json",
+      "example_path": "contracts/examples/agent_3ls_path_measurement_record.example.json",
+      "artifact_class": "coordination",
+      "introduced_in": "M3L-02"
     }
   ]
 }

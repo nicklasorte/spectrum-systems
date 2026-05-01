@@ -40,8 +40,13 @@
 - admission_replay_validation_record [coordination] producers: —; consumers: —; Governed artifact for contract `admission_replay_validation_record`.
 - aex_tlc_handoff_integrity_record [coordination] producers: —; consumers: —; Governed artifact for contract `aex_tlc_handoff_integrity_record`.
 - agency_critique_profile [coordination] producers: —; consumers: —; Governed artifact for contract `agency_critique_profile`.
+- agent_3ls_path_measurement_record [coordination] producers: —; consumers: —; Governed artifact for contract `agent_3ls_path_measurement_record`.
+- agent_core_loop_run_record [coordination] producers: —; consumers: —; Governed artifact for contract `agent_core_loop_run_record`.
 - agent_execution_trace [coordination] producers: —; consumers: —; Governed artifact for contract `agent_execution_trace`.
 - agent_failure_record [coordination] producers: —; consumers: —; Governed artifact for contract `agent_failure_record`.
+- agent_pr_precheck_result [coordination] producers: —; consumers: —; Governed artifact for contract `agent_pr_precheck_result`.
+- agent_pr_ready_result [coordination] producers: —; consumers: —; Governed artifact for contract `agent_pr_ready_result`.
+- agent_pr_update_ready_result [coordination] producers: —; consumers: —; Governed artifact for contract `agent_pr_update_ready_result`.
 - ai_model_request [coordination] producers: —; consumers: —; Governed artifact for contract `ai_model_request`.
 - ai_model_response [coordination] producers: —; consumers: —; Governed artifact for contract `ai_model_response`.
 - ai_programming_governance_rollup_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_governance_rollup_record`.
@@ -241,6 +246,7 @@
 - control_surface_obedience_result [coordination] producers: —; consumers: —; Governed artifact for contract `control_surface_obedience_result`.
 - coordination_loop [coordination] producers: —; consumers: —; Marker node for systems participating in the coordination loop.
 - core_loop_alignment_record [governance] producers: —; consumers: —; Governed artifact for contract `core_loop_alignment_record`.
+- core_loop_pre_pr_gate_result [coordination] producers: —; consumers: —; Governed artifact for contract `core_loop_pre_pr_gate_result`.
 - core_system_integration_validation [coordination] producers: —; consumers: —; Governed artifact for contract `core_system_integration_validation`.
 - correction_mining_report [governance] producers: —; consumers: —; Governed artifact for contract `correction_mining_report`.
 - correction_pattern_record [coordination] producers: —; consumers: —; Governed artifact for contract `correction_pattern_record`.
@@ -819,6 +825,7 @@
 - pqx_strategy_status_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `pqx_strategy_status_artifact`.
 - pqx_triage_plan_record [coordination] producers: —; consumers: —; Governed artifact for contract `pqx_triage_plan_record`.
 - pr_failure_capture_record [governance] producers: —; consumers: —; Governed artifact for contract `pr_failure_capture_record`.
+- pr_test_shard_result [governance] producers: —; consumers: —; Governed artifact for contract `pr_test_shard_result`.
 - pra_changed_scope_extraction_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_changed_scope_extraction_record`.
 - pra_ci_review_extraction_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_ci_review_extraction_record`.
 - pra_pull_request_anchor_record [coordination] producers: —; consumers: —; Governed artifact for contract `pra_pull_request_anchor_record`.
@@ -866,6 +873,7 @@
 - prl_eval_case [governance] producers: —; consumers: —; Governed artifact for contract `prl_eval_case`.
 - prl_eval_generation_record [governance] producers: —; consumers: —; Governed artifact for contract `prl_eval_generation_record`.
 - prl_gate_result [governance] producers: —; consumers: —; Governed artifact for contract `prl_gate_result`.
+- prl_lrt_failure_packet [governance] producers: —; consumers: —; Governed artifact for contract `prl_lrt_failure_packet`.
 - prl_repair_candidate [governance] producers: —; consumers: —; Governed artifact for contract `prl_repair_candidate`.
 - prm_ai_prompt_admissibility_result [governance] producers: —; consumers: —; Governed artifact for contract `prm_ai_prompt_admissibility_result`.
 - prm_ai_task_registry_record [governance] producers: —; consumers: —; Governed artifact for contract `prm_ai_task_registry_record`.
@@ -1375,8 +1383,13 @@
 - admission_replay_validation_record [coordination] intended consumers: spectrum-systems; artifacts: admission_replay_validation_record
 - aex_tlc_handoff_integrity_record [coordination] intended consumers: spectrum-systems; artifacts: aex_tlc_handoff_integrity_record
 - agency_critique_profile [coordination] intended consumers: spectrum-systems; artifacts: agency_critique_profile
+- agent_3ls_path_measurement_record [coordination] intended consumers: —; artifacts: agent_3ls_path_measurement_record
+- agent_core_loop_run_record [coordination] intended consumers: —; artifacts: agent_core_loop_run_record
 - agent_execution_trace [coordination] intended consumers: spectrum-systems; artifacts: agent_execution_trace
 - agent_failure_record [coordination] intended consumers: spectrum-systems; artifacts: agent_failure_record
+- agent_pr_precheck_result [coordination] intended consumers: —; artifacts: agent_pr_precheck_result
+- agent_pr_ready_result [coordination] intended consumers: —; artifacts: agent_pr_ready_result
+- agent_pr_update_ready_result [coordination] intended consumers: —; artifacts: agent_pr_update_ready_result
 - ai_model_request [coordination] intended consumers: spectrum-systems; artifacts: ai_model_request
 - ai_model_response [coordination] intended consumers: spectrum-systems; artifacts: ai_model_response
 - ai_programming_governance_rollup_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_governance_rollup_record
@@ -1574,6 +1587,7 @@
 - control_surface_manifest [coordination] intended consumers: spectrum-systems; artifacts: control_surface_manifest
 - control_surface_obedience_result [coordination] intended consumers: spectrum-systems; artifacts: control_surface_obedience_result
 - core_loop_alignment_record [governance] intended consumers: spectrum-systems; artifacts: core_loop_alignment_record
+- core_loop_pre_pr_gate_result [coordination] intended consumers: —; artifacts: core_loop_pre_pr_gate_result
 - core_system_integration_validation [coordination] intended consumers: spectrum-systems; artifacts: core_system_integration_validation
 - correction_mining_report [governance] intended consumers: spectrum-systems; artifacts: correction_mining_report
 - correction_pattern_record [coordination] intended consumers: spectrum-systems; artifacts: correction_pattern_record
@@ -2145,6 +2159,7 @@
 - pqx_strategy_status_artifact [coordination] intended consumers: spectrum-systems; artifacts: pqx_strategy_status_artifact
 - pqx_triage_plan_record [coordination] intended consumers: spectrum-systems; artifacts: pqx_triage_plan_record
 - pr_failure_capture_record [governance] intended consumers: spectrum-systems; artifacts: pr_failure_capture_record
+- pr_test_shard_result [governance] intended consumers: spectrum-systems; artifacts: pr_test_shard_result
 - pra_changed_scope_extraction_record [coordination] intended consumers: spectrum-systems; artifacts: pra_changed_scope_extraction_record
 - pra_ci_review_extraction_record [coordination] intended consumers: spectrum-systems; artifacts: pra_ci_review_extraction_record
 - pra_pull_request_anchor_record [coordination] intended consumers: spectrum-systems; artifacts: pra_pull_request_anchor_record
@@ -2192,6 +2207,7 @@
 - prl_eval_case [governance] intended consumers: spectrum-systems; artifacts: prl_eval_case
 - prl_eval_generation_record [governance] intended consumers: spectrum-systems; artifacts: prl_eval_generation_record
 - prl_gate_result [governance] intended consumers: spectrum-systems; artifacts: prl_gate_result
+- prl_lrt_failure_packet [governance] intended consumers: spectrum-systems; artifacts: prl_lrt_failure_packet
 - prl_repair_candidate [governance] intended consumers: spectrum-systems; artifacts: prl_repair_candidate
 - prm_ai_prompt_admissibility_result [governance] intended consumers: spectrum-systems; artifacts: prm_ai_prompt_admissibility_result
 - prm_ai_task_registry_record [governance] intended consumers: spectrum-systems; artifacts: prm_ai_task_registry_record

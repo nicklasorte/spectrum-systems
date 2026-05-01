@@ -385,6 +385,20 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "agent_3ls_path_measurement_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `agent_3ls_path_measurement_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "agent_core_loop_run_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `agent_core_loop_run_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "agent_execution_trace",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `agent_execution_trace`.",
@@ -395,6 +409,27 @@
       "artifact_type": "agent_failure_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `agent_failure_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "agent_pr_precheck_result",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `agent_pr_precheck_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "agent_pr_ready_result",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `agent_pr_ready_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "agent_pr_update_ready_result",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `agent_pr_update_ready_result`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -1796,6 +1831,13 @@
       "artifact_type": "core_loop_alignment_record",
       "artifact_class": "governance",
       "description": "Governed artifact for contract `core_loop_alignment_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "core_loop_pre_pr_gate_result",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `core_loop_pre_pr_gate_result`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -5869,6 +5911,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "pr_test_shard_result",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `pr_test_shard_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "pra_changed_scope_extraction_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `pra_changed_scope_extraction_record`.",
@@ -6194,6 +6243,13 @@
       "artifact_type": "prl_gate_result",
       "artifact_class": "governance",
       "description": "Governed artifact for contract `prl_gate_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "prl_lrt_failure_packet",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `prl_lrt_failure_packet`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -9870,6 +9926,22 @@
       ]
     },
     {
+      "contract_name": "agent_3ls_path_measurement_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [],
+      "related_artifact_types": [
+        "agent_3ls_path_measurement_record"
+      ]
+    },
+    {
+      "contract_name": "agent_core_loop_run_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [],
+      "related_artifact_types": [
+        "agent_core_loop_run_record"
+      ]
+    },
+    {
       "contract_name": "agent_execution_trace",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -9887,6 +9959,30 @@
       ],
       "related_artifact_types": [
         "agent_failure_record"
+      ]
+    },
+    {
+      "contract_name": "agent_pr_precheck_result",
+      "artifact_class": "coordination",
+      "intended_consumers": [],
+      "related_artifact_types": [
+        "agent_pr_precheck_result"
+      ]
+    },
+    {
+      "contract_name": "agent_pr_ready_result",
+      "artifact_class": "coordination",
+      "intended_consumers": [],
+      "related_artifact_types": [
+        "agent_pr_ready_result"
+      ]
+    },
+    {
+      "contract_name": "agent_pr_update_ready_result",
+      "artifact_class": "coordination",
+      "intended_consumers": [],
+      "related_artifact_types": [
+        "agent_pr_update_ready_result"
       ]
     },
     {
@@ -11859,6 +11955,14 @@
       ],
       "related_artifact_types": [
         "core_loop_alignment_record"
+      ]
+    },
+    {
+      "contract_name": "core_loop_pre_pr_gate_result",
+      "artifact_class": "coordination",
+      "intended_consumers": [],
+      "related_artifact_types": [
+        "core_loop_pre_pr_gate_result"
       ]
     },
     {
@@ -17578,6 +17682,16 @@
       ]
     },
     {
+      "contract_name": "pr_test_shard_result",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "pr_test_shard_result"
+      ]
+    },
+    {
       "contract_name": "pra_changed_scope_extraction_record",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -18045,6 +18159,16 @@
       ],
       "related_artifact_types": [
         "prl_gate_result"
+      ]
+    },
+    {
+      "contract_name": "prl_lrt_failure_packet",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "prl_lrt_failure_packet"
       ]
     },
     {
@@ -22997,6 +23121,20 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "agent_3ls_path_measurement_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "agent_3ls_path_measurement_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "agent_core_loop_run_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "agent_core_loop_run_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "agent_execution_trace",
       "relation": "governed_by",
       "to_type": "contract",
@@ -23008,6 +23146,27 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "agent_failure_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "agent_pr_precheck_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "agent_pr_precheck_result"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "agent_pr_ready_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "agent_pr_ready_result"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "agent_pr_update_ready_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "agent_pr_update_ready_result"
     },
     {
       "from_type": "artifact",
@@ -24387,6 +24546,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "core_loop_alignment_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "core_loop_pre_pr_gate_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "core_loop_pre_pr_gate_result"
     },
     {
       "from_type": "artifact",
@@ -28387,6 +28553,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "pr_test_shard_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "pr_test_shard_result"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "pra_changed_scope_extraction_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -28713,6 +28886,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "prl_gate_result"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "prl_lrt_failure_packet",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "prl_lrt_failure_packet"
     },
     {
       "from_type": "artifact",
@@ -32230,6 +32410,20 @@
     },
     {
       "from_type": "contract",
+      "from_id": "agent_3ls_path_measurement_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "agent_3ls_path_measurement_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "agent_core_loop_run_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "agent_core_loop_run_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "agent_execution_trace",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -32241,6 +32435,27 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "agent_failure_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "agent_pr_precheck_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "agent_pr_precheck_result"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "agent_pr_ready_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "agent_pr_ready_result"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "agent_pr_update_ready_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "agent_pr_update_ready_result"
     },
     {
       "from_type": "contract",
@@ -33620,6 +33835,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "core_loop_alignment_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "core_loop_pre_pr_gate_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "core_loop_pre_pr_gate_result"
     },
     {
       "from_type": "contract",
@@ -37620,6 +37842,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "pr_test_shard_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "pr_test_shard_result"
+    },
+    {
+      "from_type": "contract",
       "from_id": "pra_changed_scope_extraction_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -37946,6 +38175,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "prl_gate_result"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "prl_lrt_failure_packet",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "prl_lrt_failure_packet"
     },
     {
       "from_type": "contract",

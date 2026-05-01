@@ -76,6 +76,7 @@
           "spectrum_systems/governance/system_dependency_map.py",
           "spectrum_systems/modules/hop/ai_failure_mapper.py",
           "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
           "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
@@ -83,8 +84,7 @@
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/cal_runtime.py",
-          "spectrum_systems/modules/runtime/chx_runtime.py",
-          "spectrum_systems/modules/runtime/context_governed_flow.py"
+          "spectrum_systems/modules/runtime/chx_runtime.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -95,6 +95,7 @@
           "schemas/aex/aex_admission_trace_record.schema.json"
         ],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_system_registry_artifact.py",
@@ -143,7 +144,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 123,
+      "evidence_count": 124,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -339,6 +340,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_rank_maturity_alignment.py",
@@ -376,6 +378,7 @@
           "tests/test_3ls_phase6_integration.py",
           "tests/test_3ls_phase7_final_lock.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
           "tests/test_agent_pr_precheck.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
@@ -385,11 +388,10 @@
           "tests/test_authority_shape_preflight.py",
           "tests/test_cde_decision_flow.py",
           "tests/test_certification.py",
-          "tests/test_certification_judgment_40_explicit.py",
-          "tests/test_check_agent_pr_update_ready.py"
+          "tests/test_certification_judgment_40_explicit.py"
         ]
       },
-      "evidence_count": 123,
+      "evidence_count": 124,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -591,19 +593,20 @@
           "spectrum_systems/modules/observability/failure_trace.py",
           "spectrum_systems/modules/prl/eval_generator.py",
           "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
           "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
-          "spectrum_systems/modules/runtime/bne02_full_wave.py",
-          "spectrum_systems/modules/runtime/chaos_failure_intelligence.py"
+          "spectrum_systems/modules/runtime/bne02_full_wave.py"
         ],
         "review_actions": [],
         "reviews": [],
         "schemas": [],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_priority_freshness_gate.py",
@@ -638,14 +641,14 @@
           "tests/prl/test_eval_generator.py",
           "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase2_context_eval.py",
+          "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
           "tests/test_agent_pr_precheck.py",
           "tests/test_agent_pr_precheck_workflow_parity.py",
-          "tests/test_authority_drift_regression.py",
-          "tests/test_authority_shape_preflight.py"
+          "tests/test_authority_drift_regression.py"
         ]
       },
-      "evidence_count": 112,
+      "evidence_count": 113,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -854,6 +857,7 @@
           "spectrum_systems/modules/hop/ai_failure_mapper.py",
           "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
+          "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py",
           "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
@@ -861,8 +865,7 @@
           "spectrum_systems/modules/runtime/authority_repair_engine.py",
           "spectrum_systems/modules/runtime/continuous_governance.py",
           "spectrum_systems/modules/runtime/control_chain_invariants.py",
-          "spectrum_systems/modules/runtime/failure_explanation.py",
-          "spectrum_systems/modules/runtime/governance_chain_guard.py"
+          "spectrum_systems/modules/runtime/failure_explanation.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -876,6 +879,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_contract_enforcement.py",
@@ -910,7 +914,7 @@
           "tests/test_nx_control_chain.py"
         ]
       },
-      "evidence_count": 111,
+      "evidence_count": 112,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
@@ -1308,6 +1312,7 @@
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
           "spectrum_systems/modules/prl/eval_generator.py",
           "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
           "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
@@ -1323,8 +1328,7 @@
           "spectrum_systems/modules/runtime/minimality_sweep.py",
           "spectrum_systems/modules/runtime/pmh_003_surfaces.py",
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
-          "spectrum_systems/modules/runtime/rfx_certification_gate.py",
-          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py"
+          "spectrum_systems/modules/runtime/rfx_certification_gate.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1333,6 +1337,7 @@
           "schemas/artifact-bus-message.schema.json"
         ],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/validate_system_registry.py",
@@ -1345,6 +1350,7 @@
           "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_3ls_path_measurement.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_check_agent_pr_update_ready.py",
           "tests/test_core_loop_pre_pr_gate.py",
@@ -1362,11 +1368,10 @@
           "tests/test_nt_operator_proof_review.py",
           "tests/test_nt_operator_triage_cli.py",
           "tests/test_nt_proof_size_budget.py",
-          "tests/test_nt_trust_regression_pack.py",
-          "tests/test_nx_registry_red_team.py"
+          "tests/test_nt_trust_regression_pack.py"
         ]
       },
-      "evidence_count": 106,
+      "evidence_count": 107,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "LIN"
@@ -1865,6 +1870,7 @@
           "schemas/artifacts/pqx_execution_record.schema.json"
         ],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_preflight_pqx_wrapper.py",
@@ -1888,8 +1894,7 @@
           "scripts/run_next_governed_cycle.py",
           "scripts/run_next_roadmap_batch.py",
           "scripts/run_operator_shakeout.py",
-          "scripts/run_ops_master_01.py",
-          "scripts/run_pqx_bundle.py"
+          "scripts/run_ops_master_01.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -1913,10 +1918,10 @@
           "tests/test_3ls_phase4_observability.py",
           "tests/test_3ls_simplification.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
           "tests/test_agent_core_loop_requires_clp.py",
-          "tests/test_agent_pr_precheck.py",
-          "tests/test_agent_pr_precheck_workflow_parity.py"
+          "tests/test_agent_pr_precheck.py"
         ]
       },
       "evidence_count": 128,
@@ -2314,6 +2319,7 @@
           "spectrum_systems/modules/prl/repair_generator.py",
           "spectrum_systems/modules/replay/replay_gate.py",
           "spectrum_systems/modules/replay/replay_support.py",
+          "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
@@ -2327,8 +2333,7 @@
           "spectrum_systems/modules/runtime/replay_decision_engine.py",
           "spectrum_systems/modules/runtime/replay_engine.py",
           "spectrum_systems/modules/runtime/replay_governance.py",
-          "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
-          "spectrum_systems/modules/runtime/rfx_certification_gate.py"
+          "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -2337,6 +2342,7 @@
           "schemas/aex/aex_admission_replay_record.schema.json"
         ],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/replay_aex_admission.py",
           "scripts/run_agent_pr_precheck.py",
@@ -2352,6 +2358,7 @@
           "tests/prl/test_repair_generator.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_3ls_path_measurement.py",
           "tests/test_check_agent_pr_update_ready.py",
           "tests/test_clx_all_01_redteam.py",
           "tests/test_core_loop_pre_pr_gate.py",
@@ -2367,11 +2374,10 @@
           "tests/test_oc_bottleneck_classifier.py",
           "tests/test_oc_cleanup_candidate_report.py",
           "tests/test_proof_presence_enforcement.py",
-          "tests/test_rfx_certification_gate.py",
-          "tests/test_rfx_flow_integration.py"
+          "tests/test_rfx_certification_gate.py"
         ]
       },
-      "evidence_count": 107,
+      "evidence_count": 108,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "REP"
@@ -2731,14 +2737,14 @@
           "spectrum_systems/modules/observability/failure_trace.py",
           "spectrum_systems/modules/prompt_queue/execution_runner.py",
           "spectrum_systems/modules/review_handoff_disposition.py",
+          "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
-          "spectrum_systems/modules/runtime/authority_repair_engine.py",
-          "spectrum_systems/modules/runtime/cal_runtime.py"
+          "spectrum_systems/modules/runtime/authority_repair_engine.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -2748,6 +2754,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_control_surface_gap_packet.py",
           "scripts/build_d3l_mvp_graph.py",
@@ -2771,8 +2778,7 @@
           "scripts/run_rh_kernel_24_01.py",
           "scripts/run_sel_orchestration.py",
           "scripts/run_sel_replay_gate.py",
-          "scripts/run_shift_left_memory_24_01.py",
-          "scripts/run_trust_spine_evidence_cohesion.py"
+          "scripts/run_shift_left_memory_24_01.py"
         ],
         "tests": [
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
@@ -2786,6 +2792,7 @@
           "tests/test_3ls_phase5_release_budget.py",
           "tests/test_aex_authority_shape_regression.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
           "tests/test_agent_pr_precheck.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
@@ -2798,8 +2805,7 @@
           "tests/test_contract_enforcement.py",
           "tests/test_contract_preflight.py",
           "tests/test_contracts.py",
-          "tests/test_control_surface_enforcement.py",
-          "tests/test_control_surface_gap_extractor.py"
+          "tests/test_control_surface_enforcement.py"
         ]
       },
       "evidence_count": 127,
@@ -3151,13 +3157,13 @@
           "spectrum_systems/modules/observability/failure_trace.py",
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/review_fix_execution_loop.py",
+          "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
-          "spectrum_systems/modules/runtime/authority_repair_engine.py",
-          "spectrum_systems/modules/runtime/cal_runtime.py"
+          "spectrum_systems/modules/runtime/authority_repair_engine.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -3165,6 +3171,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/check_agent_pr_ready.py",
@@ -3199,6 +3206,7 @@
           "tests/test_3ls_simplification.py",
           "tests/test_3ls_simplification_phases_6_9.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_pr_precheck.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
@@ -3211,11 +3219,10 @@
           "tests/test_d3l_priority_freshness_gate.py",
           "tests/test_d3l_ranking_report.py",
           "tests/test_done_certification.py",
-          "tests/test_end_to_end_governed_scenarios.py",
-          "tests/test_evaluation_enforcement_bridge.py"
+          "tests/test_end_to_end_governed_scenarios.py"
         ]
       },
-      "evidence_count": 122,
+      "evidence_count": 123,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"

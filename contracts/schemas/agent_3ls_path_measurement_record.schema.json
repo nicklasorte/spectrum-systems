@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/m3l/agent_3ls_path_measurement_record.schema.json",
+  "title": "Agent 3LS Path Measurement Record",
+  "description": "M3L-02 measurement-only artifact emitted by spectrum_systems/modules/runtime/agent_3ls_path_measurement.py. The record aggregates existing per-system observations (APR, CLP, APU, AGL) into a single answer to: did the agent traverse AEX -> PQX -> EVL -> TPA -> CDE -> SEL, where did it fall out, and what was the first missing leg / first failed check. The artifact is observation-only and never recomputes upstream gates. Canonical authority remains with AEX (admission), PQX (bounded execution closure), EVL (eval evidence), TPA (policy/scope), CDE (continuation/closure), SEL (final gate signal), LIN (lineage), REP (replay), and GOV per docs/architecture/system_registry.md. M3L emits no admission, execution, eval, policy, control, or final-gate signal of its own.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "measurement_id",
+    "created_at",
+    "work_item_id",
+    "agent_type",
+    "repo_mutating",
+    "loop_path",
+    "first_missing_leg",
+    "first_failed_check",
+    "fell_out_at",
+    "loop_complete",
+    "pr_ready_status",
+    "pr_update_ready_status",
+    "source_artifact_refs",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": { "const": "agent_3ls_path_measurement_record" },
+    "schema_version": { "const": "1.0.0" },
+    "measurement_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "work_item_id": { "type": "string", "minLength": 1 },
+    "agent_type": {
+      "enum": ["codex", "claude", "other", "unknown", "unknown_ai_agent"]
+    },
+    "repo_mutating": {
+      "type": ["boolean", "null"]
+    },
+    "loop_path": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"],
+      "properties": {
+        "AEX": { "$ref": "#/$defs/leg_observation" },
+        "PQX": { "$ref": "#/$defs/leg_observation" },
+        "EVL": { "$ref": "#/$defs/leg_observation" },
+        "TPA": { "$ref": "#/$defs/leg_observation" },
+        "CDE": { "$ref": "#/$defs/leg_observation" },
+        "SEL": { "$ref": "#/$defs/leg_observation" }
+      }
+    },
+    "first_missing_leg": {
+      "type": ["string", "null"]
+    },
+    "first_failed_check": {
+      "type": ["string", "null"]
+    },
+    "fell_out_at": {
+      "type": ["string", "null"]
+    },
+    "loop_complete": { "type": "boolean" },
+    "pr_ready_status": {
+      "enum": ["ready", "not_ready", "human_review_required", "unknown"]
+    },
+    "pr_update_ready_status": {
+      "enum": ["ready", "not_ready", "human_review_required", "unknown"]
+    },
+    "source_artifact_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "apr_result_ref": { "type": ["string", "null"] },
+    "clp_result_ref": { "type": ["string", "null"] },
+    "apu_result_ref": { "type": ["string", "null"] },
+    "agl_record_ref": { "type": ["string", "null"] },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "authority_scope": { "const": "observation_only" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "loop_complete": { "const": true } }
+      },
+      "then": {
+        "properties": {
+          "first_missing_leg": { "type": "null" },
+          "fell_out_at": { "type": "null" },
+          "loop_path": {
+            "properties": {
+              "AEX": { "properties": { "status": { "const": "present" } } },
+              "PQX": { "properties": { "status": { "const": "present" } } },
+              "EVL": { "properties": { "status": { "const": "present" } } },
+              "TPA": { "properties": { "status": { "const": "present" } } },
+              "CDE": { "properties": { "status": { "const": "present" } } },
+              "SEL": { "properties": { "status": { "const": "present" } } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "repo_mutating": { "const": null } }
+      },
+      "then": {
+        "properties": {
+          "pr_update_ready_status": { "const": "not_ready" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "leg_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "artifact_refs", "reason_codes"],
+      "properties": {
+        "status": {
+          "enum": ["present", "partial", "missing", "unknown"]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "present" } }
+          },
+          "then": {
+            "properties": {
+              "artifact_refs": { "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "enum": ["partial", "missing", "unknown"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

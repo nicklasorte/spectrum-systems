@@ -111,6 +111,7 @@
       "items": { "type": "string", "minLength": 1 }
     },
     "policy_ref": { "type": ["string", "null"] },
+    "m3l_path_measurement_ref": { "type": ["string", "null"] },
     "authority_scope": { "const": "observation_only" }
   },
   "allOf": [
