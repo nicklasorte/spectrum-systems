@@ -48,6 +48,7 @@
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/rca_guide.md",
           "docs/review-actions/AGL-01_fix_actions.md",
+          "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
@@ -56,8 +57,7 @@
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-AUTHENTICITY-HARDGATE-24-01-2026-04-11.md",
           "docs/review-actions/PLAN-AUTO-KERNEL-24-01-2026-04-11.md",
-          "docs/review-actions/PLAN-BATCH-AEX-06-2026-04-08.md",
-          "docs/review-actions/PLAN-BATCH-AEX-2026-04-08.md"
+          "docs/review-actions/PLAN-BATCH-AEX-06-2026-04-08.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -100,8 +100,10 @@
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
+          "scripts/install_hooks.sh",
           "scripts/pqx_runner.py",
           "scripts/replay_aex_admission.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_merge_conflict_pressure_scan.py",
@@ -141,7 +143,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 121,
+      "evidence_count": 123,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -343,6 +345,7 @@
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_core_loop_pre_pr_gate.py",
@@ -374,6 +377,7 @@
           "tests/test_3ls_phase7_final_lock.py",
           "tests/test_aex_trust_hardening.py",
           "tests/test_agent_core_loop_proof.py",
+          "tests/test_agent_pr_precheck.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
@@ -382,11 +386,10 @@
           "tests/test_cde_decision_flow.py",
           "tests/test_certification.py",
           "tests/test_certification_judgment_40_explicit.py",
-          "tests/test_check_agent_pr_update_ready.py",
-          "tests/test_closure_continuation_pipeline_workflow.py"
+          "tests/test_check_agent_pr_update_ready.py"
         ]
       },
-      "evidence_count": 122,
+      "evidence_count": 123,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -564,11 +567,11 @@
           "docs/review-actions/2026-03-27-budget-control-loop-actions.md",
           "docs/review-actions/2026-03-27-control-loop-trust-boundary-review-actions.md",
           "docs/review-actions/AGL-01_fix_actions.md",
+          "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-BAE-2026-03-22.md",
-          "docs/review-actions/PLAN-BAF-2026-03-22.md",
-          "docs/review-actions/PLAN-BATCH-R-2026-04-03.md"
+          "docs/review-actions/PLAN-BAF-2026-03-22.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -606,6 +609,7 @@
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
           "scripts/check_agent_pr_update_ready.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/run_done_certification.py",
           "scripts/run_eval_ci_gate.py",
           "scripts/run_rax_redteam_arch_01.py",
@@ -635,13 +639,13 @@
           "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase2_context_eval.py",
           "tests/test_agent_core_loop_proof.py",
+          "tests/test_agent_pr_precheck.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_authority_shape_preflight.py",
-          "tests/test_certification_integrity.py",
-          "tests/test_chaos_fail_closed.py"
+          "tests/test_certification_integrity.py"
         ]
       },
-      "evidence_count": 111,
+      "evidence_count": 112,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -873,6 +877,7 @@
         ],
         "scripts": [
           "scripts/check_agent_pr_update_ready.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/run_contract_enforcement.py",
           "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/validate_system_registry.py"
@@ -905,7 +910,7 @@
           "tests/test_nx_control_chain.py"
         ]
       },
-      "evidence_count": 110,
+      "evidence_count": 111,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
@@ -1278,6 +1283,7 @@
           "docs/examples/artifact-bus-message.example.json",
           "docs/governance/agent_pr_update_policy.json",
           "docs/governance/cdx_02_3ls_roadmap.json",
+          "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CANONICAL-ID-STANDARD-REFINED-2026-03-18.md",
@@ -1291,8 +1297,7 @@
           "docs/review-actions/PLAN-R100-001-2026-04-15.md",
           "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
           "docs/review-actions/PLAN-RWA-001-2026-04-16.md",
-          "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
-          "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md"
+          "docs/review-actions/PLAN-SLH-001-2026-04-17.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -1329,6 +1334,7 @@
         ],
         "scripts": [
           "scripts/check_agent_pr_update_ready.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/validate_system_registry.py",
           "scripts/validate_system_registry_boundaries.py"
         ],
@@ -1360,7 +1366,7 @@
           "tests/test_nx_registry_red_team.py"
         ]
       },
-      "evidence_count": 105,
+      "evidence_count": 106,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "LIN"
@@ -1495,6 +1501,7 @@
           "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_simplification.py",
           "tests/test_3ls_simplification_phases_6_9.py",
+          "tests/test_agent_pr_precheck.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_certification_judgment_40_explicit.py",
           "tests/test_check_agent_pr_update_ready.py",
@@ -1507,8 +1514,7 @@
           "tests/test_nx_eval_spine.py",
           "tests/test_nx_registry_red_team.py",
           "tests/test_oc_bottleneck_classifier.py",
-          "tests/test_pqx_fix_gate.py",
-          "tests/test_pqx_sequence_runner.py"
+          "tests/test_pqx_fix_gate.py"
         ]
       },
       "evidence_count": 128,
@@ -1867,6 +1873,7 @@
           "scripts/check_agent_pr_update_ready.py",
           "scripts/generate_repo_dashboard_snapshot.py",
           "scripts/pqx_runner.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_codex_to_pqx_wrapper.py",
@@ -1882,8 +1889,7 @@
           "scripts/run_next_roadmap_batch.py",
           "scripts/run_operator_shakeout.py",
           "scripts/run_ops_master_01.py",
-          "scripts/run_pqx_bundle.py",
-          "scripts/run_pqx_sequence.py"
+          "scripts/run_pqx_bundle.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -1909,8 +1915,8 @@
           "tests/test_aex_trust_hardening.py",
           "tests/test_agent_core_loop_proof.py",
           "tests/test_agent_core_loop_requires_clp.py",
-          "tests/test_artifact_boundary_workflow_policy_observation.py",
-          "tests/test_artifact_boundary_workflow_pytest_policy_observation.py"
+          "tests/test_agent_pr_precheck.py",
+          "tests/test_artifact_boundary_workflow_policy_observation.py"
         ]
       },
       "evidence_count": 128,
@@ -2022,6 +2028,7 @@
           "docs/review-actions/CLP-02_fix_actions.md",
           "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
           "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md",
+          "docs/reviews/APR-01_redteam.md",
           "docs/reviews/APU-3LS-01_redteam.md",
           "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md",
           "docs/reviews/CLP-01_core_loop_pre_pr_gate_redteam.md",
@@ -2077,7 +2084,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 62,
+      "evidence_count": 63,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"
@@ -2278,6 +2285,7 @@
           "docs/architecture/system_registry_reduction_decision.md",
           "docs/governance/agent_pr_update_policy.json",
           "docs/governance/cdx_02_3ls_roadmap.json",
+          "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
@@ -2293,8 +2301,7 @@
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
           "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md",
           "docs/review-actions/batch-sys-enf-02_registry_to_impl_conformance_scan.md",
-          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
-          "docs/reviews/AEX-TRUST-01_final_report.md"
+          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md"
         ],
         "modules": [
           "spectrum_systems/aex/admission_replay.py",
@@ -2332,6 +2339,7 @@
         "scripts": [
           "scripts/check_agent_pr_update_ready.py",
           "scripts/replay_aex_admission.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/validate_system_registry.py",
           "scripts/validate_system_registry_boundaries.py"
         ],
@@ -2363,7 +2371,7 @@
           "tests/test_rfx_flow_integration.py"
         ]
       },
-      "evidence_count": 106,
+      "evidence_count": 107,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "REP"
@@ -2746,6 +2754,7 @@
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_contract_preflight.py",
@@ -2763,8 +2772,7 @@
           "scripts/run_sel_orchestration.py",
           "scripts/run_sel_replay_gate.py",
           "scripts/run_shift_left_memory_24_01.py",
-          "scripts/run_trust_spine_evidence_cohesion.py",
-          "scripts/validate_dashboard_public_artifacts.py"
+          "scripts/run_trust_spine_evidence_cohesion.py"
         ],
         "tests": [
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
@@ -2779,6 +2787,7 @@
           "tests/test_aex_authority_shape_regression.py",
           "tests/test_aex_trust_hardening.py",
           "tests/test_agent_core_loop_proof.py",
+          "tests/test_agent_pr_precheck.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
@@ -2790,8 +2799,7 @@
           "tests/test_contract_preflight.py",
           "tests/test_contracts.py",
           "tests/test_control_surface_enforcement.py",
-          "tests/test_control_surface_gap_extractor.py",
-          "tests/test_control_surface_obedience.py"
+          "tests/test_control_surface_gap_extractor.py"
         ]
       },
       "evidence_count": 127,
@@ -3162,6 +3170,7 @@
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/refresh_tpa_source_authority_digests.py",
+          "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_contract_preflight.py",
@@ -3190,6 +3199,7 @@
           "tests/test_3ls_simplification.py",
           "tests/test_3ls_simplification_phases_6_9.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_agent_pr_precheck.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_certification_judgment_40_explicit.py",
@@ -3202,11 +3212,10 @@
           "tests/test_d3l_ranking_report.py",
           "tests/test_done_certification.py",
           "tests/test_end_to_end_governed_scenarios.py",
-          "tests/test_evaluation_enforcement_bridge.py",
-          "tests/test_fail_closed_enforcer.py"
+          "tests/test_evaluation_enforcement_bridge.py"
         ]
       },
-      "evidence_count": 121,
+      "evidence_count": 122,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"

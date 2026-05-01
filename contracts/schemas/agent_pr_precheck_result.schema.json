@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/apr/agent_pr_precheck_result.schema.json",
+  "title": "Agent PR Precheck Result",
+  "description": "APR-01 pre-PR readiness aggregate emitted by scripts/run_agent_pr_precheck.py. APR composes existing per-gate scripts in the canonical CI sequence (authority-shape, authority-leak, system-registry, contract-compliance, contract preflight, generated-artifact freshness, selected tests, CLP-01, CLP-02, APU) and surfaces the same readiness signal that CI's governed-contract-preflight job emits. APR is observation-only: it aggregates upstream evidence and emits readiness observations and compliance observations only. Canonical authority remains with AEX (admission), PQX (bounded execution closure), EVL (eval evidence), TPA (policy/scope), CDE (continuation/closure), SEL (final gate signal), LIN (lineage), REP (replay), and GOV per docs/architecture/system_registry.md. APR emits no admission, execution, eval, policy, control, or final-gate signal of its own.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "precheck_id",
+    "created_at",
+    "work_item_id",
+    "agent_type",
+    "repo_mutating",
+    "base_ref",
+    "head_ref",
+    "overall_status",
+    "pr_ready_status",
+    "pr_update_ready_status",
+    "checks",
+    "phase_summaries",
+    "clp_artifact_ref",
+    "apu_artifact_ref",
+    "contract_preflight_artifact_refs",
+    "generated_artifact_freshness_refs",
+    "authority_artifact_refs",
+    "selected_test_refs",
+    "first_failed_check",
+    "first_missing_artifact",
+    "reason_codes",
+    "warnings",
+    "trace_refs",
+    "replay_refs",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": { "const": "agent_pr_precheck_result" },
+    "schema_version": { "const": "1.0.0" },
+    "precheck_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "work_item_id": { "type": "string", "minLength": 1 },
+    "agent_type": {
+      "enum": ["codex", "claude", "unknown_ai_agent"]
+    },
+    "repo_mutating": {
+      "type": ["boolean", "null"]
+    },
+    "base_ref": { "type": "string", "minLength": 1 },
+    "head_ref": { "type": "string", "minLength": 1 },
+    "overall_status": {
+      "enum": ["pass", "warn", "block", "human_review_required"]
+    },
+    "pr_ready_status": {
+      "enum": ["ready", "not_ready", "human_review_required"]
+    },
+    "pr_update_ready_status": {
+      "enum": ["ready", "not_ready", "human_review_required"]
+    },
+    "checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check" }
+    },
+    "phase_summaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["AEX", "TPA", "PQX", "EVL", "CDE", "SEL"],
+      "properties": {
+        "AEX": { "$ref": "#/$defs/phase_summary" },
+        "TPA": { "$ref": "#/$defs/phase_summary" },
+        "PQX": { "$ref": "#/$defs/phase_summary" },
+        "EVL": { "$ref": "#/$defs/phase_summary" },
+        "CDE": { "$ref": "#/$defs/phase_summary" },
+        "SEL": { "$ref": "#/$defs/phase_summary" }
+      }
+    },
+    "clp_artifact_ref": { "type": ["string", "null"] },
+    "apu_artifact_ref": { "type": ["string", "null"] },
+    "contract_preflight_artifact_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "generated_artifact_freshness_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "authority_artifact_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "selected_test_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "first_failed_check": { "type": ["string", "null"] },
+    "first_missing_artifact": { "type": ["string", "null"] },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "policy_ref": { "type": ["string", "null"] },
+    "authority_scope": { "const": "observation_only" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "overall_status": { "const": "pass" } }
+      },
+      "then": {
+        "properties": {
+          "first_failed_check": { "type": "null" },
+          "first_missing_artifact": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "repo_mutating": { "const": null } }
+      },
+      "then": {
+        "properties": {
+          "overall_status": { "const": "block" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_name",
+        "phase",
+        "command",
+        "status",
+        "exit_code",
+        "output_artifact_refs",
+        "reason_codes"
+      ],
+      "properties": {
+        "check_name": { "type": "string", "minLength": 1 },
+        "phase": {
+          "enum": ["AEX", "TPA", "PQX", "EVL", "CDE", "SEL"]
+        },
+        "command": { "type": "string", "minLength": 1 },
+        "status": {
+          "enum": ["pass", "warn", "block", "skipped", "missing", "unknown"]
+        },
+        "exit_code": { "type": ["integer", "null"] },
+        "output_artifact_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "next_action": { "type": ["string", "null"] }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "pass" } }
+          },
+          "then": {
+            "properties": {
+              "output_artifact_refs": { "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "enum": ["warn", "block", "skipped", "missing", "unknown"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
+    "phase_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "check_count", "fail_count", "owner_system"],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "block", "skipped", "missing", "unknown"]
+        },
+        "check_count": { "type": "integer", "minimum": 0 },
+        "fail_count": { "type": "integer", "minimum": 0 },
+        "owner_system": {
+          "enum": ["AEX", "TPA", "PQX", "EVL", "CDE", "SEL"]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

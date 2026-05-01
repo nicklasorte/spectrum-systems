@@ -228,5 +228,16 @@
   ],
   "docs/governance/agent_pr_update_policy.json": [
     "tests/test_check_agent_pr_update_ready.py"
+  ],
+  "scripts/run_agent_pr_precheck.py": [
+    "tests/test_agent_pr_precheck.py"
+  ],
+  "contracts/schemas/agent_pr_precheck_result.schema.json": [
+    "tests/test_contracts.py",
+    "tests/test_agent_pr_precheck.py"
+  ],
+  "contracts/examples/agent_pr_precheck_result.example.json": [
+    "tests/test_contracts.py",
+    "tests/test_agent_pr_precheck.py"
   ]
 }

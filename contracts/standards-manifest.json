@@ -17288,6 +17288,14 @@
       "example_path": "contracts/examples/agent_pr_update_ready_result.example.json",
       "artifact_class": "coordination",
       "introduced_in": "APU-3LS-01"
+    },
+    {
+      "artifact_type": "agent_pr_precheck_result",
+      "schema_version": "1.0.0",
+      "schema_path": "contracts/schemas/agent_pr_precheck_result.schema.json",
+      "example_path": "contracts/examples/agent_pr_precheck_result.example.json",
+      "artifact_class": "coordination",
+      "introduced_in": "APR-01"
     }
   ]
 }
