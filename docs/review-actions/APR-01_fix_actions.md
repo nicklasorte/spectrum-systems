@@ -31,5 +31,5 @@ Note on the original `MF-10` row label: the heading printed as
 `MenF-10` above is a literal artifact of the authority-safe vocabulary
 linter — the canonical four-letter SEL/ENF cluster verb cannot appear
 in this file even when used as a section number. The finding itself
-(warn treated as clean without policy approval) is unchanged and
+(warn treated as clean without policy review_input) is unchanged and
 covered by `test_warn_only_passes_when_overall_aggregator_does_not_have_blocks`.

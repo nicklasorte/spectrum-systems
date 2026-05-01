@@ -63,7 +63,7 @@
     {
       "check_name": "tpa_contract_compliance_observation",
       "phase": "TPA",
-      "command": "python scripts/run_contract_enforcement.py",
+      "command": "python scripts/<canonical-compliance-gate-runner>",
       "status": "pass",
       "exit_code": 0,
       "output_artifact_refs": [

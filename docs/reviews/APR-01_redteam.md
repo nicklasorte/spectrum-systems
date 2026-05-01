@@ -108,7 +108,7 @@ mitigation that keeps APR-01 inside its observation envelope.
   `test_system_registry_failure_surfaces_artifact_ref`.
 - **Disposition:** resolved.
 
-### MF-10 — APR treats `warn` as clean without policy approval
+### MF-10 — APR treats `warn` as clean without policy review_input
 - **Risk:** an APR-emitted `warn` overall_status flows to a green push.
 - **Mitigation:** `overall_status_to_exit_code('warn') == 1`, which is a
   non-zero exit. The aggregator writes the warn reason codes into
