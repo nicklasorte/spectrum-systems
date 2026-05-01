@@ -75,6 +75,12 @@
       ]
     },
     {
+      "path_prefix": "docs/reviews/AGENT-INSTR-",
+      "required_test_targets": [
+        "tests/test_agent_instruction_apr_m3l_required.py"
+      ]
+    },
+    {
       "path_prefix": "AGENTS.md",
       "required_test_targets": [
         "tests/test_system_registry_guard.py"
