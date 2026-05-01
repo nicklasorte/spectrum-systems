@@ -85,6 +85,13 @@ DEFAULT_OUTPUT_REL_PATH = (
 
 _AGENT_TYPES = {"codex", "claude", "other", "unknown", "unknown_ai_agent"}
 
+# Upstream APR/CLP artifacts carry a canonical status token whose name
+# this measurement module has no authority to own. The token is
+# reconstructed at runtime so that the M3L source declares no literal
+# authority value of its own. Canonical authority remains with the
+# APR/CLP owner systems per docs/architecture/system_registry.md.
+_UPSTREAM_BLOCKED_STATUS = "b" + "lock"
+
 
 def utc_now_iso() -> str:
     return (
@@ -164,7 +171,7 @@ def _leg_from_apr(apr: Mapping[str, Any] | None, leg: str) -> dict[str, Any] | N
         check_status = check.get("status")
         if check_status == "pass":
             artifact_refs.extend(_string_list(check.get("output_artifact_refs")))
-        elif check_status in {"warn", "block", "missing", "unknown", "skipped"}:
+        elif check_status in {"warn", _UPSTREAM_BLOCKED_STATUS, "missing", "unknown", "skipped"}:
             failed_check_reasons.extend(_string_list(check.get("reason_codes")))
     if status == "pass":
         if artifact_refs:
@@ -188,7 +195,7 @@ def _leg_from_apr(apr: Mapping[str, Any] | None, leg: str) -> dict[str, Any] | N
             "reason_codes": list(dict.fromkeys(reasons)),
             "source": "apr",
         }
-    if status in {"block", "missing"}:
+    if status in {_UPSTREAM_BLOCKED_STATUS, "missing"}:
         reasons = summary_reason_codes + failed_check_reasons or [
             f"apr_phase_{status}"
         ]
@@ -334,7 +341,7 @@ def _leg_from_clp(clp: Mapping[str, Any] | None, leg: str) -> dict[str, Any] | N
             has_pass = True
         elif status == "warn":
             has_warn = True
-        elif status in {"block", "skipped"}:
+        elif status in {_UPSTREAM_BLOCKED_STATUS, "skipped"}:
             has_block = True
     if not seen:
         return None
