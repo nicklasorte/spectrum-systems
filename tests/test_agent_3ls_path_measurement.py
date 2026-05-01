@@ -206,6 +206,8 @@ def test_full_loop_present_loop_complete_true():
     for leg in LOOP_ORDER:
         assert record["loop_path"][leg]["status"] == "present"
         assert record["loop_path"][leg]["artifact_refs"]
+        # APR-supplied artifact ref is surfaced into M3L loop_path leg.
+        assert f"outputs/x/{leg.lower()}.json" in record["loop_path"][leg]["artifact_refs"]
 
 
 # ---------------------------------------------------------------------------
