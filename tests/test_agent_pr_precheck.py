@@ -330,6 +330,41 @@ def test_repo_mutating_unknown_blocks():
 
 
 # ---------------------------------------------------------------------------
+# Case 9b (APR-SMOKE-01 regression) — built APR result honors repo_mutating=None
+# ---------------------------------------------------------------------------
+
+
+def test_repo_mutating_unknown_blocks_built_artifact():
+    """Regression for APR-SMOKE-01: the merged APR result (not just the
+    aggregator) must treat ``repo_mutating=None`` as
+    ``overall_status=block`` and ``pr_ready_status=pr_update_ready_status=not_ready``,
+    and the schema's ``repo_mutating==null → overall_status=='block'`` invariant
+    must hold on the built artifact.
+    """
+    overall, pr_ready, pr_upd, reasons = _aggregate_overall_status(
+        repo_mutating=None, checks=[]
+    )
+    artifact = build_agent_pr_precheck_result(
+        work_item_id="APR-SMOKE-01",
+        agent_type="claude",
+        repo_mutating=None,
+        base_ref="origin/main",
+        head_ref="HEAD",
+        checks=[],
+        overall_status=overall,
+        pr_ready_status=pr_ready,
+        pr_update_ready_status=pr_upd,
+        reason_codes=reasons,
+    )
+    validate_artifact(artifact, "agent_pr_precheck_result")
+    assert artifact["repo_mutating"] is None
+    assert artifact["overall_status"] == "block"
+    assert artifact["pr_ready_status"] == "not_ready"
+    assert artifact["pr_update_ready_status"] == "not_ready"
+    assert "repo_mutating_unknown" in artifact["reason_codes"]
+
+
+# ---------------------------------------------------------------------------
 # Case 10 — status=pass without output_artifact_refs is schema-invalid
 # ---------------------------------------------------------------------------
 

@@ -298,6 +298,8 @@ def _check_tls_freshness(*, output_dir: Path) -> dict[str, Any]:
         "artifacts/tls",
         "--top-level-out",
         "artifacts",
+        "--candidates",
+        "",
     ]
     eco_cmd = [sys.executable, "scripts/generate_ecosystem_health_report.py"]
     rc1, _ = _run_subcommand(cmd=tls_cmd, log_path=log_path)
