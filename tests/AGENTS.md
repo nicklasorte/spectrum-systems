@@ -22,7 +22,25 @@ Before any `BUILD` or `VALIDATE` prompt is marked complete:
 2. Run `pytest tests/test_contracts.py` if any contract was modified.
 3. Run `pytest tests/test_module_architecture.py` if module structure was changed.
 4. Run `pytest tests/test_core_loop_pre_pr_gate.py tests/test_check_agent_pr_ready.py tests/test_agent_core_loop_requires_clp.py` for any repo-mutating work — CLP-02 requires `core_loop_pre_pr_gate_result` evidence and a passing `agent_pr_ready_result` guard before PR-ready handoff.
-5. All tests must pass before the step is marked done.
+5. Run `pytest tests/test_agent_instruction_apr_m3l_required.py` for any change that touches `AGENTS.md`, `CLAUDE.md`, or `tests/AGENTS.md` — AGENT-INSTR-01 requires APR, M3L, and APU evidence references in the agent instruction surface.
+6. All tests must pass before the step is marked done.
+
+## AI Repo-Mutating Work — Required 3LS Evidence (AGENT-INSTR-01)
+
+Repo-mutating Codex/Claude work in this directory is governed by
+AGENT-INSTR-01 in the repo-root `AGENTS.md` and `CLAUDE.md`. Before
+claiming PR-ready or PR-update-ready, agents must run APR
+(`scripts/run_agent_pr_precheck.py`) and surface the resulting
+`agent_pr_precheck_result`, `agent_3ls_path_measurement_record`, and
+`agent_pr_update_ready_result` artifact refs. APR/M3L/APU/CLP are
+observation-only systems — they emit pre-PR readiness, 3LS path
+measurement, and PR-update readiness observations. Canonical ownership
+remains with the systems declared in `docs/architecture/system_registry.md`.
+
+The fail-closed stop conditions in AGENT-INSTR-01 §5 apply to test-only
+slices as well: missing APR, M3L, or APU artifact, `repo_mutating`
+unknown, or any `present` leg without an artifact ref stops the
+PR-ready claim.
 
 ## Files that must not be changed casually
 | File | Reason |
