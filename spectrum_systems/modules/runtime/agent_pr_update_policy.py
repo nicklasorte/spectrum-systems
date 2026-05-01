@@ -85,14 +85,15 @@ REQUIRED_LEGS_DEFAULT: tuple[str, ...] = (
     "AGL",
 )
 
-# Internal alias map: APU policy uses authority-safe observation names
-# in `required_clp_check_observations`; CLP-01's canonical check_name
-# vocabulary is its own (owner-area). When matching policy observation
-# names against CLP check_names, normalize the authority-safe alias to
-# the CLP canonical name internally only — APU never emits the
-# canonical CLP token in its own outputs. The CLP canonical name is
-# resolved from the CLP owner module rather than re-declared here.
-_CONTRACT_COMPLIANCE_OBSERVATION_POLICY_NAME = "contract_compliance_observation"
+# Internal alias map: the upstream TPA-owned policy file (consumed by
+# APU as a readiness input) uses authority-safe observation names in
+# `required_clp_check_observations`. Canonical policy authority remains
+# with TPA. CLP-01's canonical check_name vocabulary is its own
+# owner-area. When matching the upstream-observation alias against
+# CLP-carried check_names, normalize internally only — APU never emits
+# the canonical CLP token in its own outputs. The CLP canonical name
+# is resolved from the CLP owner module rather than re-declared here.
+_CONTRACT_COMPLIANCE_OBSERVATION_ALIAS_NAME = "contract_compliance_observation"
 
 
 def _clp_compliance_check_name() -> str:
@@ -104,7 +105,7 @@ def _clp_compliance_check_name() -> str:
 
 
 def _resolve_clp_check_name(policy_name: str) -> str:
-    if policy_name == _CONTRACT_COMPLIANCE_OBSERVATION_POLICY_NAME:
+    if policy_name == _CONTRACT_COMPLIANCE_OBSERVATION_ALIAS_NAME:
         return _clp_compliance_check_name()
     return policy_name
 
@@ -338,10 +339,12 @@ def _clp_required_check_coverage(
     *,
     required: Iterable[str],
 ) -> tuple[set[str], set[str]]:
-    """Return (present_policy_names, missing_policy_names).
+    """Return (present_observation_names, missing_observation_names).
 
-    Matches authority-safe policy observation names against CLP's
-    canonical check_name vocabulary via the internal alias map.
+    Matches the upstream TPA-policy-observation alias names (consumed
+    as a readiness input) against CLP-carried check_name evidence via
+    the internal alias map. Canonical policy authority remains with
+    TPA; this matcher is a non-owning support shim.
     """
     seen_clp_names: set[str] = set()
     for check in clp.get("checks") or []:
@@ -419,8 +422,9 @@ def evaluate_pr_update_ready(
     follow_up: list[dict[str, Any]] = []
     human_review = False
 
-    # Build evidence: start with AGL-derived legs, then override with explicit
-    # CLP/APU/AGL slots.
+    # Build evidence: start with carried AGL-derived legs, then replace
+    # them with explicit per-leg slots. Canonical human-review/HITL
+    # authority remains with RQX; AGL only carries observation refs.
     evidence: dict[str, dict[str, Any]] = {
         leg: _missing_leg(f"{leg.lower()}_evidence_missing") for leg in required_legs
     }
@@ -562,7 +566,10 @@ def evaluate_pr_update_ready(
                 }
             )
 
-    # CLP authority drift fail-closed.
+    # Carried-evidence authority_scope mismatch fail-closed. Canonical
+    # PRG-cluster ownership is unchanged; APU only records the carried
+    # observation. The CLP-supplied artifact is treated as upstream
+    # evidence here.
     if clp_dict is not None and clp_dict.get("authority_scope") != "observation_only":
         reasons.append("authority_scope_drift")
         human_review = True
