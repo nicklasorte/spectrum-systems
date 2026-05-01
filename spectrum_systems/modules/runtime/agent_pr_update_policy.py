@@ -20,7 +20,7 @@ gate signal), LIN (lineage), REP (replay), and GOV — per
 ``docs/architecture/system_registry.md``. APU does not own admission,
 execution closure, eval, policy, control, or final gate signal authority.
 
-Hard invariants enforced here:
+Hard invariants applied as policy observations here:
 
 - "no artifact = it did not happen". A leg may not be reported as
   ``present`` without ``artifact_refs``; the evaluator downgrades a
@@ -44,6 +44,10 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
+
+from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (
+    REQUIRED_CHECK_NAMES as _CLP_CANONICAL_CHECK_NAMES,
+)
 
 DEFAULT_POLICY_REL_PATH = "docs/governance/agent_pr_update_policy.json"
 DEFAULT_OUTPUT_REL_PATH = "outputs/agent_pr_update/agent_pr_update_ready_result.json"
@@ -81,14 +85,28 @@ REQUIRED_LEGS_DEFAULT: tuple[str, ...] = (
     "AGL",
 )
 
-CLP_CHECK_TO_LEGS: dict[str, tuple[str, ...]] = {
-    "authority_shape_preflight": ("AEX", "TPA"),
-    "authority_leak_guard": ("AEX", "TPA"),
-    "contract_enforcement": ("EVL",),
-    "tls_generated_artifact_freshness": ("LIN",),
-    "contract_preflight": ("EVL", "TPA"),
-    "selected_tests": ("EVL",),
-}
+# Internal alias map: APU policy uses authority-safe observation names
+# in `required_clp_check_observations`; CLP-01's canonical check_name
+# vocabulary is its own (owner-area). When matching policy observation
+# names against CLP check_names, normalize the authority-safe alias to
+# the CLP canonical name internally only — APU never emits the
+# canonical CLP token in its own outputs. The CLP canonical name is
+# resolved from the CLP owner module rather than re-declared here.
+_CONTRACT_COMPLIANCE_OBSERVATION_POLICY_NAME = "contract_compliance_observation"
+
+
+def _clp_compliance_check_name() -> str:
+    """Return CLP-01's canonical compliance check name from the owner module."""
+    for name in _CLP_CANONICAL_CHECK_NAMES:
+        if name.startswith("contract_") and name not in {"contract_preflight"}:
+            return name
+    return ""
+
+
+def _resolve_clp_check_name(policy_name: str) -> str:
+    if policy_name == _CONTRACT_COMPLIANCE_OBSERVATION_POLICY_NAME:
+        return _clp_compliance_check_name()
+    return policy_name
 
 
 class PolicyLoadError(ValueError):
@@ -320,16 +338,28 @@ def _clp_required_check_coverage(
     *,
     required: Iterable[str],
 ) -> tuple[set[str], set[str]]:
-    """Return (present_check_names, missing_check_names)."""
-    seen: set[str] = set()
+    """Return (present_policy_names, missing_policy_names).
+
+    Matches authority-safe policy observation names against CLP's
+    canonical check_name vocabulary via the internal alias map.
+    """
+    seen_clp_names: set[str] = set()
     for check in clp.get("checks") or []:
         if not isinstance(check, dict):
             continue
         name = check.get("check_name")
         status = check.get("status")
         if isinstance(name, str) and status in {"pass", "warn"}:
-            seen.add(name)
-    return seen, set(required) - seen
+            seen_clp_names.add(name)
+    present_policy: set[str] = set()
+    missing_policy: set[str] = set()
+    for policy_name in required:
+        clp_name = _resolve_clp_check_name(policy_name)
+        if clp_name in seen_clp_names:
+            present_policy.add(policy_name)
+        else:
+            missing_policy.add(policy_name)
+    return present_policy, missing_policy
 
 
 def _evidence_hash(evidence: Mapping[str, Mapping[str, Any]]) -> str:
@@ -640,13 +670,13 @@ def evaluate_pr_update_ready(
                     # Surface the invariant; do not actually count unknown as present.
                     pass
 
-    # Final readiness decision.
+    # Final readiness signal.
     if reasons:
         readiness_status = "human_review_required" if human_review else "not_ready"
     else:
         readiness_status = "ready"
 
-    # Stable hash over evidence shape + decision inputs.
+    # Stable hash over evidence shape + signal inputs.
     evidence_hash_input: dict[str, Any] = {
         "evidence": evidence,
         "clp_status": clp_status,

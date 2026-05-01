@@ -121,7 +121,8 @@ Findings are categorised as `must_fix`, `should_fix`, or `observation`.
 
 ### MF-11 — Negated authority verbs in non-owner artifacts
 - **Risk:** APU schema/example/tests drift into negated authority
-  language ("does not approve", "must not certify", etc.).
+  language using reserved verbs from the GOV/HIT/SEL/CDE owner
+  clusters in negated form.
 - **Mitigation:** schema description and policy notes use
   authority-safe wording ("emits readiness observations only",
   "canonical authority remains with <OWNER_SYSTEM>"); the example

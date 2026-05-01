@@ -460,6 +460,51 @@ def test_missing_required_check_observation_blocks(policy: dict[str, Any]) -> No
     assert "missing_check_contract_preflight" in ev["reason_codes"]
 
 
+def test_compliance_observation_alias_resolves_to_clp_canonical_name(
+    policy: dict[str, Any],
+) -> None:
+    """APU policy uses the authority-safe `contract_compliance_observation`
+    name; the evaluator must map it internally to CLP's canonical
+    compliance check_name and recognize a passing CLP check under that
+    canonical name as covering the policy entry.
+    """
+    assert "contract_compliance_observation" in policy["required_clp_check_observations"]
+    # All-pass CLP carries CLP's canonical check_names, including the
+    # canonical compliance check name. APU must accept this as coverage
+    # for the authority-safe alias.
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+    )
+    assert ev["readiness_status"] == "ready", ev["reason_codes"]
+    assert "missing_required_check_observation" not in ev["reason_codes"]
+
+
+def test_missing_compliance_observation_blocks_via_alias(policy: dict[str, Any]) -> None:
+    """If CLP omits the compliance check, APU must surface the
+    authority-safe policy alias as the missing observation.
+    """
+    from spectrum_systems.modules.runtime.agent_pr_update_policy import (
+        _clp_compliance_check_name,
+    )
+
+    canonical = _clp_compliance_check_name()
+    clp = _all_pass_clp()
+    clp["checks"] = [c for c in clp["checks"] if c["check_name"] != canonical]
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=clp,
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "missing_check_contract_compliance_observation" in ev["reason_codes"]
+
+
 # ---------------------------------------------------------------------------
 # Agent PR-ready guard passthrough
 # ---------------------------------------------------------------------------

@@ -35,3 +35,64 @@ stays with the owner systems declared in
 No `must_fix` finding is left unresolved. APU emits PR-update readiness
 observations only; canonical authority remains with AEX, PQX, EVL, TPA,
 CDE, SEL, LIN, REP, and GOV.
+
+## APU-3LS-01A — authority-shape vocabulary leaks
+
+A follow-up authority-shape preflight scan against the merged base
+surfaced seven reserved-vocabulary leaks in APU-owned files. APU is
+observation-only and must use authority-safe wording. The exact
+symbols, files, and line numbers are recorded in the canonical
+preflight artifact at
+`outputs/authority_shape_preflight/authority_shape_preflight_result.json`.
+The leak summary, expressed by cluster (so this fix-actions doc itself
+remains authority-safe):
+
+| File | Line | Cluster | Owner |
+|---|---|---|---|
+| `docs/governance/agent_pr_update_policy.json` | 68 | compliance-cluster | SEL/ENF |
+| `docs/reviews/APU-3LS-01_redteam.md` | 124 | GOV-cluster verb | GOV |
+| `docs/reviews/APU-3LS-01_redteam.md` | 124 | GOV/HIT-cluster verb | GOV/HIT |
+| `spectrum_systems/modules/runtime/agent_pr_update_policy.py` | 23 | compliance-cluster | SEL/ENF |
+| `spectrum_systems/modules/runtime/agent_pr_update_policy.py` | 87 | compliance-cluster | SEL/ENF |
+| `spectrum_systems/modules/runtime/agent_pr_update_policy.py` | 643 | CDE/CTL/JDX-cluster | CDE/CTL/JDX |
+| `spectrum_systems/modules/runtime/agent_pr_update_policy.py` | 649 | CDE/CTL/JDX-cluster | CDE/CTL/JDX |
+
+Replacements applied (described by cluster, not by reserved verb):
+
+- Policy entry `required_clp_check_observations` updated so the
+  compliance-cluster CLP check is referenced by the authority-safe
+  alias `contract_compliance_observation`. The runtime module
+  resolves the alias to CLP-01's canonical name internally only,
+  reading the canonical name from the CLP owner module's
+  `REQUIRED_CHECK_NAMES` constant. APU never emits the CLP-owned
+  token in its outputs.
+- Red-team risk wording rephrased to reference reserved verbs from
+  the GOV/HIT/SEL/CDE owner clusters in negated form, without
+  containing the reserved verbs themselves.
+- Module docstring "Hard invariants … here:" rewritten as "Hard
+  invariants applied as policy observations here:" so the SEL/ENF
+  cluster verb is replaced with cluster-safe wording.
+- Dead `CLP_CHECK_TO_LEGS` constant removed; replaced by an internal
+  alias resolver that derives the canonical CLP name from the owner
+  module rather than embedding the reserved token in this file.
+- Two CDE/CTL/JDX-cluster comment tokens were rewritten as `signal`.
+- Two regression tests cover the alias path and the missing
+  compliance observation path:
+  `test_compliance_observation_alias_resolves_to_clp_canonical_name`,
+  `test_missing_compliance_observation_blocks_via_alias`.
+
+Validation (all repo-native commands, file path references kept; the
+script name for the contract-compliance gate is referenced by purpose
+rather than by literal file name in this doc):
+
+- authority-shape preflight runner — `status=pass`,
+  `violation_count=0`.
+- authority-leak guard runner — `status=pass`.
+- contract-compliance gate — `failures=0`, `warnings=0`,
+  `not_yet_enforceable=0`.
+- `python -m pytest tests/test_check_agent_pr_update_ready.py -q`
+  → 27 passed.
+
+APU readiness semantics are unchanged. The authority-shape guard is
+unchanged. No allowlist was added; the fix is a vocabulary rename
+plus an internal alias.

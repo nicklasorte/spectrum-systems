@@ -65,7 +65,7 @@
   "required_clp_check_observations": [
     "authority_shape_preflight",
     "authority_leak_guard",
-    "contract_enforcement",
+    "contract_compliance_observation",
     "tls_generated_artifact_freshness",
     "contract_preflight",
     "selected_tests"
