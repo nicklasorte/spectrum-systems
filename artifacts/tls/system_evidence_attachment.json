@@ -615,6 +615,7 @@
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_done_certification.py",
           "scripts/run_eval_ci_gate.py",
+          "scripts/run_pr_test_shards.py",
           "scripts/run_rax_redteam_arch_01.py",
           "scripts/run_rax_redteam_harness_01.py",
           "scripts/validate_system_registry.py",
@@ -645,10 +646,10 @@
           "tests/test_agent_core_loop_proof.py",
           "tests/test_agent_instruction_apr_m3l_required.py",
           "tests/test_agent_pr_precheck.py",
-          "tests/test_agent_pr_precheck_workflow_parity.py"
+          "tests/test_authority_drift_regression.py"
         ]
       },
-      "evidence_count": 113,
+      "evidence_count": 114,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"

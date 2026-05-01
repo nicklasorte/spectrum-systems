@@ -614,6 +614,28 @@ def evl_pr_test_shards(
         if ref not in artifact_refs:
             artifact_refs.append(ref)
 
+    # Fail closed: if the shard runner subprocess exited non-zero, the
+    # current summary cannot be trusted (it may be stale, partially
+    # written, or from an earlier run). Do not let a stale "pass"
+    # summary override a non-zero rc.
+    if rc != 0:
+        return CheckResult(
+            check_name="evl_pr_test_shards",
+            phase="EVL",
+            command=cmd_str,
+            status="block",
+            exit_code=rc,
+            output_artifact_refs=artifact_refs,
+            reason_codes=[
+                "pr_test_shard_runner_failed",
+                "pr_test_shard_summary_stale_or_untrusted",
+            ],
+            next_action=(
+                "shard runner exited non-zero; rerun and inspect: "
+                + (combined.splitlines() or ["(no output)"])[-1][:200]
+            ),
+        )
+
     overall = summary.get("overall_status", "unknown")
     blocking_reasons = list(summary.get("blocking_reasons", []) or [])
     if overall == "pass":

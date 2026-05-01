@@ -448,6 +448,12 @@ def test_apr_evl_phase_blocks_when_shard_summary_missing(tmp_path: Path, monkeyp
 def test_apr_evl_phase_blocks_when_summary_reports_failed_shard(
     tmp_path: Path, monkeypatch
 ):
+    """Summary that reports a failed required shard must block APR.
+
+    Uses rc=0 to exercise APR's summary-content path. The non-zero rc
+    fail-closed path is covered separately by
+    ``test_apr_evl_phase_blocks_on_stale_pass_summary`` and friends.
+    """
     from scripts.run_agent_pr_precheck import evl_pr_test_shards
     import scripts.run_agent_pr_precheck as apr_module
 
@@ -474,7 +480,7 @@ def test_apr_evl_phase_blocks_when_summary_reports_failed_shard(
     )
 
     def _fake_run(cmd, cwd):  # noqa: ARG001
-        return 1, ""
+        return 0, ""
 
     monkeypatch.setattr(apr_module, "_run_subprocess", _fake_run)
     result = evl_pr_test_shards(
@@ -485,3 +491,71 @@ def test_apr_evl_phase_blocks_when_summary_reports_failed_shard(
     )
     assert result.status == "block"
     assert "contract:required_shard_failed" in result.reason_codes
+
+
+def test_apr_evl_phase_blocks_on_stale_pass_summary(
+    tmp_path: Path, monkeypatch
+):
+    """Non-zero shard runner exit must block APR even if a stale
+    summary on disk says ``overall_status=pass``.
+
+    This is the safety bug the PAR-BATCH-01B fix targets. The shard
+    runner's subprocess return code is the primary readiness signal;
+    APR must not trust a stale or partially written summary as
+    artifact-backed evidence when the current invocation failed.
+    """
+    from scripts.run_agent_pr_precheck import evl_pr_test_shards
+    import scripts.run_agent_pr_precheck as apr_module
+
+    shard_dir = REPO_ROOT / "outputs" / "pr_test_shards"
+    summary_path = shard_dir / "pr_test_shards_summary.json"
+    shard_dir.mkdir(parents=True, exist_ok=True)
+    # Stale summary on disk says everything is fine.
+    summary_path.write_text(
+        json.dumps(
+            {
+                "artifact_type": "pr_test_shards_summary",
+                "schema_version": "1.0.0",
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "shard_status": {
+                    "contract": "pass",
+                    "governance": "pass",
+                    "changed_scope": "pass",
+                },
+                "required_shards": [
+                    "contract",
+                    "governance",
+                    "changed_scope",
+                ],
+                "shard_artifact_refs": [
+                    "outputs/pr_test_shards/contract.json",
+                    "outputs/pr_test_shards/governance.json",
+                    "outputs/pr_test_shards/changed_scope.json",
+                ],
+                "overall_status": "pass",
+                "blocking_reasons": [],
+                "created_at": "2026-05-01T00:00:00Z",
+                "authority_scope": "observation_only",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    # But the current shard runner subprocess crashed.
+    def _fake_run(cmd, cwd):  # noqa: ARG001
+        return 1, "Traceback: shard runner crashed"
+
+    monkeypatch.setattr(apr_module, "_run_subprocess", _fake_run)
+    result = evl_pr_test_shards(
+        repo_root=REPO_ROOT,
+        base_ref="origin/main",
+        head_ref="HEAD",
+        output_dir=tmp_path,
+    )
+    assert result.status == "block", (
+        "stale pass summary must not pass APR when runner exits non-zero"
+    )
+    assert result.exit_code == 1
+    assert "pr_test_shard_runner_failed" in result.reason_codes
+    assert "pr_test_shard_summary_stale_or_untrusted" in result.reason_codes
