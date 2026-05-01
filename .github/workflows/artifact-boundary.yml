@@ -323,7 +323,58 @@ jobs:
         shell: bash
         run: |
           set +e
-          ls -la outputs/contract_preflight/ 2>&1 | head -30
+          # Use a separate Python file to avoid YAML/heredoc indentation issues.
+          cat <<'PYEOF' > /tmp/diag_summarize.py
+          import json, sys
+          path = sys.argv[1]
+          mode = sys.argv[2] if len(sys.argv) > 2 else "summary"
+          try:
+              d = json.load(open(path))
+          except Exception as exc:
+              print(json.dumps({"error": f"failed to load {path}: {exc}"}, indent=2))
+              sys.exit(0)
+          if mode == "result_artifact":
+              out = {
+                  "preflight_status": d.get("preflight_status"),
+                  "control_signal": d.get("control_signal"),
+                  "recommended_repair_area": d.get("recommended_repair_area"),
+                  "control_surface_gap_status": d.get("control_surface_gap_status"),
+                  "pytest_execution": d.get("pytest_execution"),
+              }
+          elif mode == "report_summary":
+              out = {
+                  "status": d.get("status"),
+                  "changed_examples": d.get("changed_examples"),
+                  "schema_example_failures": d.get("schema_example_failures"),
+                  "producer_failures_count": len(d.get("producer_failures") or []),
+                  "fixture_failures_count": len(d.get("fixture_failures") or []),
+                  "consumer_failures_count": len(d.get("consumer_failures") or []),
+                  "missing_required_surface": (d.get("missing_required_surface") or [])[:20],
+                  "invariant_violations": d.get("invariant_violations"),
+                  "skip_reason": d.get("skip_reason"),
+                  "evaluation_classification": d.get("evaluation_classification"),
+                  "recommended_repair_areas": d.get("recommended_repair_areas"),
+                  "ref_context": d.get("ref_context"),
+                  "changed_path_detection": d.get("changed_path_detection"),
+                  "impact": d.get("impact"),
+                  "bootstrap_failures": d.get("bootstrap_failures"),
+                  "pqx_execution_policy": d.get("pqx_execution_policy"),
+                  "secondary_exception": (d.get("secondary_exception") or "")[:1500] if isinstance(d.get("secondary_exception"), str) else d.get("secondary_exception"),
+              }
+          elif mode == "producer_failures":
+              parts = []
+              for f in (d.get("producer_failures") or [])[:3]:
+                  parts.append(f"=== {f.get('path')} (rc={f.get('returncode')}) ===")
+                  parts.append((f.get("output") or "")[:2500])
+                  parts.append("")
+              print("\n".join(parts))
+              sys.exit(0)
+          else:
+              out = {"unknown_mode": mode}
+          print(json.dumps(out, indent=2)[:10000])
+          PYEOF
+          # Use sed to strip the leading 10 spaces of YAML indentation that the heredoc preserves
+          sed -i 's/^          //' /tmp/diag_summarize.py
           {
             echo "## governed-contract-preflight failure diagnosis"
             echo
@@ -338,7 +389,7 @@ jobs:
             echo
             echo "### contract_preflight_result_artifact.json (top-level signal)"
             echo '```json'
-            python -c 'import json; d=json.load(open("outputs/contract_preflight/contract_preflight_result_artifact.json")); print(json.dumps({"preflight_status":d.get("preflight_status"),"control_signal":d.get("control_signal"),"recommended_repair_area":d.get("recommended_repair_area"),"control_surface_gap_status":d.get("control_surface_gap_status"),"pytest_execution":d.get("pytest_execution")}, indent=2))' 2>&1 | head -200
+            python /tmp/diag_summarize.py outputs/contract_preflight/contract_preflight_result_artifact.json result_artifact 2>&1 | head -200
             echo '```'
             echo
             echo "### preflight_block_diagnosis_record.json"
@@ -353,40 +404,12 @@ jobs:
             echo
             echo "### contract_preflight_report.json failure summaries"
             echo '```json'
-            python -c '
-            import json
-            d = json.load(open("outputs/contract_preflight/contract_preflight_report.json"))
-            print(json.dumps({
-                "status": d.get("status"),
-                "changed_examples": d.get("changed_examples"),
-                "schema_example_failures": d.get("schema_example_failures"),
-                "producer_failures_count": len(d.get("producer_failures") or []),
-                "fixture_failures_count": len(d.get("fixture_failures") or []),
-                "consumer_failures_count": len(d.get("consumer_failures") or []),
-                "missing_required_surface": (d.get("missing_required_surface") or [])[:20],
-                "invariant_violations": d.get("invariant_violations"),
-                "skip_reason": d.get("skip_reason"),
-                "evaluation_classification": d.get("evaluation_classification"),
-                "recommended_repair_areas": d.get("recommended_repair_areas"),
-                "ref_context": d.get("ref_context"),
-                "changed_path_detection": d.get("changed_path_detection"),
-                "impact": d.get("impact"),
-                "bootstrap_failures": d.get("bootstrap_failures"),
-                "secondary_exception": (d.get("secondary_exception") or "")[:1500] if isinstance(d.get("secondary_exception"), str) else d.get("secondary_exception"),
-            }, indent=2)[:8000])
-            ' 2>&1 | head -300
+            python /tmp/diag_summarize.py outputs/contract_preflight/contract_preflight_report.json report_summary 2>&1 | head -300
             echo '```'
             echo
             echo "### producer_failures detail (first 3)"
             echo '```'
-            python -c '
-            import json
-            d = json.load(open("outputs/contract_preflight/contract_preflight_report.json"))
-            for f in (d.get("producer_failures") or [])[:3]:
-                print(f"=== {f.get(\"path\")} (rc={f.get(\"returncode\")}) ===")
-                print((f.get("output") or "")[:2500])
-                print()
-            ' 2>&1 | head -200
+            python /tmp/diag_summarize.py outputs/contract_preflight/contract_preflight_report.json producer_failures 2>&1 | head -200
             echo '```'
           } > /tmp/preflight_diag_comment.md 2>&1
           # Always emit to step summary (visible on Actions page, no perms needed)
