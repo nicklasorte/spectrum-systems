@@ -112,6 +112,12 @@
       ]
     },
     {
+      "path_prefix": "tests/test_agent_3ls_path_measurement.py",
+      "required_test_targets": [
+        "tests/test_agent_3ls_path_measurement.py"
+      ]
+    },
+    {
       "path_prefix": "scripts/select_pr_test_shard.py",
       "required_test_targets": [
         "tests/test_pr_test_shards.py"

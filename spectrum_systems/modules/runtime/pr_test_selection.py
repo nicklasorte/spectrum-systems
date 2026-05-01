@@ -268,6 +268,7 @@ def classify_changed_path(path: str) -> dict[str, Any]:
             "next_step_decision",
             "cycle_runner",
             "workflow",
+            "agent_3ls",
         )
         if any(marker in path for marker in tied_markers):
             return {
