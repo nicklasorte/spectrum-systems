@@ -211,5 +211,22 @@
   ],
   "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py": [
     "tests/test_core_loop_pre_pr_gate.py"
+  ],
+  "scripts/check_agent_pr_update_ready.py": [
+    "tests/test_check_agent_pr_update_ready.py"
+  ],
+  "spectrum_systems/modules/runtime/agent_pr_update_policy.py": [
+    "tests/test_check_agent_pr_update_ready.py"
+  ],
+  "contracts/schemas/agent_pr_update_ready_result.schema.json": [
+    "tests/test_contracts.py",
+    "tests/test_check_agent_pr_update_ready.py"
+  ],
+  "contracts/examples/agent_pr_update_ready_result.example.json": [
+    "tests/test_contracts.py",
+    "tests/test_check_agent_pr_update_ready.py"
+  ],
+  "docs/governance/agent_pr_update_policy.json": [
+    "tests/test_check_agent_pr_update_ready.py"
   ]
 }

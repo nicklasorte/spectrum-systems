@@ -1,0 +1,124 @@
+{
+  "artifact_type": "agent_pr_update_ready_result",
+  "schema_version": "1.0.0",
+  "guard_id": "agent-pr-update-ready-EXAMPLE-READY-0001",
+  "work_item_id": "APU-3LS-01-EXAMPLE-READY",
+  "agent_type": "claude",
+  "repo_mutating": true,
+  "policy_ref": "docs/governance/agent_pr_update_policy.json",
+  "clp_result_ref": "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+  "agl_record_ref": "outputs/agent_core_loop/agent_core_loop_run_record.json",
+  "agent_pr_ready_result_ref": "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
+  "readiness_status": "ready",
+  "clp_status": "pass",
+  "reason_codes": [],
+  "evidence": {
+    "AEX": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/core_loop_pre_pr_gate/authority_shape_preflight_result.json",
+        "outputs/core_loop_pre_pr_gate/authority_leak_guard_result.json"
+      ],
+      "reason_codes": [],
+      "source": "agl"
+    },
+    "PQX": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_core_loop/agent_core_loop_run_record.json"
+      ],
+      "reason_codes": [],
+      "source": "agl"
+    },
+    "EVL": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/core_loop_pre_pr_gate/contract_preflight/contract_preflight_result_artifact.json",
+        "outputs/core_loop_pre_pr_gate/selected_tests_result.json"
+      ],
+      "reason_codes": [],
+      "source": "clp"
+    },
+    "TPA": {
+      "status": "present",
+      "artifact_refs": [
+        "docs/governance/agent_pr_update_policy.json",
+        "docs/governance/core_loop_pre_pr_gate_policy.json"
+      ],
+      "reason_codes": [],
+      "source": "policy"
+    },
+    "CDE": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_core_loop/agent_core_loop_run_record.json"
+      ],
+      "reason_codes": [],
+      "source": "agl"
+    },
+    "SEL": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_core_loop/agent_core_loop_run_record.json"
+      ],
+      "reason_codes": [],
+      "source": "agl"
+    },
+    "LIN": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_core_loop/agent_core_loop_run_record.json"
+      ],
+      "reason_codes": [],
+      "source": "agl"
+    },
+    "REP": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_core_loop/agent_core_loop_run_record.json"
+      ],
+      "reason_codes": [],
+      "source": "agl"
+    },
+    "CLP": {
+      "status": "pass",
+      "artifact_refs": [
+        "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json"
+      ],
+      "reason_codes": [],
+      "source": "clp"
+    },
+    "APU": {
+      "status": "ready",
+      "artifact_refs": [
+        "outputs/agent_pr_update/agent_pr_update_ready_result.json"
+      ],
+      "reason_codes": [],
+      "source": "self"
+    },
+    "AGL": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_core_loop/agent_core_loop_run_record.json"
+      ],
+      "reason_codes": [],
+      "source": "agl"
+    }
+  },
+  "allowed_warning_reason_codes": [],
+  "blocked_warning_reason_codes": [],
+  "source_artifact_refs": [
+    "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+    "outputs/agent_core_loop/agent_core_loop_run_record.json",
+    "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
+    "docs/governance/agent_pr_update_policy.json"
+  ],
+  "evidence_hash": "sha256-example-deterministic-hash-0000000000000000000000000000",
+  "trace_refs": [],
+  "replay_refs": [],
+  "authority_scope": "observation_only",
+  "human_review_required": false,
+  "pr_evidence_section_markdown": "3LS Evidence:\n- AEX: present — outputs/core_loop_pre_pr_gate/authority_shape_preflight_result.json\n- PQX: present — outputs/agent_core_loop/agent_core_loop_run_record.json\n- EVL: present — outputs/core_loop_pre_pr_gate/contract_preflight/contract_preflight_result_artifact.json\n- TPA: present — docs/governance/agent_pr_update_policy.json\n- CDE: present — outputs/agent_core_loop/agent_core_loop_run_record.json\n- SEL: present — outputs/agent_core_loop/agent_core_loop_run_record.json\n- LIN: present — outputs/agent_core_loop/agent_core_loop_run_record.json\n- REP: present — outputs/agent_core_loop/agent_core_loop_run_record.json\n- CLP: pass — outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json\n- APU: ready — outputs/agent_pr_update/agent_pr_update_ready_result.json\n- AGL: present — outputs/agent_core_loop/agent_core_loop_run_record.json\n",
+  "generated_at": "2026-05-01T00:00:00Z",
+  "required_follow_up": []
+}

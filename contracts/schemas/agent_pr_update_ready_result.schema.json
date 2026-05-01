@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/apu/agent_pr_update_ready_result.schema.json",
+  "title": "Agent PR Update Ready Result",
+  "description": "APU-3LS-01 PR-update readiness evidence artifact emitted by scripts/check_agent_pr_update_ready.py. The guard observes a core_loop_pre_pr_gate_result (CLP), an agent_core_loop_run_record (AGL), and the upstream agent_pr_ready_result (CLP-02 guard) against docs/governance/agent_pr_update_policy.json. APU then records whether a repo-mutating Codex/Claude slice has the artifact-backed 3LS evidence required to be safely handed off as PR-update ready. APU is observation-only: it surfaces PR-update readiness inputs and compliance observations only. Canonical authority remains with AEX (admission), PQX (execution closure), EVL (eval evidence), TPA (policy/scope), CDE (continuation/closure), SEL (final gate signal), LIN (lineage), REP (replay), and GOV per docs/architecture/system_registry.md. APU emits no admission, execution, eval, policy, control, or final-gate signal of its own.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "guard_id",
+    "work_item_id",
+    "agent_type",
+    "repo_mutating",
+    "policy_ref",
+    "readiness_status",
+    "reason_codes",
+    "evidence",
+    "clp_status",
+    "allowed_warning_reason_codes",
+    "blocked_warning_reason_codes",
+    "source_artifact_refs",
+    "evidence_hash",
+    "trace_refs",
+    "replay_refs",
+    "authority_scope",
+    "human_review_required",
+    "pr_evidence_section_markdown",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "agent_pr_update_ready_result"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "guard_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent_type": {
+      "enum": ["codex", "claude", "other", "unknown"]
+    },
+    "repo_mutating": {
+      "type": ["boolean", "null"]
+    },
+    "policy_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "clp_result_ref": {
+      "type": ["string", "null"]
+    },
+    "agl_record_ref": {
+      "type": ["string", "null"]
+    },
+    "agent_pr_ready_result_ref": {
+      "type": ["string", "null"]
+    },
+    "readiness_status": {
+      "enum": ["ready", "not_ready", "human_review_required"]
+    },
+    "clp_status": {
+      "enum": ["pass", "warn", "block", "missing", "unknown", null]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "AEX",
+        "PQX",
+        "EVL",
+        "TPA",
+        "CDE",
+        "SEL",
+        "LIN",
+        "REP",
+        "CLP",
+        "APU",
+        "AGL"
+      ],
+      "properties": {
+        "AEX": { "$ref": "#/$defs/leg_evidence" },
+        "PQX": { "$ref": "#/$defs/leg_evidence" },
+        "EVL": { "$ref": "#/$defs/leg_evidence" },
+        "TPA": { "$ref": "#/$defs/leg_evidence" },
+        "CDE": { "$ref": "#/$defs/leg_evidence" },
+        "SEL": { "$ref": "#/$defs/leg_evidence" },
+        "LIN": { "$ref": "#/$defs/leg_evidence" },
+        "REP": { "$ref": "#/$defs/leg_evidence" },
+        "CLP": { "$ref": "#/$defs/clp_evidence" },
+        "APU": { "$ref": "#/$defs/apu_evidence" },
+        "AGL": { "$ref": "#/$defs/leg_evidence" }
+      }
+    },
+    "allowed_warning_reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "blocked_warning_reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "source_artifact_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "evidence_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    },
+    "human_review_required": {
+      "type": "boolean"
+    },
+    "pr_evidence_section_markdown": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_follow_up": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/follow_up" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "readiness_status": { "const": "ready" }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_review_required": { "const": false },
+          "reason_codes": { "maxItems": 0 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "leg_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "artifact_refs", "reason_codes"],
+      "properties": {
+        "status": {
+          "enum": ["present", "partial", "missing", "unknown", "not_required"]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "present" } }
+          },
+          "then": {
+            "properties": {
+              "artifact_refs": { "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": ["partial", "missing", "unknown"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
+    "clp_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "artifact_refs", "reason_codes"],
+      "properties": {
+        "status": {
+          "enum": ["pass", "warn", "block", "missing", "unknown"]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "pass" } }
+          },
+          "then": {
+            "properties": {
+              "artifact_refs": { "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": ["warn", "block", "missing", "unknown"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
+    "apu_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "artifact_refs", "reason_codes"],
+      "properties": {
+        "status": {
+          "enum": ["ready", "not_ready", "missing", "unknown"]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "ready" } }
+          },
+          "then": {
+            "properties": {
+              "artifact_refs": { "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": ["not_ready", "missing", "unknown"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
+    "follow_up": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner_system", "action_type", "reason_code", "source_failure_ref"],
+      "properties": {
+        "owner_system": {
+          "enum": [
+            "AEX",
+            "PQX",
+            "EVL",
+            "TPA",
+            "CDE",
+            "SEL",
+            "LIN",
+            "REP",
+            "OBS",
+            "SLO",
+            "PRL",
+            "RIL",
+            "FRE",
+            "AGL",
+            "CLP",
+            "APU",
+            "GOV"
+          ]
+        },
+        "action_type": { "type": "string", "minLength": 1 },
+        "reason_code": { "type": "string", "minLength": 1 },
+        "source_failure_ref": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
