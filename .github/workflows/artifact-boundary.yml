@@ -310,6 +310,78 @@ jobs:
             outputs/contract_preflight/system_registry_guard_result.json
             outputs/contract_preflight/contract_preflight_diagnosis_bundle.md
 
+      - name: Post preflight diagnosis to PR comment on failure
+        if: failure() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set +e
+          {
+            echo "## governed-contract-preflight failure diagnosis"
+            echo
+            echo "Commit: \`${{ github.event.pull_request.head.sha }}\`"
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            echo "### contract_preflight_result_artifact.json (control_signal + status)"
+            echo '```json'
+            python -c 'import json; d=json.load(open("outputs/contract_preflight/contract_preflight_result_artifact.json")); print(json.dumps({"preflight_status":d.get("preflight_status"),"control_signal":d.get("control_signal"),"recommended_repair_area":d.get("recommended_repair_area"),"control_surface_gap_status":d.get("control_surface_gap_status"),"pytest_execution":d.get("pytest_execution")}, indent=2))' 2>&1 | head -200
+            echo '```'
+            echo
+            echo "### preflight_block_diagnosis_record.json"
+            echo '```json'
+            cat outputs/contract_preflight/preflight_block_diagnosis_record.json 2>/dev/null | head -100 || echo "(not produced)"
+            echo '```'
+            echo
+            echo "### preflight_repair_plan_record.json"
+            echo '```json'
+            cat outputs/contract_preflight/preflight_repair_plan_record.json 2>/dev/null | head -50 || echo "(not produced)"
+            echo '```'
+            echo
+            echo "### contract_preflight_report.json failure summaries"
+            echo '```json'
+            python -c '
+            import json
+            d = json.load(open("outputs/contract_preflight/contract_preflight_report.json"))
+            print(json.dumps({
+                "status": d.get("status"),
+                "changed_examples": d.get("changed_examples"),
+                "schema_example_failures": d.get("schema_example_failures"),
+                "producer_failures_count": len(d.get("producer_failures") or []),
+                "fixture_failures_count": len(d.get("fixture_failures") or []),
+                "consumer_failures_count": len(d.get("consumer_failures") or []),
+                "missing_required_surface": (d.get("missing_required_surface") or [])[:20],
+                "invariant_violations": d.get("invariant_violations"),
+                "skip_reason": d.get("skip_reason"),
+                "evaluation_classification": d.get("evaluation_classification"),
+                "recommended_repair_areas": d.get("recommended_repair_areas"),
+                "ref_context": d.get("ref_context"),
+                "changed_path_detection": d.get("changed_path_detection"),
+                "impact": d.get("impact"),
+            }, indent=2)[:8000])
+            ' 2>&1 | head -300
+            echo '```'
+            echo
+            echo "### producer_failures detail (first 3)"
+            echo '```'
+            python -c '
+            import json
+            d = json.load(open("outputs/contract_preflight/contract_preflight_report.json"))
+            for f in (d.get("producer_failures") or [])[:3]:
+                print(f"=== {f.get(\"path\")} (rc={f.get(\"returncode\")}) ===")
+                print((f.get("output") or "")[:2500])
+                print()
+            ' 2>&1 | head -200
+            echo '```'
+          } > /tmp/preflight_diag_comment.md
+          # Truncate to GitHub's comment limit
+          head -c 60000 /tmp/preflight_diag_comment.md > /tmp/preflight_diag_comment_truncated.md
+          gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" \
+            -F body=@/tmp/preflight_diag_comment_truncated.md \
+            || echo "(failed to post diagnosis comment; continuing)"
+
   run-pytest:
     needs:
       - enforce-artifact-boundary
