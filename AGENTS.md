@@ -162,6 +162,137 @@ This rule ensures:
 
 All changes must be admissible, traceable, testable, and governed before execution.
 
+## AI Repo-Mutating Work — Required 3LS Evidence (AGENT-INSTR-01)
+
+This rule applies to every Codex/Claude repo-mutating slice. It binds the
+agent-facing instruction surface to the artifact-backed observation
+systems that already exist in the repo. The agent must not claim
+PR-ready or PR-update-ready without the artifacts named below.
+
+APR, M3L, CLP, and APU are observation-only systems. APR emits pre-PR
+readiness observations; M3L emits 3LS path measurement observations;
+CLP emits pre-PR readiness observations; APU emits PR-update readiness
+observations. Canonical authority remains with the owner systems
+declared in `docs/architecture/system_registry.md`. The rule below
+governs the agent's PR-ready handoff claim only — it neither redefines
+ownership nor introduces a new gate.
+
+### 1. Run APR before any PR-ready or PR-update claim
+
+For any repo-mutating slice, run the APR runner and capture its
+artifact before opening or updating a PR:
+
+```
+python scripts/run_agent_pr_precheck.py \
+  --base-ref <base_ref> \
+  --head-ref HEAD \
+  --work-item-id <work_item_id> \
+  --agent-type <codex|claude> \
+  --repo-mutating true \
+  --output outputs/agent_pr_precheck/agent_pr_precheck_result.json
+```
+
+Required APR result conditions:
+
+- `overall_status` must be `pass`, or a `warn` whose reason codes are
+  all listed in the active warn-reason-codes policy file referenced by
+  the APR / CLP runners.
+- `pr_ready_status` must be `ready`.
+- `pr_update_ready_status` must be `ready`.
+- Every `pass` / present check entry must carry one or more
+  `output_artifact_refs`.
+- Every `missing` / `partial` / `unknown` / non-pass check entry must
+  carry one or more `reason_codes`.
+
+### 2. Inspect the M3L 3LS path measurement
+
+The same invocation also writes an `agent_3ls_path_measurement_record`
+artifact at:
+
+```
+outputs/agent_3ls_path_measurement/agent_3ls_path_measurement_record.json
+```
+
+Required M3L conditions:
+
+- AEX, PQX, EVL, TPA, CDE, and SEL legs must each be recorded with a
+  status.
+- A `present` leg must list at least one `artifact_refs` entry.
+- A `partial` / `missing` / `unknown` leg must list at least one
+  `reason_codes` entry.
+- `first_missing_leg`, `first_failed_check`, `fell_out_at`, and
+  `loop_complete` must be recorded.
+
+### 3. Inspect the APU PR-update readiness artifact
+
+```
+outputs/agent_pr_update/agent_pr_update_ready_result.json
+```
+
+Required APU conditions:
+
+- The PR-update readiness must be `ready` before claiming
+  PR-update-ready.
+- A `not_ready`, `missing`, `unknown`, or `human_review_required`
+  readiness observation stops the PR-ready claim.
+
+### 4. Required PR-ready evidence section
+
+Every final agent report or PR body for a repo-mutating slice must
+include this 3LS evidence section, populated from the artifacts above:
+
+```
+3LS Agent Path Evidence:
+- APR result: <artifact_ref>
+- M3L path measurement: <artifact_ref>
+- APU readiness: <artifact_ref>
+- AEX: present/partial/missing/unknown — artifact_ref or reason_code
+- PQX: present/partial/missing/unknown — artifact_ref or reason_code
+- EVL: present/partial/missing/unknown — artifact_ref or reason_code
+- TPA: present/partial/missing/unknown — artifact_ref or reason_code
+- CDE: present/partial/missing/unknown — artifact_ref or reason_code
+- SEL: present/partial/missing/unknown — artifact_ref or reason_code
+- first_missing_leg: <value>
+- first_failed_check: <value>
+- fell_out_at: <value>
+- loop_complete: <value>
+- pr_ready_status: <value>
+- pr_update_ready_status: <value>
+```
+
+Prose substitution is not evidence. Every line must reference an
+artifact ref or a reason code as recorded by APR / M3L / APU.
+
+### 5. Stop conditions — fail closed
+
+The agent must stop and report `not_ready` /
+`human_review_required` if any of the following hold:
+
+- the APR artifact is missing
+- the M3L artifact is missing
+- the APU artifact is missing
+- `repo_mutating` is unknown
+- any `present` claim lacks an artifact ref
+- any `partial` / `missing` / `unknown` claim lacks a reason code
+- APR `overall_status` is a non-pass blocking observation
+- APU readiness is `not_ready`
+- M3L records `fell_out_at` other than `null` for a required leg, unless
+  the active warn-reason-codes policy explicitly permits that fallout
+  reason
+
+No artifact = not proven. Missing reason code = not proven. Prose
+substitution = not proven. The agent must not infer readiness from
+silence.
+
+### 6. Authority boundary
+
+The rule above scopes the agent's PR-ready handoff claim only. APR,
+M3L, CLP, and APU each surface observation-only PR-update or
+measurement artifacts as listed above. They do not hold admission,
+execution closure, eval evidence, policy/scope, continuation/closure,
+or final-gate signal. Canonical ownership stays with the systems
+declared in `docs/architecture/system_registry.md`.
+
 ## Pre-PR Gate Evidence (CLP-02)
 
 Before marking repo-mutating agent work PR-ready or updating an existing PR,

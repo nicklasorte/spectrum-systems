@@ -380,6 +380,7 @@
           "tests/test_aex_trust_hardening.py",
           "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
+          "tests/test_agent_instruction_apr_m3l_required.py",
           "tests/test_agent_pr_precheck.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
@@ -387,8 +388,7 @@
           "tests/test_authority_repair_candidate_generator.py",
           "tests/test_authority_shape_preflight.py",
           "tests/test_cde_decision_flow.py",
-          "tests/test_certification.py",
-          "tests/test_certification_judgment_40_explicit.py"
+          "tests/test_certification.py"
         ]
       },
       "evidence_count": 124,
@@ -643,9 +643,9 @@
           "tests/test_3ls_phase2_context_eval.py",
           "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
+          "tests/test_agent_instruction_apr_m3l_required.py",
           "tests/test_agent_pr_precheck.py",
-          "tests/test_agent_pr_precheck_workflow_parity.py",
-          "tests/test_authority_drift_regression.py"
+          "tests/test_agent_pr_precheck_workflow_parity.py"
         ]
       },
       "evidence_count": 113,
@@ -1921,7 +1921,7 @@
           "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
           "tests/test_agent_core_loop_requires_clp.py",
-          "tests/test_agent_pr_precheck.py"
+          "tests/test_agent_instruction_apr_m3l_required.py"
         ]
       },
       "evidence_count": 128,
@@ -2794,6 +2794,7 @@
           "tests/test_aex_trust_hardening.py",
           "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
+          "tests/test_agent_instruction_apr_m3l_required.py",
           "tests/test_agent_pr_precheck.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
@@ -2804,8 +2805,7 @@
           "tests/test_clx_all_01_redteam.py",
           "tests/test_contract_enforcement.py",
           "tests/test_contract_preflight.py",
-          "tests/test_contracts.py",
-          "tests/test_control_surface_enforcement.py"
+          "tests/test_contracts.py"
         ]
       },
       "evidence_count": 127,
@@ -3207,6 +3207,7 @@
           "tests/test_3ls_simplification_phases_6_9.py",
           "tests/test_aex_trust_hardening.py",
           "tests/test_agent_3ls_path_measurement.py",
+          "tests/test_agent_instruction_apr_m3l_required.py",
           "tests/test_agent_pr_precheck.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
@@ -3218,8 +3219,7 @@
           "tests/test_d3l_mvp_graph.py",
           "tests/test_d3l_priority_freshness_gate.py",
           "tests/test_d3l_ranking_report.py",
-          "tests/test_done_certification.py",
-          "tests/test_end_to_end_governed_scenarios.py"
+          "tests/test_done_certification.py"
         ]
       },
       "evidence_count": 123,
