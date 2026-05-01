@@ -233,6 +233,101 @@ Rules:
 - CLP supplies observation-only pre-PR evidence; canonical ownership stays
   with the systems declared in `docs/architecture/system_registry.md`.
 
+## Pre-PR Aggregate Evidence (APR-01)
+
+CLP-01/CLP-02 are necessary but not sufficient. Before claiming PR-ready
+or PR-update-ready on any repo-mutating slice, also run or provide:
+
+- `python scripts/run_agent_pr_precheck.py --work-item-id <ID> --agent-type claude`
+
+APR composes the same per-gate scripts CI's `governed-contract-preflight`
+job runs and emits a single `agent_pr_precheck_result` aggregate.
+
+Rules:
+
+- Repo-mutating slice with no `agent_pr_precheck_result` is not PR-ready.
+  PR body or commit prose is not a substitute.
+- APR `overall_status=block` blocks PR-ready / PR-update-ready handoff.
+  Repair via PRL/FRE/CDE/PQX or report the APR block.
+- APR `overall_status=warn` permits handoff only when every warn reason
+  code is policy-allowed under the upstream gate policies APR composes.
+- APR `pr_ready_status=not_ready` or `pr_update_ready_status=not_ready`
+  blocks the corresponding handoff regardless of overall status.
+- Cite APR `first_failed_check` and `first_missing_artifact` when
+  reporting an APR block.
+
+APR is observation-only. Canonical authority remains with AEX, PQX, EVL,
+TPA, CDE, SEL, LIN, REP, and GOV per
+`docs/architecture/system_registry.md`.
+
+## PR-Update Readiness Guard (APU-3LS-01)
+
+Before updating an existing PR with new repo-mutating commits, also run
+or provide:
+
+- `python scripts/check_agent_pr_update_ready.py --work-item-id <ID> --agent-type claude`
+
+Rules:
+
+- Repo-mutating PR update with no `agent_pr_update_ready_result` is not
+  PR-update-ready.
+- APU `readiness_status=not_ready` blocks the PR update; repair the
+  missing or failing CLP / AGL / CLP-02 inputs first.
+- APU `readiness_status=human_review_required` halts agent handoff —
+  emit a finding instead of pushing.
+- APU `readiness_status=ready` permits the PR update. Use the guard's
+  `pr_evidence_section_markdown` as the canonical PR-body evidence
+  summary.
+
+APU is observation-only and evaluated against
+`docs/governance/agent_pr_update_policy.json`. Canonical ownership of
+upstream signals remains with the systems declared in
+`docs/architecture/system_registry.md`.
+
+## Agent 3LS Path Measurement (M3L-02)
+
+For every repo-mutating slice, also emit a measurement-only
+`agent_3ls_path_measurement_record`:
+
+- `python scripts/build_agent_3ls_path_measurement.py --work-item-id <ID> --agent-type claude`
+
+Rules:
+
+- Repo-mutating slice with no `agent_3ls_path_measurement_record` leaves
+  loop traversal unobserved; do not claim PR-ready or PR-update-ready.
+- M3L `loop_complete=false` requires citing `fell_out_at`,
+  `first_missing_leg`, and `first_failed_check` when reporting why the
+  slice is not ready.
+- M3L never recomputes upstream gates and never overrides APR / CLP /
+  APU. If M3L disagrees with an upstream readiness status, the upstream
+  artifact is canonical — repair the upstream input, do not re-emit M3L
+  to mask it.
+
+M3L is observation-only. Canonical authority remains with AEX, PQX, EVL,
+TPA, CDE, SEL, LIN, REP, and GOV per
+`docs/architecture/system_registry.md`.
+
+## PR-Ready / PR-Update-Ready Claim Requirement
+
+Claude may claim PR-ready or PR-update-ready only when, for the current
+repo-mutating slice, all of the following are true:
+
+1. A valid `core_loop_pre_pr_gate_result` exists (CLP-01) and a passing
+   `agent_pr_ready_result` exists (CLP-02).
+1. A valid `agent_pr_precheck_result` exists (APR-01) with
+   `pr_ready_status=ready` (and `pr_update_ready_status=ready` for PR
+   updates), and `overall_status` is `pass` or `warn` with all warn
+   reason codes policy-allowed.
+1. For PR updates, a valid `agent_pr_update_ready_result` exists
+   (APU-3LS-01) with `readiness_status=ready`.
+1. A valid `agent_3ls_path_measurement_record` exists (M3L-02) with
+   `loop_complete=true`.
+
+If any of the above is missing, blocked, or `not_ready`, fail closed:
+do not claim PR-ready, do not push the PR-update, and report the gap
+with the artifact reference and the specific `first_missing_*` /
+`first_failed_*` field that drove the decision.
+
 ## References
 
 - `README.md`

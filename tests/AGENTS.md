@@ -22,7 +22,8 @@ Before any `BUILD` or `VALIDATE` prompt is marked complete:
 2. Run `pytest tests/test_contracts.py` if any contract was modified.
 3. Run `pytest tests/test_module_architecture.py` if module structure was changed.
 4. Run `pytest tests/test_core_loop_pre_pr_gate.py tests/test_check_agent_pr_ready.py tests/test_agent_core_loop_requires_clp.py` for any repo-mutating work — CLP-02 requires `core_loop_pre_pr_gate_result` evidence and a passing `agent_pr_ready_result` guard before PR-ready handoff.
-5. All tests must pass before the step is marked done.
+5. Run `pytest tests/test_agent_pr_precheck.py tests/test_agent_pr_precheck_workflow_parity.py tests/test_check_agent_pr_update_ready.py tests/test_agent_3ls_path_measurement.py` for any repo-mutating work — APR-01, APU-3LS-01, and M3L-02 require valid `agent_pr_precheck_result`, `agent_pr_update_ready_result`, and `agent_3ls_path_measurement_record` artifacts before PR-ready / PR-update-ready handoff (see root `AGENTS.md` § PR-Ready / PR-Update-Ready Claim Requirement).
+6. All tests must pass before the step is marked done.
 
 ## Files that must not be changed casually
 | File | Reason |
