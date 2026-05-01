@@ -561,6 +561,7 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
             "next_step_decision",
             "cycle_runner",
             "workflow",
+            "agent_3ls",
         )
         if any(marker in path for marker in tied_markers):
             return True, "contract_tied_tests", "contract-tied test changed"

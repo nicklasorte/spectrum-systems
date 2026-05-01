@@ -256,5 +256,8 @@
   "contracts/examples/agent_3ls_path_measurement_record.example.json": [
     "tests/test_contracts.py",
     "tests/test_agent_3ls_path_measurement.py"
+  ],
+  "tests/test_agent_3ls_path_measurement.py": [
+    "tests/test_agent_3ls_path_measurement.py"
   ]
 }
