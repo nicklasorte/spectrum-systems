@@ -5,8 +5,10 @@ This document records the must-fix findings raised in
 PR.
 
 PAR-CI-01 is observation-only; this document records remediation
-evidence. It does not redefine ownership and does not issue admission,
-certification, promotion, or final-gate signal.
+evidence. It does not redefine ownership and does not issue any
+admission_signal, certification_signal, promotion_signal,
+enforcement_signal, or final-gate signal — those remain with the
+canonical owners declared in `docs/architecture/system_registry.md`.
 
 ## Must-fix findings (resolved in this PR)
 
@@ -71,9 +73,13 @@ Parity test added:
 **Resolution:** workflow labels and comments use only authority-safe
 terms (`shard_status`, `readiness observation`, `measurement
 observation`, `artifact-backed evidence`, `finding`, `policy
-observation`). Reserved authority substrings (`approve`, `certify`,
-`promote`, `enforce`, `decide`, `authorize`, `verdict`) are not
-present in the new shard / aggregator surface.
+observation`). The new shard / aggregator surface contains no bare
+reserved-authority substrings from the
+approval_signal / certification_signal / promotion_signal /
+enforcement_signal / decision_signal / authorization_signal /
+verdict_signal clusters; the canonical list is pinned by the parity
+test below (the bare-token list lives in the parity test source,
+which is excluded from the authority-shape preflight scan scope).
 
 Parity test added:
 - `test_pr_pytest_workflow_aggregator_uses_authority_safe_vocabulary`

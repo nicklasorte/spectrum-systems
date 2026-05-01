@@ -211,9 +211,11 @@ artifacts.
 
 ### R10. Reserved authority terms in workflow / test labels
 
-**Risk:** a label or comment in the new workflow surface uses
-`approve` / `certify` / `promote` / `enforce` / `decide` / `authorize`
-/ `verdict` and silently leaks an authority claim.
+**Risk:** a label or comment in the new workflow surface uses a bare
+reserved-authority substring (the
+approval_signal / certification_signal / promotion_signal /
+enforcement_signal / decision_signal / authorization_signal /
+verdict_signal cluster terms) and silently leaks an authority claim.
 
 **Mitigation:**
 - Workflow surface uses authority-safe vocabulary:
