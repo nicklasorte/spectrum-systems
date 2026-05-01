@@ -1,0 +1,194 @@
+{
+  "artifact_type": "agent_pr_precheck_result",
+  "schema_version": "1.0.0",
+  "precheck_id": "apr-precheck-EXAMPLE-PASS-0001",
+  "created_at": "2026-05-01T00:00:00Z",
+  "work_item_id": "APR-01-EXAMPLE",
+  "agent_type": "claude",
+  "repo_mutating": true,
+  "base_ref": "origin/main",
+  "head_ref": "HEAD",
+  "overall_status": "pass",
+  "pr_ready_status": "ready",
+  "pr_update_ready_status": "ready",
+  "checks": [
+    {
+      "check_name": "aex_required_surface_mapping",
+      "phase": "AEX",
+      "command": "in-process: pr_test_selection.resolve_required_tests",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/agent_pr_precheck/aex_required_surface_mapping.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "tpa_authority_shape_preflight",
+      "phase": "TPA",
+      "command": "python scripts/run_authority_shape_preflight.py --base-ref origin/main --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/authority_shape_preflight/authority_shape_preflight_result.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "tpa_authority_leak_guard",
+      "phase": "TPA",
+      "command": "python scripts/run_authority_leak_guard.py --base-ref origin/main --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/authority_leak_guard/authority_leak_guard_result.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "tpa_system_registry_guard",
+      "phase": "TPA",
+      "command": "python scripts/run_system_registry_guard.py --base-ref origin/main --head-ref HEAD --output outputs/system_registry_guard/system_registry_guard_result.json",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/system_registry_guard/system_registry_guard_result.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "tpa_contract_compliance_observation",
+      "phase": "TPA",
+      "command": "python scripts/run_contract_enforcement.py",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "governance/reports/contract-dependency-graph.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "pqx_preflight_pqx_wrapper",
+      "phase": "PQX",
+      "command": "python scripts/build_preflight_pqx_wrapper.py --base-ref origin/main --head-ref HEAD --output outputs/contract_preflight/preflight_pqx_task_wrapper.json",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/contract_preflight/preflight_pqx_task_wrapper.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "pqx_governed_contract_preflight",
+      "phase": "PQX",
+      "command": "python scripts/run_contract_preflight.py --base-ref origin/main --head-ref HEAD --output-dir outputs/contract_preflight --execution-context pqx_governed --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/contract_preflight/contract_preflight_report.json",
+        "outputs/contract_preflight/contract_preflight_result_artifact.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "evl_generated_artifact_freshness",
+      "phase": "EVL",
+      "command": "python scripts/build_tls_dependency_priority.py --out artifacts/tls --top-level-out artifacts --candidates '' && python scripts/generate_ecosystem_health_report.py (run twice)",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/agent_pr_precheck/evl_generated_artifact_freshness.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "evl_selected_tests",
+      "phase": "EVL",
+      "command": "python -m pytest -q tests/test_check_agent_pr_update_ready.py",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/agent_pr_precheck/evl_selected_tests.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "cde_core_loop_pre_pr_gate",
+      "phase": "CDE",
+      "command": "python scripts/run_core_loop_pre_pr_gate.py --work-item-id APR-01-EXAMPLE --agent-type claude",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "cde_check_agent_pr_ready",
+      "phase": "CDE",
+      "command": "python scripts/check_agent_pr_ready.py --work-item-id APR-01-EXAMPLE --agent-type claude",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    },
+    {
+      "check_name": "sel_check_agent_pr_update_ready",
+      "phase": "SEL",
+      "command": "python scripts/check_agent_pr_update_ready.py --work-item-id APR-01-EXAMPLE --agent-type claude",
+      "status": "pass",
+      "exit_code": 0,
+      "output_artifact_refs": [
+        "outputs/agent_pr_update/agent_pr_update_ready_result.json"
+      ],
+      "reason_codes": [],
+      "next_action": "none"
+    }
+  ],
+  "phase_summaries": {
+    "AEX": { "status": "pass", "check_count": 1, "fail_count": 0, "owner_system": "AEX", "reason_codes": [] },
+    "TPA": { "status": "pass", "check_count": 4, "fail_count": 0, "owner_system": "TPA", "reason_codes": [] },
+    "PQX": { "status": "pass", "check_count": 2, "fail_count": 0, "owner_system": "PQX", "reason_codes": [] },
+    "EVL": { "status": "pass", "check_count": 2, "fail_count": 0, "owner_system": "EVL", "reason_codes": [] },
+    "CDE": { "status": "pass", "check_count": 2, "fail_count": 0, "owner_system": "CDE", "reason_codes": [] },
+    "SEL": { "status": "pass", "check_count": 1, "fail_count": 0, "owner_system": "SEL", "reason_codes": [] }
+  },
+  "clp_artifact_ref": "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+  "apu_artifact_ref": "outputs/agent_pr_update/agent_pr_update_ready_result.json",
+  "contract_preflight_artifact_refs": [
+    "outputs/contract_preflight/contract_preflight_report.json",
+    "outputs/contract_preflight/contract_preflight_result_artifact.json"
+  ],
+  "generated_artifact_freshness_refs": [
+    "outputs/agent_pr_precheck/evl_generated_artifact_freshness.json"
+  ],
+  "authority_artifact_refs": [
+    "outputs/authority_shape_preflight/authority_shape_preflight_result.json",
+    "outputs/authority_leak_guard/authority_leak_guard_result.json",
+    "outputs/system_registry_guard/system_registry_guard_result.json"
+  ],
+  "selected_test_refs": [
+    "tests/test_check_agent_pr_update_ready.py"
+  ],
+  "first_failed_check": null,
+  "first_missing_artifact": null,
+  "reason_codes": [],
+  "warnings": [],
+  "trace_refs": [],
+  "replay_refs": [],
+  "policy_ref": null,
+  "authority_scope": "observation_only"
+}
