@@ -273,20 +273,22 @@ def test_tls_ecosystem_stale_blocks():
 def test_selected_test_failure_blocks():
     checks = [
         CheckResult(
-            check_name="evl_selected_tests",
+            check_name="evl_pr_test_shards",
             phase="EVL",
             command="(test)",
             status="block",
             exit_code=1,
-            output_artifact_refs=["outputs/agent_pr_precheck/evl_selected_tests.json"],
-            reason_codes=["pytest_returncode_1"],
+            output_artifact_refs=[
+                "outputs/pr_test_shards/pr_test_shards_summary.json"
+            ],
+            reason_codes=["contract:required_shard_failed"],
         )
     ]
     overall, _, _, reasons = _aggregate_overall_status(
         repo_mutating=True, checks=checks
     )
     assert overall == "block"
-    assert "pytest_returncode_1" in reasons
+    assert "contract:required_shard_failed" in reasons
 
 
 # ---------------------------------------------------------------------------

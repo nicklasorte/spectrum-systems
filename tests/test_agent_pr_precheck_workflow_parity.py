@@ -328,11 +328,11 @@ def test_apr_covers_generated_artifact_freshness(apr_text: str) -> None:
 
 
 def test_apr_covers_selected_tests(apr_text: str) -> None:
-    assert "evl_selected_tests" in apr_text, (
-        "APR no longer covers the EVL selected-tests phase"
+    assert "evl_pr_test_shards" in apr_text, (
+        "APR no longer covers the per-shard test phase"
     )
-    assert "pytest" in apr_text, (
-        "APR no longer invokes pytest for the selected-tests phase"
+    assert "scripts/run_pr_test_shards.py" in apr_text, (
+        "APR no longer invokes the canonical shard runner"
     )
 
 
