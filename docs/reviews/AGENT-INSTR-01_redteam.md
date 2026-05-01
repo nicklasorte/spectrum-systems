@@ -132,3 +132,9 @@ declared in `docs/architecture/system_registry.md`.
   / CLP. The instruction text does not introduce new runtime gates;
   it binds the agent's PR-ready handoff claim to those existing
   artifact-backed observations.
+
+### OBS-02 — Reminder for downstream readers
+- **Observation:** APR, M3L, and APU artifact-backed evidence is
+  required for every AI repo-mutating slice before any PR-ready or
+  PR-update-ready claim, per AGENT-INSTR-01 in the repo-root `AGENTS.md`
+  and `CLAUDE.md`.
