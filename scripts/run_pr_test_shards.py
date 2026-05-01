@@ -9,9 +9,10 @@ run sequentially. GitHub matrix parallelization is deferred to a later
 slice.
 
 Authority scope: observation_only. The runner emits test shard result
-evidence and reason codes only. It does not certify, promote, enforce,
-or decide. Canonical ownership remains with the systems declared in
-``docs/architecture/system_registry.md``.
+evidence and reason codes only. It produces artifact-backed findings
+that support APR / EVL consumption. It does not issue admission,
+closure, or final-gate signal. Canonical ownership remains with the
+systems declared in ``docs/architecture/system_registry.md``.
 
 Status semantics
 ----------------
@@ -202,7 +203,7 @@ def run_shard(
 ) -> dict[str, Any]:
     """Run a single shard's selected tests and write an artifact.
 
-    ``selector_status`` is the canonical selector's verdict for this
+    ``selector_status`` is the canonical selector's shard_status for this
     shard:
       - ``selected``      → run pytest on selected_tests
       - ``empty_allowed`` → emit ``skipped`` with reason
