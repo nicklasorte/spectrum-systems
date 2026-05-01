@@ -43,10 +43,12 @@
           "docs/architecture/system_registry.md",
           "docs/architecture/system_registry_core.md",
           "docs/architecture/system_registry_reduction_decision.md",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/core_loop_pre_pr_gate_policy.json",
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/rca_guide.md",
           "docs/review-actions/AGL-01_fix_actions.md",
+          "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
           "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
@@ -55,9 +57,7 @@
           "docs/review-actions/PLAN-AUTHENTICITY-HARDGATE-24-01-2026-04-11.md",
           "docs/review-actions/PLAN-AUTO-KERNEL-24-01-2026-04-11.md",
           "docs/review-actions/PLAN-BATCH-AEX-06-2026-04-08.md",
-          "docs/review-actions/PLAN-BATCH-AEX-2026-04-08.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-01-2026-04-08.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-02-2026-04-09.md"
+          "docs/review-actions/PLAN-BATCH-AEX-2026-04-08.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -78,13 +78,13 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/cal_runtime.py",
           "spectrum_systems/modules/runtime/chx_runtime.py",
-          "spectrum_systems/modules/runtime/context_governed_flow.py",
-          "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py"
+          "spectrum_systems/modules/runtime/context_governed_flow.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -99,6 +99,7 @@
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/pqx_runner.py",
           "scripts/replay_aex_admission.py",
           "scripts/run_authenticity_hardgate_24_01.py",
@@ -140,7 +141,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 120,
+      "evidence_count": 121,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -286,6 +287,7 @@
           "docs/architecture/system_registry_reduction_decision.md",
           "docs/architecture/transcript_processing_hardening.md",
           "docs/events/event_catalog.json",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/authority_shape_preflight.md",
           "docs/governance/cdx_02_3ls_roadmap.json",
           "docs/governance/core_loop_pre_pr_gate_policy.json",
@@ -298,8 +300,7 @@
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/operations/operator_playbook.md",
           "docs/operations/tls_priority_preflight.md",
-          "docs/phase-2/PHASE_2_ESCALATION_PROTOCOL.md",
-          "docs/phase-2/PHASE_2_ROLLBACK_STRATEGY.md"
+          "docs/phase-2/PHASE_2_ESCALATION_PROTOCOL.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -341,6 +342,7 @@
           "scripts/build_d3l_rank_maturity_alignment.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_core_loop_pre_pr_gate.py",
@@ -380,11 +382,11 @@
           "tests/test_cde_decision_flow.py",
           "tests/test_certification.py",
           "tests/test_certification_judgment_40_explicit.py",
-          "tests/test_closure_continuation_pipeline_workflow.py",
-          "tests/test_closure_decision_engine.py"
+          "tests/test_check_agent_pr_update_ready.py",
+          "tests/test_closure_continuation_pipeline_workflow.py"
         ]
       },
-      "evidence_count": 121,
+      "evidence_count": 122,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -553,6 +555,7 @@
           "docs/architecture/system_registry.md",
           "docs/architecture/system_registry_core.md",
           "docs/architecture/system_registry_reduction_decision.md",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/cdx_02_3ls_roadmap.json",
           "docs/governance/core_loop_pre_pr_gate_policy.json",
           "docs/hop/hop006_issue_extraction_design.md",
@@ -561,12 +564,11 @@
           "docs/review-actions/2026-03-27-budget-control-loop-actions.md",
           "docs/review-actions/2026-03-27-control-loop-trust-boundary-review-actions.md",
           "docs/review-actions/AGL-01_fix_actions.md",
+          "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-BAE-2026-03-22.md",
           "docs/review-actions/PLAN-BAF-2026-03-22.md",
-          "docs/review-actions/PLAN-BATCH-R-2026-04-03.md",
-          "docs/review-actions/PLAN-BATCH-S2-2026-04-04.md",
-          "docs/review-actions/PLAN-BBA-2026-03-21.md"
+          "docs/review-actions/PLAN-BATCH-R-2026-04-03.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -588,12 +590,12 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/bne02_full_wave.py",
-          "spectrum_systems/modules/runtime/chaos_failure_intelligence.py",
-          "spectrum_systems/modules/runtime/control_chain_invariants.py"
+          "spectrum_systems/modules/runtime/chaos_failure_intelligence.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -603,6 +605,7 @@
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/run_done_certification.py",
           "scripts/run_eval_ci_gate.py",
           "scripts/run_rax_redteam_arch_01.py",
@@ -638,7 +641,7 @@
           "tests/test_chaos_fail_closed.py"
         ]
       },
-      "evidence_count": 110,
+      "evidence_count": 111,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -817,6 +820,7 @@
           "docs/execution_reports/BATCH-GOV-FIX-03_delivery_report.md",
           "docs/execution_reports/BATCH-GOV-FIX-04_delivery_report.md",
           "docs/governance/GOVERNANCE_INTEGRATION_BACKLOG.md",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/authority_shape_preflight.md",
           "docs/governance/strategy_compliance_hard_gate.md",
           "docs/governance/three_letter_system_policy.json",
@@ -827,8 +831,7 @@
           "docs/migration_guide.md",
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/operations/tls_priority_preflight.md",
-          "docs/policy-as-code.md",
-          "docs/rca_guide.md"
+          "docs/policy-as-code.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -847,6 +850,7 @@
           "spectrum_systems/modules/hop/ai_failure_mapper.py",
           "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
@@ -854,8 +858,7 @@
           "spectrum_systems/modules/runtime/continuous_governance.py",
           "spectrum_systems/modules/runtime/control_chain_invariants.py",
           "spectrum_systems/modules/runtime/failure_explanation.py",
-          "spectrum_systems/modules/runtime/governance_chain_guard.py",
-          "spectrum_systems/modules/runtime/next24_serial_execution.py"
+          "spectrum_systems/modules/runtime/governance_chain_guard.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -869,6 +872,7 @@
           "schemas/aex/aex_admission_policy_observation.schema.json"
         ],
         "scripts": [
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/run_contract_enforcement.py",
           "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/validate_system_registry.py"
@@ -901,7 +905,7 @@
           "tests/test_nx_control_chain.py"
         ]
       },
-      "evidence_count": 109,
+      "evidence_count": 110,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
@@ -1272,7 +1276,9 @@
           "docs/architecture/system_registry_core.md",
           "docs/architecture/system_registry_reduction_decision.md",
           "docs/examples/artifact-bus-message.example.json",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/cdx_02_3ls_roadmap.json",
+          "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CANONICAL-ID-STANDARD-REFINED-2026-03-18.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
@@ -1286,9 +1292,7 @@
           "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
           "docs/review-actions/PLAN-RWA-001-2026-04-16.md",
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
-          "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md",
-          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
-          "docs/reviews/AEX-TRUST-01_final_report.md"
+          "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -1301,6 +1305,7 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/artifact_lineage.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
@@ -1314,8 +1319,7 @@
           "spectrum_systems/modules/runtime/pmh_003_surfaces.py",
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
-          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
-          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py"
+          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1324,6 +1328,7 @@
           "schemas/artifact-bus-message.schema.json"
         ],
         "scripts": [
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/validate_system_registry.py",
           "scripts/validate_system_registry_boundaries.py"
         ],
@@ -1335,6 +1340,7 @@
           "tests/test_3ls_phase4_observability.py",
           "tests/test_aex_trust_hardening.py",
           "tests/test_authority_drift_regression.py",
+          "tests/test_check_agent_pr_update_ready.py",
           "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_done_certification.py",
           "tests/test_evaluation_enforcement_bridge.py",
@@ -1351,11 +1357,10 @@
           "tests/test_nt_operator_triage_cli.py",
           "tests/test_nt_proof_size_budget.py",
           "tests/test_nt_trust_regression_pack.py",
-          "tests/test_nx_registry_red_team.py",
-          "tests/test_oc_bottleneck_classifier.py"
+          "tests/test_nx_registry_red_team.py"
         ]
       },
-      "evidence_count": 104,
+      "evidence_count": 105,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "LIN"
@@ -1620,6 +1625,7 @@
           "tests/test_3ls_phase4_observability.py",
           "tests/test_3ls_phase6_integration.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_check_agent_pr_update_ready.py",
           "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_cross_run_intelligence.py",
           "tests/test_d3l_mvp_graph.py",
@@ -1635,8 +1641,7 @@
           "tests/test_rfx_adversarial_reliability_guard.py",
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_error_budget_governance.py",
-          "tests/test_rfx_flow_integration.py",
-          "tests/test_rfx_loop_04_06_red_team.py"
+          "tests/test_rfx_flow_integration.py"
         ]
       },
       "evidence_count": 111,
@@ -1812,11 +1817,11 @@
           "docs/architecture/system_registry_reduction_decision.md",
           "docs/events/event_catalog.json",
           "docs/generated-artifact-merge-policy.md",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/contract-impact-gate.md",
           "docs/governance/core_loop_pre_pr_gate_policy.json",
           "docs/governance/default_pqx_execution_policy.md",
-          "docs/governance/execution-change-impact-gate.md",
-          "docs/governance/governance-enforcement-step-11-activation.md"
+          "docs/governance/execution-change-impact-gate.md"
         ],
         "modules": [
           "spectrum_systems/aex/classifier.py",
@@ -1859,6 +1864,7 @@
           "scripts/build_preflight_pqx_wrapper.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/generate_repo_dashboard_snapshot.py",
           "scripts/pqx_runner.py",
           "scripts/run_authenticity_hardgate_24_01.py",
@@ -1877,8 +1883,7 @@
           "scripts/run_operator_shakeout.py",
           "scripts/run_ops_master_01.py",
           "scripts/run_pqx_bundle.py",
-          "scripts/run_pqx_sequence.py",
-          "scripts/run_prompt_queue_sequence.py"
+          "scripts/run_pqx_sequence.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -2009,12 +2014,15 @@
         "docs": [
           "docs/architecture/clp_02_pr_ready_admission.md",
           "docs/architecture/system_registry.md",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/core_loop_pre_pr_gate_policy.json",
           "docs/governance/preflight_required_surface_test_overrides.json",
+          "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
           "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
           "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md",
+          "docs/reviews/APU-3LS-01_redteam.md",
           "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md",
           "docs/reviews/CLP-01_core_loop_pre_pr_gate_redteam.md",
           "docs/reviews/CLP-02_require_pre_pr_gate_final_report.md",
@@ -2029,6 +2037,7 @@
           "spectrum_systems/modules/prl/failure_parser.py",
           "spectrum_systems/modules/prl/repair_generator.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py",
           "spectrum_systems/modules/runtime/core_loop_pre_pr_gate_policy.py",
           "spectrum_systems/modules/runtime/fre_repair_flow.py",
@@ -2068,7 +2077,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 58,
+      "evidence_count": 62,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"
@@ -2267,7 +2276,9 @@
           "docs/architecture/system_registry.md",
           "docs/architecture/system_registry_core.md",
           "docs/architecture/system_registry_reduction_decision.md",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/cdx_02_3ls_roadmap.json",
+          "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
           "docs/review-actions/PLAN-CDX-02-3LS-roadmap-build.md",
@@ -2283,9 +2294,7 @@
           "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md",
           "docs/review-actions/batch-sys-enf-02_registry_to_impl_conformance_scan.md",
           "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
-          "docs/reviews/AEX-TRUST-01_final_report.md",
-          "docs/reviews/AEX-TRUST-01_root_cause.md",
-          "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md"
+          "docs/reviews/AEX-TRUST-01_final_report.md"
         ],
         "modules": [
           "spectrum_systems/aex/admission_replay.py",
@@ -2299,6 +2308,7 @@
           "spectrum_systems/modules/replay/replay_gate.py",
           "spectrum_systems/modules/replay/replay_support.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/failure_explanation.py",
@@ -2311,8 +2321,7 @@
           "spectrum_systems/modules/runtime/replay_engine.py",
           "spectrum_systems/modules/runtime/replay_governance.py",
           "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
-          "spectrum_systems/modules/runtime/rfx_certification_gate.py",
-          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py"
+          "spectrum_systems/modules/runtime/rfx_certification_gate.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -2321,6 +2330,7 @@
           "schemas/aex/aex_admission_replay_record.schema.json"
         ],
         "scripts": [
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/replay_aex_admission.py",
           "scripts/validate_system_registry.py",
           "scripts/validate_system_registry_boundaries.py"
@@ -2334,6 +2344,7 @@
           "tests/prl/test_repair_generator.py",
           "tests/test_3ls_phase4_observability.py",
           "tests/test_aex_trust_hardening.py",
+          "tests/test_check_agent_pr_update_ready.py",
           "tests/test_clx_all_01_redteam.py",
           "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_error_taxonomy.py",
@@ -2349,11 +2360,10 @@
           "tests/test_oc_cleanup_candidate_report.py",
           "tests/test_proof_presence_enforcement.py",
           "tests/test_rfx_certification_gate.py",
-          "tests/test_rfx_flow_integration.py",
-          "tests/test_rfx_integrity_bundle.py"
+          "tests/test_rfx_flow_integration.py"
         ]
       },
-      "evidence_count": 105,
+      "evidence_count": 106,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "REP"
@@ -2680,6 +2690,7 @@
           "docs/architecture/system_registry_reduction_decision.md",
           "docs/events/event_catalog.json",
           "docs/governance-reports/contract-enforcement-report.md",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/authority_shape_preflight.md",
           "docs/governance/core_loop_pre_pr_gate_policy.json",
           "docs/governance/prompt_contract.md",
@@ -2692,8 +2703,7 @@
           "docs/review-actions/2026-04-12-cde-001-build-plan.md",
           "docs/review-actions/2026-04-12-sel-001-build-plan.md",
           "docs/review-actions/2026-04-12-sel-002-rqx-002-build-plan.md",
-          "docs/review-actions/AGL-01_fix_actions.md",
-          "docs/review-actions/BATCH-GOV-B-DELIVERY-REPORT-2026-04-09.md"
+          "docs/review-actions/AGL-01_fix_actions.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -2714,13 +2724,13 @@
           "spectrum_systems/modules/prompt_queue/execution_runner.py",
           "spectrum_systems/modules/review_handoff_disposition.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/authority_repair_engine.py",
-          "spectrum_systems/modules/runtime/cal_runtime.py",
-          "spectrum_systems/modules/runtime/cde_decision_flow.py"
+          "spectrum_systems/modules/runtime/cal_runtime.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -2735,6 +2745,7 @@
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_contract_preflight.py",
@@ -2753,8 +2764,7 @@
           "scripts/run_sel_replay_gate.py",
           "scripts/run_shift_left_memory_24_01.py",
           "scripts/run_trust_spine_evidence_cohesion.py",
-          "scripts/validate_dashboard_public_artifacts.py",
-          "scripts/validate_system_registry.py"
+          "scripts/validate_dashboard_public_artifacts.py"
         ],
         "tests": [
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
@@ -2774,14 +2784,14 @@
           "tests/test_authority_drift_regression.py",
           "tests/test_authority_shape_preflight.py",
           "tests/test_certification_judgment_40_explicit.py",
+          "tests/test_check_agent_pr_update_ready.py",
           "tests/test_clx_all_01_redteam.py",
           "tests/test_contract_enforcement.py",
           "tests/test_contract_preflight.py",
           "tests/test_contracts.py",
           "tests/test_control_surface_enforcement.py",
           "tests/test_control_surface_gap_extractor.py",
-          "tests/test_control_surface_obedience.py",
-          "tests/test_core_loop_pre_pr_gate.py"
+          "tests/test_control_surface_obedience.py"
         ]
       },
       "evidence_count": 127,
@@ -2899,6 +2909,7 @@
           "tests/metrics/test_met_full_roadmap_contract_selection.py",
           "tests/test_ai_governed_integration.py",
           "tests/test_artifact_lineage.py",
+          "tests/test_check_agent_pr_update_ready.py",
           "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_error_budget.py",
@@ -2914,8 +2925,7 @@
           "tests/test_oc_operator_runbook.py",
           "tests/test_phase_a_integration.py",
           "tests/test_phase_d_slos.py",
-          "tests/test_policy_registry.py",
-          "tests/test_query_surfaces.py"
+          "tests/test_policy_registry.py"
         ]
       },
       "evidence_count": 113,
@@ -3099,6 +3109,7 @@
           "docs/architecture/system_registry.md",
           "docs/architecture/system_registry_core.md",
           "docs/architecture/system_registry_reduction_decision.md",
+          "docs/governance/agent_pr_update_policy.json",
           "docs/governance/authority_shape_preflight.md",
           "docs/governance/core_loop_pre_pr_gate_policy.json",
           "docs/governance/three_letter_system_policy.json",
@@ -3111,8 +3122,7 @@
           "docs/operations/tls_priority_preflight.md",
           "docs/review-actions/2026-04-04-tpa-completion-hardening-actions.md",
           "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
-          "docs/review-actions/2026-04-05-tpa-trust-boundary-verification-actions.md",
-          "docs/review-actions/AGL-01_fix_actions.md"
+          "docs/review-actions/2026-04-05-tpa-trust-boundary-verification-actions.md"
         ],
         "modules": [
           "spectrum_systems/aex/classifier.py",
@@ -3134,12 +3144,12 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/review_fix_execution_loop.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/authority_repair_engine.py",
-          "spectrum_systems/modules/runtime/cal_runtime.py",
-          "spectrum_systems/modules/runtime/cax.py"
+          "spectrum_systems/modules/runtime/cal_runtime.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -3150,6 +3160,7 @@
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/check_agent_pr_ready.py",
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/refresh_tpa_source_authority_digests.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
@@ -3182,6 +3193,7 @@
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_certification_judgment_40_explicit.py",
+          "tests/test_check_agent_pr_update_ready.py",
           "tests/test_context_governed_foundation.py",
           "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_core_loop_pre_pr_gate_policy.py",
@@ -3191,11 +3203,10 @@
           "tests/test_done_certification.py",
           "tests/test_end_to_end_governed_scenarios.py",
           "tests/test_evaluation_enforcement_bridge.py",
-          "tests/test_fail_closed_enforcer.py",
-          "tests/test_failure_learning_artifacts.py"
+          "tests/test_fail_closed_enforcer.py"
         ]
       },
-      "evidence_count": 120,
+      "evidence_count": 121,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"
