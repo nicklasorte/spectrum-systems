@@ -1071,6 +1071,7 @@
           "docs/architecture/transcript_processing_hardening.md",
           "docs/governance/authority_shape_preflight.md",
           "docs/governance/cdx_02_3ls_roadmap.json",
+          "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CDX-02-3LS-roadmap-build.md",
           "docs/review-actions/PLAN-CTRL-LOOP-05-LIFECYCLE-ENFORCEMENT-HARDENING-2026-03-30.md",
@@ -1085,8 +1086,7 @@
           "docs/reviews/MET-04-18-final-integration-review.md",
           "docs/reviews/NX_ALL_01_delivery_report.md",
           "docs/reviews/OPR-TRN-01A_authority_failclosed.md",
-          "docs/reviews/RFX-SUPER-01-red-team-review.md",
-          "docs/reviews/SMA-01_measurement_layer_report.md"
+          "docs/reviews/RFX-SUPER-01-red-team-review.md"
         ],
         "modules": [
           "spectrum_systems/governance/authority_shape_early_gate.py",
@@ -1443,10 +1443,10 @@
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
           "spectrum_systems/modules/observability/trust_artifact_freshness.py",
           "spectrum_systems/modules/prl/failure_classifier.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/artifact_lineage.py",
           "spectrum_systems/modules/runtime/control_surface_manifest.py",
-          "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py",
-          "spectrum_systems/modules/runtime/decision_gating.py"
+          "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -1497,6 +1497,7 @@
           "tests/test_3ls_simplification_phases_6_9.py",
           "tests/test_authenticity_hardgate_24_01.py",
           "tests/test_certification_judgment_40_explicit.py",
+          "tests/test_check_agent_pr_update_ready.py",
           "tests/test_crm_comment_mapping.py",
           "tests/test_error_taxonomy.py",
           "tests/test_evaluation_auto_generation.py",
@@ -1507,8 +1508,7 @@
           "tests/test_nx_registry_red_team.py",
           "tests/test_oc_bottleneck_classifier.py",
           "tests/test_pqx_fix_gate.py",
-          "tests/test_pqx_sequence_runner.py",
-          "tests/test_preflight_selection_diagnostic.py"
+          "tests/test_pqx_sequence_runner.py"
         ]
       },
       "evidence_count": 128,
