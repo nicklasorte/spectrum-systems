@@ -1,0 +1,82 @@
+{
+  "artifact_type": "agent_3ls_path_measurement_record",
+  "schema_version": "1.0.0",
+  "measurement_id": "m3l-path-EXAMPLE-COMPLETE-0001",
+  "created_at": "2026-05-01T00:00:00Z",
+  "work_item_id": "M3L-02-EXAMPLE",
+  "agent_type": "claude",
+  "repo_mutating": true,
+  "loop_path": {
+    "AEX": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_pr_precheck/aex_required_surface_mapping.json",
+        "outputs/authority_shape_preflight/authority_shape_preflight_result.json"
+      ],
+      "reason_codes": [],
+      "source": "apr"
+    },
+    "PQX": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/contract_preflight/preflight_pqx_task_wrapper.json",
+        "outputs/contract_preflight/contract_preflight_report.json"
+      ],
+      "reason_codes": [],
+      "source": "apr"
+    },
+    "EVL": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_pr_precheck/evl_generated_artifact_freshness.json",
+        "outputs/agent_pr_precheck/evl_selected_tests.json"
+      ],
+      "reason_codes": [],
+      "source": "apr"
+    },
+    "TPA": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/authority_leak_guard/authority_leak_guard_result.json",
+        "outputs/system_registry_guard/system_registry_guard_result.json"
+      ],
+      "reason_codes": [],
+      "source": "apr"
+    },
+    "CDE": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+        "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json"
+      ],
+      "reason_codes": [],
+      "source": "apr"
+    },
+    "SEL": {
+      "status": "present",
+      "artifact_refs": [
+        "outputs/agent_pr_update/agent_pr_update_ready_result.json"
+      ],
+      "reason_codes": [],
+      "source": "apr"
+    }
+  },
+  "first_missing_leg": null,
+  "first_failed_check": null,
+  "fell_out_at": null,
+  "loop_complete": true,
+  "pr_ready_status": "ready",
+  "pr_update_ready_status": "ready",
+  "source_artifact_refs": [
+    "outputs/agent_pr_precheck/agent_pr_precheck_result.json",
+    "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+    "outputs/agent_pr_update/agent_pr_update_ready_result.json",
+    "outputs/agent_core_loop/agent_core_loop_run_record.json"
+  ],
+  "apr_result_ref": "outputs/agent_pr_precheck/agent_pr_precheck_result.json",
+  "clp_result_ref": "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+  "apu_result_ref": "outputs/agent_pr_update/agent_pr_update_ready_result.json",
+  "agl_record_ref": "outputs/agent_core_loop/agent_core_loop_run_record.json",
+  "reason_codes": [],
+  "authority_scope": "observation_only"
+}
