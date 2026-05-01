@@ -146,6 +146,11 @@ _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
         "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
         "tests/test_artifact_boundary_workflow_policy_observation.py",
     ],
+    ".github/workflows/pr-pytest.yml": [
+        "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
+        "tests/test_agent_pr_precheck_workflow_parity.py",
+        "tests/test_pr_test_shards.py",
+    ],
 }
 
 # ---------------------------------------------------------------------------

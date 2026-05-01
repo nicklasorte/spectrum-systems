@@ -7,13 +7,19 @@ permissions:
   contents: read
 
 jobs:
-  shard-select:
-    name: shard-select (${{ matrix.shard }})
+  pr-test-shards:
+    name: pr-test-shards (${{ matrix.shard }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [contract, governance, dashboard, changed_scope]
+        shard:
+          - contract
+          - governance
+          - runtime_core
+          - changed_scope
+          - generated_artifacts
+          - measurement
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,7 +34,7 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
 
-      - name: Resolve preflight refs
+      - name: Resolve shard refs
         id: shard-refs
         shell: bash
         run: |
@@ -44,8 +50,8 @@ jobs:
             echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Select tests for shard
-        id: shard-select
+      - name: Run canonical PR test shard
+        id: shard-run
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
@@ -54,78 +60,36 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          mkdir -p outputs/pr_test_shards/${{ matrix.shard }}
-          python scripts/select_pr_test_shard.py \
-            --mode ci \
-            --shard "${{ matrix.shard }}" \
+          mkdir -p outputs/pr_test_shards
+          # Canonical PAR-BATCH-01 shard runner. Same selector path
+          # APR uses (scripts/run_pr_test_shards.py +
+          # spectrum_systems.modules.runtime.pr_test_selection). The
+          # workflow does NOT introduce a second selector.
+          # Each matrix entry runs a single canonical shard and writes
+          # one pr_test_shard_result artifact at
+          # outputs/pr_test_shards/<shard>.json. Per-shard fail-closed:
+          # required-shards is set to the matrix shard so a fail/missing/
+          # unknown status exits the runner non-zero.
+          python scripts/run_pr_test_shards.py \
             --base-ref "${{ steps.shard-refs.outputs.base_ref }}" \
             --head-ref "${{ steps.shard-refs.outputs.head_ref }}" \
-            --output "outputs/pr_test_shards/${{ matrix.shard }}/${{ matrix.shard }}_selection.json"
+            --shards "${{ matrix.shard }}" \
+            --required-shards "${{ matrix.shard }}" \
+            --output-dir outputs/pr_test_shards
 
-      - name: Run shard tests
-        id: shard-run
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import json, subprocess, sys, time
-          from pathlib import Path
-
-          shard = "${{ matrix.shard }}"
-          selection_path = Path(f"outputs/pr_test_shards/{shard}/{shard}_selection.json")
-          result_path = Path(f"outputs/pr_test_shards/{shard}/{shard}_result.json")
-          result_path.parent.mkdir(parents=True, exist_ok=True)
-
-          if not selection_path.is_file():
-              sys.exit(f"missing selection artifact: {selection_path}")
-          selection = json.loads(selection_path.read_text(encoding="utf-8"))
-          selected = selection.get("selected_test_files") or []
-          sel_status = selection.get("status", "block")
-
-          start = time.monotonic()
-          commands_run = []
-          failure_summary = None
-          result_status = "pass"
-
-          if sel_status == "empty_allowed" or not selected:
-              result_status = "skipped" if sel_status == "empty_allowed" else "pass"
-          else:
-              cmd = [sys.executable, "-m", "pytest", "-q"] + selected
-              commands_run.append(" ".join(cmd))
-              proc = subprocess.run(cmd, check=False)
-              if proc.returncode != 0:
-                  result_status = "fail"
-                  failure_summary = f"pytest exited {proc.returncode}"
-
-          duration_ms = int((time.monotonic() - start) * 1000)
-          result = {
-              "artifact_type": "pr_test_shard_result",
-              "schema_version": "1.0.0",
-              "shard_name": shard,
-              "status": result_status,
-              "selected_tests": selected,
-              "commands_run": commands_run,
-              "duration_ms": duration_ms,
-              "failure_summary": failure_summary,
-              "artifact_refs": [str(selection_path)],
-              "trace_refs": [],
-              "authority_scope": "observation_only",
-          }
-          result_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-          if result_status in ("fail", "block"):
-              sys.exit(1)
-          PY
-
-      - name: Upload shard outputs
+      - name: Upload shard result artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: shard-outputs-${{ matrix.shard }}
+          name: pr-test-shard-${{ matrix.shard }}
           if-no-files-found: warn
-          path: outputs/pr_test_shards
+          path: |
+            outputs/pr_test_shards/${{ matrix.shard }}.json
+            outputs/pr_test_shards/pr_test_shards_summary.json
 
-  pr-gate:
-    name: pr-gate
-    needs: shard-select
+  pr-test-shards-aggregate:
+    name: pr-test-shards-aggregate
+    needs: pr-test-shards
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -140,30 +104,138 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
 
-      - name: Download all shard outputs
+      - name: Download per-shard result artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: shard-outputs-*
+          pattern: pr-test-shard-*
           merge-multiple: true
           path: outputs/pr_test_shards
 
-      - name: Run PR gate aggregator
+      - name: Aggregate canonical shard results
+        env:
+          MATRIX_RESULT: ${{ needs.pr-test-shards.result }}
         run: |
           set -euo pipefail
-          mkdir -p outputs/pr_gate
-          python scripts/run_pr_gate.py \
-            --shard-dir outputs/pr_test_shards \
-            --required-shards contract,governance,dashboard,changed_scope \
-            --shard-matrix-result "${{ needs.shard-select.result }}" \
-            --output outputs/pr_gate/pr_gate_result.json
+          mkdir -p outputs/pr_test_shards_aggregate
+          # Aggregation observation. authority_scope: observation_only.
+          # - validates per-shard pr_test_shard_result artifacts against
+          #   the canonical schema
+          # - confirms every canonical shard artifact is present
+          # - any fail / missing / unknown status is a blocking
+          #   readiness observation
+          # - skipped is treated as a clean readiness observation, per
+          #   the canonical shard runner's current policy
+          # - upstream matrix non-success is itself a blocking
+          #   readiness observation (e.g. cancelled, runner crash)
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          from datetime import datetime, timezone
+          from pathlib import Path
 
-      - name: Upload PR gate result
+          repo_root = Path(".").resolve()
+          sys.path.insert(0, str(repo_root))
+          from spectrum_systems.contracts import validate_artifact
+
+          CANONICAL_SHARDS = (
+              "contract",
+              "governance",
+              "runtime_core",
+              "changed_scope",
+              "generated_artifacts",
+              "measurement",
+          )
+
+          shard_dir = Path("outputs/pr_test_shards")
+          out_dir = Path("outputs/pr_test_shards_aggregate")
+          out_dir.mkdir(parents=True, exist_ok=True)
+
+          shard_status: dict[str, str] = {}
+          shard_artifact_refs: list[str] = []
+          blocking_reasons: list[str] = []
+
+          matrix_result = (os.environ.get("MATRIX_RESULT") or "").strip().lower()
+          if matrix_result and matrix_result != "success":
+              blocking_reasons.append(
+                  f"pr_test_shards_matrix_result_{matrix_result}"
+              )
+
+          for shard in CANONICAL_SHARDS:
+              artifact_path = shard_dir / f"{shard}.json"
+              if not artifact_path.is_file():
+                  shard_status[shard] = "missing"
+                  blocking_reasons.append(
+                      f"{shard}:shard_artifact_missing"
+                  )
+                  continue
+              try:
+                  payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+              except (OSError, json.JSONDecodeError) as exc:
+                  shard_status[shard] = "unknown"
+                  blocking_reasons.append(
+                      f"{shard}:shard_artifact_unreadable:{exc}"
+                  )
+                  continue
+              try:
+                  validate_artifact(payload, "pr_test_shard_result")
+              except Exception as exc:  # noqa: BLE001
+                  shard_status[shard] = "unknown"
+                  blocking_reasons.append(
+                      f"{shard}:shard_artifact_invalid:{exc}"
+                  )
+                  continue
+              status = payload.get("status", "unknown")
+              shard_status[shard] = status
+              shard_artifact_refs.append(str(artifact_path))
+              if payload.get("shard_name") != shard:
+                  blocking_reasons.append(
+                      f"{shard}:shard_name_mismatch:{payload.get('shard_name')!r}"
+                  )
+                  continue
+              if status == "fail":
+                  blocking_reasons.append(f"{shard}:shard_status_fail")
+              elif status == "missing":
+                  blocking_reasons.append(f"{shard}:shard_status_missing")
+              elif status == "unknown":
+                  blocking_reasons.append(f"{shard}:shard_status_unknown")
+              # status == "pass" or "skipped" → clean per current policy
+
+          overall_status = "block" if blocking_reasons else "pass"
+          summary = {
+              "artifact_type": "pr_test_shards_aggregate_summary",
+              "schema_version": "1.0.0",
+              "shard_status": shard_status,
+              "required_shards": list(CANONICAL_SHARDS),
+              "shard_artifact_refs": sorted(shard_artifact_refs),
+              "matrix_result": matrix_result,
+              "overall_status": overall_status,
+              "blocking_reasons": blocking_reasons,
+              "created_at": datetime.now(timezone.utc)
+                  .replace(microsecond=0)
+                  .isoformat()
+                  .replace("+00:00", "Z"),
+              "authority_scope": "observation_only",
+          }
+          out_path = out_dir / "pr_test_shards_aggregate_summary.json"
+          out_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+          print(json.dumps({
+              "overall_status": overall_status,
+              "shard_status": shard_status,
+              "blocking_reasons": blocking_reasons,
+              "summary_path": str(out_path),
+          }, indent=2))
+          if overall_status != "pass":
+              sys.exit(1)
+          PY
+
+      - name: Upload shard aggregate summary
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pr-gate-result
+          name: pr-test-shards-aggregate-summary
           if-no-files-found: warn
-          path: outputs/pr_gate/pr_gate_result.json
+          path: outputs/pr_test_shards_aggregate/pr_test_shards_aggregate_summary.json
 
   pytest:
     name: pytest
