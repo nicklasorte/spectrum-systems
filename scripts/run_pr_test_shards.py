@@ -370,6 +370,171 @@ def run_all_shards(
     )
 
 
+# Shards whose status indicates pytest actually ran. Skipped / missing /
+# unknown shards are excluded from balance metrics so a no-op shard does
+# not corrupt the imbalance ratio or median.
+_ACTIVE_STATUSES: frozenset[str] = frozenset({"pass", "fail"})
+
+# Threshold multipliers for balancing findings. Conservative defaults —
+# emit findings only, never auto-rebalance.
+_OVER_MEDIAN_DURATION_MULTIPLIER: float = 2.0
+_TESTS_COUNT_SKEW_MULTIPLIER: float = 5.0
+
+
+def _median(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    if len(ordered) % 2 == 1:
+        return float(ordered[mid])
+    return float((ordered[mid - 1] + ordered[mid]) / 2.0)
+
+
+def compute_shard_timing_summary(
+    artifacts_by_shard: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Return shard timing observations for the summary artifact.
+
+    Excludes shards whose status is not in :data:`_ACTIVE_STATUSES` from
+    the imbalance ratio so a skipped or missing shard does not corrupt
+    min/max. Returns ``imbalance_ratio = None`` whenever the eligible
+    set has no positive-duration entry.
+    """
+    durations_by_name: dict[str, float] = {}
+    for shard, artifact in artifacts_by_shard.items():
+        try:
+            durations_by_name[shard] = float(artifact.get("duration_seconds") or 0.0)
+        except (TypeError, ValueError):
+            durations_by_name[shard] = 0.0
+
+    eligible = {
+        shard: durations_by_name[shard]
+        for shard, artifact in artifacts_by_shard.items()
+        if artifact.get("status") in _ACTIVE_STATUSES
+        and durations_by_name.get(shard, 0.0) > 0.0
+    }
+
+    total = round(sum(durations_by_name.values()), 3)
+    if eligible:
+        max_shard, max_dur = max(eligible.items(), key=lambda kv: kv[1])
+        min_dur = min(eligible.values())
+        slowest_shard: str | None = max_shard
+        max_duration: float | None = round(max_dur, 3)
+        min_duration: float | None = round(min_dur, 3)
+        ratio: float | None = (
+            round(max_dur / min_dur, 3) if min_dur > 0.0 else None
+        )
+    else:
+        slowest_shard = None
+        max_duration = None
+        min_duration = None
+        ratio = None
+
+    return {
+        "total_duration_seconds": total,
+        "max_shard_duration_seconds": max_duration,
+        "min_shard_duration_seconds": min_duration,
+        "shard_duration_by_name": {
+            shard: round(durations_by_name[shard], 3)
+            for shard in sorted(durations_by_name)
+        },
+        "slowest_shard": slowest_shard,
+        "imbalance_ratio": ratio,
+    }
+
+
+def compute_balancing_findings(
+    artifacts_by_shard: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Return artifact-backed balancing findings for the shard summary.
+
+    Findings are observation-only. They never move tests between shards
+    and never change shard_status. Each finding carries a stable ``code``
+    plus ``shard`` and a ``details`` dict so consumers can read the
+    underlying timing observation without reparsing the summary.
+    """
+    findings: list[dict[str, Any]] = []
+    active_durations: dict[str, float] = {}
+    selected_counts: dict[str, int] = {}
+    for shard, artifact in artifacts_by_shard.items():
+        if artifact.get("status") not in _ACTIVE_STATUSES:
+            continue
+        try:
+            duration = float(artifact.get("duration_seconds") or 0.0)
+        except (TypeError, ValueError):
+            duration = 0.0
+        active_durations[shard] = duration
+        selected = artifact.get("selected_tests") or []
+        selected_counts[shard] = len(selected)
+
+    if not active_durations:
+        return findings
+
+    slowest_shard, slowest_duration = max(
+        active_durations.items(), key=lambda kv: kv[1]
+    )
+    findings.append(
+        {
+            "code": "slowest_shard_observed",
+            "shard": slowest_shard,
+            "details": {
+                "duration_seconds": round(slowest_duration, 3),
+            },
+        }
+    )
+
+    median_duration = _median(list(active_durations.values()))
+    if median_duration > 0.0:
+        cutoff = _OVER_MEDIAN_DURATION_MULTIPLIER * median_duration
+        for shard in sorted(active_durations):
+            if active_durations[shard] > cutoff:
+                findings.append(
+                    {
+                        "code": "shard_duration_over_2x_median",
+                        "shard": shard,
+                        "details": {
+                            "duration_seconds": round(active_durations[shard], 3),
+                            "median_seconds": round(median_duration, 3),
+                            "multiplier_threshold": _OVER_MEDIAN_DURATION_MULTIPLIER,
+                        },
+                    }
+                )
+
+    for shard in sorted(selected_counts):
+        if selected_counts[shard] == 0:
+            findings.append(
+                {
+                    "code": "empty_or_near_empty_shard",
+                    "shard": shard,
+                    "details": {
+                        "selected_tests_count": 0,
+                    },
+                }
+            )
+
+    nonzero_counts = [c for c in selected_counts.values() if c > 0]
+    if len(nonzero_counts) >= 2:
+        max_count = max(nonzero_counts)
+        min_count = min(nonzero_counts)
+        if min_count > 0 and max_count >= _TESTS_COUNT_SKEW_MULTIPLIER * min_count:
+            for shard in sorted(selected_counts):
+                if selected_counts[shard] == max_count:
+                    findings.append(
+                        {
+                            "code": "selected_tests_count_skew",
+                            "shard": shard,
+                            "details": {
+                                "max_selected_tests": max_count,
+                                "min_selected_tests": min_count,
+                                "skew_threshold": _TESTS_COUNT_SKEW_MULTIPLIER,
+                            },
+                        }
+                    )
+
+    return findings
+
+
 def _build_summary(
     *,
     base_ref: str,
@@ -401,6 +566,9 @@ def _build_summary(
 
     overall_status = "block" if blocking_reasons else "pass"
 
+    timing = compute_shard_timing_summary(artifacts_by_shard)
+    balancing_findings = compute_balancing_findings(artifacts_by_shard)
+
     summary = {
         "artifact_type": "pr_test_shards_summary",
         "schema_version": "1.0.0",
@@ -411,6 +579,13 @@ def _build_summary(
         "shard_artifact_refs": shard_artifact_refs,
         "overall_status": overall_status,
         "blocking_reasons": blocking_reasons,
+        "total_duration_seconds": timing["total_duration_seconds"],
+        "max_shard_duration_seconds": timing["max_shard_duration_seconds"],
+        "min_shard_duration_seconds": timing["min_shard_duration_seconds"],
+        "shard_duration_by_name": timing["shard_duration_by_name"],
+        "slowest_shard": timing["slowest_shard"],
+        "imbalance_ratio": timing["imbalance_ratio"],
+        "balancing_findings": balancing_findings,
         "created_at": _utc_now_iso(),
         "authority_scope": "observation_only",
     }
