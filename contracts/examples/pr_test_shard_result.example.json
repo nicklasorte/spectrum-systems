@@ -4,17 +4,16 @@
   "shard_name": "contract",
   "status": "pass",
   "selected_tests": [
-    "tests/contracts/test_pr_test_shard_result_schema.py",
-    "tests/contracts/test_contract_schema_compliance.py"
+    "tests/test_pr_test_shards.py",
+    "tests/test_contracts.py"
   ],
-  "commands_run": [
-    "python -m pytest -q tests/contracts/test_pr_test_shard_result_schema.py tests/contracts/test_contract_schema_compliance.py"
+  "command": "python -m pytest -q tests/test_pr_test_shards.py tests/test_contracts.py",
+  "exit_code": 0,
+  "duration_seconds": 3.142,
+  "output_artifact_refs": [
+    "outputs/pr_test_shards/contract.json"
   ],
-  "duration_ms": 3142,
-  "failure_summary": null,
-  "artifact_refs": [],
-  "trace_refs": [
-    "PAR-00-01"
-  ],
+  "reason_codes": [],
+  "created_at": "2026-05-01T00:00:00Z",
   "authority_scope": "observation_only"
 }

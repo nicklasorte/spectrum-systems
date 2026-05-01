@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/pr_test_shard_result.schema.json",
   "title": "PR Test Shard Result",
-  "description": "Schema for parallel PR shard execution results, selection records, and precheck parity records. authority_scope is observation_only for all sub-types.",
+  "description": "Per-shard test execution result emitted by scripts/run_pr_test_shards.py. authority_scope is observation_only. pass requires output_artifact_refs; fail/missing/unknown/skipped require reason_codes; unknown never counts as pass.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,11 +11,12 @@
     "shard_name",
     "status",
     "selected_tests",
-    "commands_run",
-    "duration_ms",
-    "failure_summary",
-    "artifact_refs",
-    "trace_refs",
+    "command",
+    "exit_code",
+    "duration_seconds",
+    "output_artifact_refs",
+    "reason_codes",
+    "created_at",
     "authority_scope"
   ],
   "properties": {
@@ -32,9 +33,9 @@
       "enum": [
         "contract",
         "governance",
-        "dashboard",
-        "changed_scope",
         "runtime_core",
+        "changed_scope",
+        "generated_artifacts",
         "measurement"
       ]
     },
@@ -43,8 +44,9 @@
       "enum": [
         "pass",
         "fail",
-        "block",
-        "skipped"
+        "skipped",
+        "missing",
+        "unknown"
       ]
     },
     "selected_tests": {
@@ -54,63 +56,85 @@
         "minLength": 1
       }
     },
-    "commands_run": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+    "command": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Single command line that was executed for this shard, or null when no command ran (e.g. skipped)."
     },
-    "duration_ms": {
+    "exit_code": {
       "type": [
         "integer",
         "null"
       ]
     },
-    "failure_summary": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "description": "Required when status is 'fail' or 'block'. Must be non-null for those statuses."
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0
     },
-    "artifact_refs": {
+    "output_artifact_refs": {
       "type": "array",
       "items": {
         "type": "string",
         "minLength": 1
       }
     },
-    "trace_refs": {
+    "reason_codes": {
       "type": "array",
       "items": {
         "type": "string",
         "minLength": 1
       }
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
     },
     "authority_scope": {
       "type": "string",
       "const": "observation_only"
     }
   },
-  "if": {
-    "properties": {
-      "status": {
-        "enum": [
-          "fail",
-          "block"
-        ]
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "pass"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "output_artifact_refs": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "fail",
+              "skipped",
+              "missing",
+              "unknown"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "minItems": 1
+          }
+        }
       }
     }
-  },
-  "then": {
-    "properties": {
-      "failure_summary": {
-        "type": "string",
-        "minLength": 1
-      }
-    }
-  },
+  ],
   "$defs": {
     "pr_test_shard_selection": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",

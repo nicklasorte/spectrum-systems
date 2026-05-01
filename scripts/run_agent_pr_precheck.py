@@ -551,66 +551,93 @@ def evl_generated_artifact_freshness(*, output_dir: Path) -> CheckResult:
     )
 
 
-def evl_selected_tests(
-    *, repo_root: Path, changed_paths: list[str], output_dir: Path
+def evl_pr_test_shards(
+    *,
+    repo_root: Path,
+    base_ref: str,
+    head_ref: str,
+    output_dir: Path,
 ) -> CheckResult:
-    """Run pytest on the test set ``pr_test_selection`` resolves for the diff."""
+    """Invoke the sequential PR test shard process and consume its artifacts.
+
+    Replaces the legacy single-pytest ``evl_selected_tests`` check. The
+    upstream shard process produces one ``pr_test_shard_result`` per
+    canonical shard plus a ``pr_test_shards_summary`` artifact. APR
+    consumes those artifacts as observation-only inputs; it does not
+    recompute selection or re-execute the shards itself.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
-    artifact_path = output_dir / "evl_selected_tests.json"
-    governed = [p for p in changed_paths if classify_changed_path(p).get("is_governed")]
-    targets_by_path = resolve_required_tests(repo_root, governed)
-    targets = sorted(
-        {
-            t
-            for ts in targets_by_path.values()
-            for t in ts
-            if (repo_root / t).is_file()
-        }
-    )
-    payload = {
-        "artifact_type": "apr_evl_selected_tests_observation",
-        "phase": "EVL",
-        "selected_targets": targets,
-        "authority_scope": "observation_only",
-    }
-    if not targets:
-        payload["pytest_returncode"] = None
-        payload["reason"] = "no_selected_tests_resolved"
-        artifact_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-        return CheckResult(
-            check_name="evl_selected_tests",
-            phase="EVL",
-            command="(no targeted tests resolved)",
-            status="skipped",
-            exit_code=None,
-            output_artifact_refs=[str(artifact_path.relative_to(repo_root))],
-            reason_codes=["no_selected_tests_resolved"],
-            next_action="none",
-        )
-    cmd = [sys.executable, "-m", "pytest", "-q", *targets]
+    shard_output_dir = repo_root / "outputs" / "pr_test_shards"
+    summary_path = shard_output_dir / "pr_test_shards_summary.json"
+
+    cmd = [
+        sys.executable,
+        "scripts/run_pr_test_shards.py",
+        "--base-ref", base_ref,
+        "--head-ref", head_ref,
+        "--output-dir", str(shard_output_dir.relative_to(repo_root)),
+    ]
+    cmd_str = " ".join(shlex.quote(p) for p in cmd)
     rc, combined = _run_subprocess(cmd, cwd=repo_root)
-    payload["pytest_returncode"] = rc
-    payload["pytest_tail"] = "\n".join(combined.splitlines()[-25:])
-    artifact_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    if rc == 0:
+
+    if not summary_path.is_file():
         return CheckResult(
-            check_name="evl_selected_tests",
+            check_name="evl_pr_test_shards",
             phase="EVL",
-            command=" ".join(shlex.quote(p) for p in cmd),
+            command=cmd_str,
+            status="block",
+            exit_code=rc,
+            output_artifact_refs=[],
+            reason_codes=["pr_test_shards_summary_missing"],
+            next_action=(
+                "investigate run_pr_test_shards.py: "
+                + (combined.splitlines() or ["(no output)"])[-1][:200]
+            ),
+        )
+
+    try:
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return CheckResult(
+            check_name="evl_pr_test_shards",
+            phase="EVL",
+            command=cmd_str,
+            status="block",
+            exit_code=rc,
+            output_artifact_refs=[str(summary_path.relative_to(repo_root))],
+            reason_codes=[f"pr_test_shards_summary_unreadable:{exc}"],
+            next_action="inspect summary file",
+        )
+
+    artifact_refs: list[str] = [str(summary_path.relative_to(repo_root))]
+    for ref in summary.get("shard_artifact_refs", []) or []:
+        if ref not in artifact_refs:
+            artifact_refs.append(ref)
+
+    overall = summary.get("overall_status", "unknown")
+    blocking_reasons = list(summary.get("blocking_reasons", []) or [])
+    if overall == "pass":
+        return CheckResult(
+            check_name="evl_pr_test_shards",
+            phase="EVL",
+            command=cmd_str,
             status="pass",
-            exit_code=0,
-            output_artifact_refs=[str(artifact_path.relative_to(repo_root))],
+            exit_code=rc,
+            output_artifact_refs=artifact_refs,
             next_action="none",
         )
+
+    if not blocking_reasons:
+        blocking_reasons = [f"pr_test_shards_overall_status_{overall}"]
     return CheckResult(
-        check_name="evl_selected_tests",
+        check_name="evl_pr_test_shards",
         phase="EVL",
-        command=" ".join(shlex.quote(p) for p in cmd),
+        command=cmd_str,
         status="block",
-        exit_code=rc,
-        output_artifact_refs=[str(artifact_path.relative_to(repo_root))],
-        reason_codes=[f"pytest_returncode_{rc}"],
-        next_action="repair_failing_tests",
+        exit_code=rc if rc is not None else 1,
+        output_artifact_refs=artifact_refs,
+        reason_codes=blocking_reasons,
+        next_action="repair_failing_or_missing_shards",
     )
 
 
@@ -917,9 +944,10 @@ def main() -> int:
         if "EVL" not in skipped:
             checks.append(evl_generated_artifact_freshness(output_dir=phase_output_dir))
             checks.append(
-                evl_selected_tests(
+                evl_pr_test_shards(
                     repo_root=REPO_ROOT,
-                    changed_paths=changed_paths,
+                    base_ref=args.base_ref,
+                    head_ref=args.head_ref,
                     output_dir=phase_output_dir,
                 )
             )
@@ -974,7 +1002,7 @@ def main() -> int:
     ]
     selected_test_refs = []
     for c in checks:
-        if c.check_name != "evl_selected_tests":
+        if c.check_name != "evl_pr_test_shards":
             continue
         for ref in c.output_artifact_refs:
             selected_test_refs.append(ref)

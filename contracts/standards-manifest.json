@@ -10155,9 +10155,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.3.152",
-      "last_updated_in": "1.3.152",
+      "last_updated_in": "PAR-BATCH-01",
       "example_path": "contracts/examples/pr_test_shard_result.example.json",
-      "notes": "PAR-00-01 parallel PR shard result contract."
+      "notes": "PAR-BATCH-01 sequential PR test shard result contract; one artifact per canonical shard (contract, governance, runtime_core, changed_scope, generated_artifacts, measurement). pass requires output_artifact_refs; fail/missing/unknown/skipped require reason_codes; unknown never counts as pass. authority_scope: observation_only."
     },
     {
       "artifact_type": "pra_changed_scope_extraction_record",

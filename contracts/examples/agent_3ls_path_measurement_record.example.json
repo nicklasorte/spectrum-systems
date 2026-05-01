@@ -29,7 +29,7 @@
       "status": "present",
       "artifact_refs": [
         "outputs/agent_pr_precheck/evl_generated_artifact_freshness.json",
-        "outputs/agent_pr_precheck/evl_selected_tests.json"
+        "outputs/pr_test_shards/pr_test_shards_summary.json"
       ],
       "reason_codes": [],
       "source": "apr"
