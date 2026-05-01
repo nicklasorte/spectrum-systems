@@ -119,6 +119,9 @@
     "tests/test_pytest_selection_integrity.py",
     "tests/test_governance_doc_preflight_selection_mapping.py"
   ],
+  "docs/reviews/AGENT-INSTR-01_redteam.md": [
+    "tests/test_agent_instruction_apr_m3l_required.py"
+  ],
   "docs/reviews/MET-04-18-final-integration-review.md": [
     "tests/metrics/test_met_04_18_contract_selection.py"
   ],

@@ -577,6 +577,8 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
         return True, "met_04_18_dashboard_surface", "MET-04-18 dashboard surface changed"
     if path.startswith("docs/reviews/MET-") and path.endswith(".md"):
         return True, "met_review_surface", "MET-* review doc changed"
+    if path.startswith("docs/reviews/AGENT-INSTR-") and path.endswith(".md"):
+        return True, "agent_instr_review_surface", "AGENT-INSTR-* review doc changed"
     return False, "other", "path does not map to governed contract surface"
 
 

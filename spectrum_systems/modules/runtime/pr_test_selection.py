@@ -300,6 +300,14 @@ def classify_changed_path(path: str) -> dict[str, Any]:
             "reason": "MET-* review doc changed",
         }
 
+    # AGENT-INSTR-* review docs
+    if path.startswith("docs/reviews/AGENT-INSTR-") and path.endswith(".md"):
+        return {
+            "is_governed": True,
+            "surface": "agent_instr_review_surface",
+            "reason": "AGENT-INSTR-* review doc changed",
+        }
+
     # Docs/governance/ prefix (from GOVERNED_PATH_PREFIXES)
     if path.startswith("docs/governance/"):
         return {
