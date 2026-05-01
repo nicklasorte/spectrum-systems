@@ -1,0 +1,31 @@
+{
+  "artifact_type": "agent_pr_update_ready_result",
+  "schema_version": "1.0.0",
+  "created_at": "2026-05-01T00:00:00Z",
+  "trace_id": "agent-pr-update-ready-1234567890abcdef",
+  "work_item_id": "APU-3LS-01",
+  "agent_type": "codex",
+  "repo_mutating": true,
+  "readiness_status": "not_ready",
+  "reason_codes": ["clp_evidence_missing","agl_evidence_missing"],
+  "evidence": {
+    "AEX": {"status":"missing","artifact_refs":[],"reason_codes":["missing_reason_codes"]},
+    "PQX": {"status":"missing","artifact_refs":[],"reason_codes":["missing_reason_codes"]},
+    "EVL": {"status":"missing","artifact_refs":[],"reason_codes":["missing_reason_codes"]},
+    "TPA": {"status":"missing","artifact_refs":[],"reason_codes":["missing_reason_codes"]},
+    "CDE": {"status":"missing","artifact_refs":[],"reason_codes":["missing_reason_codes"]},
+    "SEL": {"status":"missing","artifact_refs":[],"reason_codes":["missing_reason_codes"]},
+    "LIN": {"status":"missing","artifact_refs":[],"reason_codes":["missing_reason_codes"]},
+    "REP": {"status":"missing","artifact_refs":[],"reason_codes":["missing_reason_codes"]},
+    "CLP": {"status":"missing","artifact_refs":[],"reason_codes":["clp_evidence_missing"]},
+    "AGL": {"status":"missing","artifact_refs":[],"reason_codes":["agl_evidence_missing"]},
+    "APU": {"status":"not_ready","artifact_refs":[],"reason_codes":["clp_evidence_missing","agl_evidence_missing"]}
+  },
+  "clp_status": "missing",
+  "allowed_warning_reason_codes": [],
+  "blocked_warning_reason_codes": [],
+  "source_artifact_refs": [],
+  "policy_ref": "docs/governance/agent_pr_update_policy.json",
+  "inputs_hash": "abc",
+  "authority_scope": "observation_only"
+}

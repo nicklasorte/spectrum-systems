@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spectrum-systems.org/contracts/apu/agent_pr_update_ready_result.schema.json",
+  "title": "agent_pr_update_ready_result",
+  "type": "object",
+  "required": ["artifact_type","schema_version","created_at","trace_id","work_item_id","agent_type","readiness_status","reason_codes","evidence","clp_status","allowed_warning_reason_codes","blocked_warning_reason_codes","source_artifact_refs","policy_ref","authority_scope"],
+  "properties": {
+    "artifact_type": {"const": "agent_pr_update_ready_result"},
+    "schema_version": {"const": "1.0.0"},
+    "created_at": {"type": "string"},
+    "trace_id": {"type": "string"},
+    "work_item_id": {"type": "string"},
+    "agent_type": {"type": "string","enum":["codex","claude","other","unknown"]},
+    "repo_mutating": {"type": ["boolean","null"]},
+    "readiness_status": {"type":"string","enum":["ready","not_ready","human_review_required"]},
+    "reason_codes": {"type":"array","items":{"type":"string"}},
+    "evidence": {"type":"object"},
+    "clp_status": {"type":"string"},
+    "allowed_warning_reason_codes": {"type":"array","items":{"type":"string"}},
+    "blocked_warning_reason_codes": {"type":"array","items":{"type":"string"}},
+    "source_artifact_refs": {"type":"array","items":{"type":"string"}},
+    "policy_ref": {"type":"string"},
+    "inputs_hash": {"type":"string"},
+    "authority_scope": {"const":"observation_only"}
+  }
+}

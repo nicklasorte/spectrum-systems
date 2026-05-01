@@ -47,6 +47,7 @@
           "docs/operations/3ls_simplified_architecture_runbook.md",
           "docs/rca_guide.md",
           "docs/review-actions/AGL-01_fix_actions.md",
+          "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
           "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
@@ -56,8 +57,7 @@
           "docs/review-actions/PLAN-AUTO-KERNEL-24-01-2026-04-11.md",
           "docs/review-actions/PLAN-BATCH-AEX-06-2026-04-08.md",
           "docs/review-actions/PLAN-BATCH-AEX-2026-04-08.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-01-2026-04-08.md",
-          "docs/review-actions/PLAN-BATCH-AEX-FIX-02-2026-04-09.md"
+          "docs/review-actions/PLAN-BATCH-AEX-FIX-01-2026-04-08.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -78,13 +78,13 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/cal_runtime.py",
           "spectrum_systems/modules/runtime/chx_runtime.py",
-          "spectrum_systems/modules/runtime/context_governed_flow.py",
-          "spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py"
+          "spectrum_systems/modules/runtime/context_governed_flow.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -588,12 +588,12 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/bne02_full_wave.py",
-          "spectrum_systems/modules/runtime/chaos_failure_intelligence.py",
-          "spectrum_systems/modules/runtime/control_chain_invariants.py"
+          "spectrum_systems/modules/runtime/chaos_failure_intelligence.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1301,6 +1301,7 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/artifact_lineage.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
@@ -1314,8 +1315,7 @@
           "spectrum_systems/modules/runtime/pmh_003_surfaces.py",
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
-          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
-          "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py"
+          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1737,6 +1737,7 @@
         "tests": [
           "tests/fixtures/autonomous_cycle/hardening/pol_policy_lifecycle.json",
           "tests/test_3ls_phase3_judgment_policy.py",
+          "tests/test_agent_pr_update_ready.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_cde_decision_flow.py",
           "tests/test_ctrl_loop_closure.py",
@@ -1757,7 +1758,7 @@
           "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
-      "evidence_count": 96,
+      "evidence_count": 97,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "POL"
@@ -2299,6 +2300,7 @@
           "spectrum_systems/modules/replay/replay_gate.py",
           "spectrum_systems/modules/replay/replay_support.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/failure_explanation.py",
@@ -2311,8 +2313,7 @@
           "spectrum_systems/modules/runtime/replay_engine.py",
           "spectrum_systems/modules/runtime/replay_governance.py",
           "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
-          "spectrum_systems/modules/runtime/rfx_certification_gate.py",
-          "spectrum_systems/modules/runtime/rfx_chaos_campaign.py"
+          "spectrum_systems/modules/runtime/rfx_certification_gate.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -2714,13 +2715,13 @@
           "spectrum_systems/modules/prompt_queue/execution_runner.py",
           "spectrum_systems/modules/review_handoff_disposition.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/authority_repair_engine.py",
-          "spectrum_systems/modules/runtime/cal_runtime.py",
-          "spectrum_systems/modules/runtime/cde_decision_flow.py"
+          "spectrum_systems/modules/runtime/cal_runtime.py"
         ],
         "review_actions": [],
         "reviews": [
@@ -3134,12 +3135,12 @@
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/review_fix_execution_loop.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ail_runtime.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
           "spectrum_systems/modules/runtime/authority_repair_engine.py",
-          "spectrum_systems/modules/runtime/cal_runtime.py",
-          "spectrum_systems/modules/runtime/cax.py"
+          "spectrum_systems/modules/runtime/cal_runtime.py"
         ],
         "review_actions": [],
         "reviews": [],

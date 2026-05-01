@@ -1,0 +1,7 @@
+{
+  "policy_id": "APU-3LS-01",
+  "policy_version": "1.0.0",
+  "authority_scope": "observation_only",
+  "allowed_warning_reason_codes": ["tls_artifacts_updated"],
+  "optional_legs_out_of_scope": []
+}
