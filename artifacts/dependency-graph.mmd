@@ -36,8 +36,13 @@ flowchart TD
   art_admission_replay_validation_record["admission_replay_validation_record\ncoordination"]
   art_aex_tlc_handoff_integrity_record["aex_tlc_handoff_integrity_record\ncoordination"]
   art_agency_critique_profile["agency_critique_profile\ncoordination"]
+  art_agent_3ls_path_measurement_record["agent_3ls_path_measurement_record\ncoordination"]
+  art_agent_core_loop_run_record["agent_core_loop_run_record\ncoordination"]
   art_agent_execution_trace["agent_execution_trace\ncoordination"]
   art_agent_failure_record["agent_failure_record\ncoordination"]
+  art_agent_pr_precheck_result["agent_pr_precheck_result\ncoordination"]
+  art_agent_pr_ready_result["agent_pr_ready_result\ncoordination"]
+  art_agent_pr_update_ready_result["agent_pr_update_ready_result\ncoordination"]
   art_ai_model_request["ai_model_request\ncoordination"]
   art_ai_model_response["ai_model_response\ncoordination"]
   art_ai_programming_governance_rollup_record["ai_programming_governance_rollup_record\ngovernance"]
@@ -237,6 +242,7 @@ flowchart TD
   art_control_surface_obedience_result["control_surface_obedience_result\ncoordination"]
   art_coordination_loop["coordination_loop\ncoordination"]
   art_core_loop_alignment_record["core_loop_alignment_record\ngovernance"]
+  art_core_loop_pre_pr_gate_result["core_loop_pre_pr_gate_result\ncoordination"]
   art_core_system_integration_validation["core_system_integration_validation\ncoordination"]
   art_correction_mining_report["correction_mining_report\ngovernance"]
   art_correction_pattern_record["correction_pattern_record\ncoordination"]
@@ -815,6 +821,7 @@ flowchart TD
   art_pqx_strategy_status_artifact["pqx_strategy_status_artifact\ncoordination"]
   art_pqx_triage_plan_record["pqx_triage_plan_record\ncoordination"]
   art_pr_failure_capture_record["pr_failure_capture_record\ngovernance"]
+  art_pr_test_shard_result["pr_test_shard_result\ngovernance"]
   art_pra_changed_scope_extraction_record["pra_changed_scope_extraction_record\ncoordination"]
   art_pra_ci_review_extraction_record["pra_ci_review_extraction_record\ncoordination"]
   art_pra_pull_request_anchor_record["pra_pull_request_anchor_record\ncoordination"]
@@ -862,6 +869,7 @@ flowchart TD
   art_prl_eval_case["prl_eval_case\ngovernance"]
   art_prl_eval_generation_record["prl_eval_generation_record\ngovernance"]
   art_prl_gate_result["prl_gate_result\ngovernance"]
+  art_prl_lrt_failure_packet["prl_lrt_failure_packet\ngovernance"]
   art_prl_repair_candidate["prl_repair_candidate\ngovernance"]
   art_prm_ai_prompt_admissibility_result["prm_ai_prompt_admissibility_result\ngovernance"]
   art_prm_ai_task_registry_record["prm_ai_task_registry_record\ngovernance"]
@@ -1369,8 +1377,13 @@ flowchart TD
   con_admission_replay_validation_record["admission_replay_validation_record\ncontract"]
   con_aex_tlc_handoff_integrity_record["aex_tlc_handoff_integrity_record\ncontract"]
   con_agency_critique_profile["agency_critique_profile\ncontract"]
+  con_agent_3ls_path_measurement_record["agent_3ls_path_measurement_record\ncontract"]
+  con_agent_core_loop_run_record["agent_core_loop_run_record\ncontract"]
   con_agent_execution_trace["agent_execution_trace\ncontract"]
   con_agent_failure_record["agent_failure_record\ncontract"]
+  con_agent_pr_precheck_result["agent_pr_precheck_result\ncontract"]
+  con_agent_pr_ready_result["agent_pr_ready_result\ncontract"]
+  con_agent_pr_update_ready_result["agent_pr_update_ready_result\ncontract"]
   con_ai_model_request["ai_model_request\ncontract"]
   con_ai_model_response["ai_model_response\ncontract"]
   con_ai_programming_governance_rollup_record["ai_programming_governance_rollup_record\ncontract"]
@@ -1568,6 +1581,7 @@ flowchart TD
   con_control_surface_manifest["control_surface_manifest\ncontract"]
   con_control_surface_obedience_result["control_surface_obedience_result\ncontract"]
   con_core_loop_alignment_record["core_loop_alignment_record\ncontract"]
+  con_core_loop_pre_pr_gate_result["core_loop_pre_pr_gate_result\ncontract"]
   con_core_system_integration_validation["core_system_integration_validation\ncontract"]
   con_correction_mining_report["correction_mining_report\ncontract"]
   con_correction_pattern_record["correction_pattern_record\ncontract"]
@@ -2139,6 +2153,7 @@ flowchart TD
   con_pqx_strategy_status_artifact["pqx_strategy_status_artifact\ncontract"]
   con_pqx_triage_plan_record["pqx_triage_plan_record\ncontract"]
   con_pr_failure_capture_record["pr_failure_capture_record\ncontract"]
+  con_pr_test_shard_result["pr_test_shard_result\ncontract"]
   con_pra_changed_scope_extraction_record["pra_changed_scope_extraction_record\ncontract"]
   con_pra_ci_review_extraction_record["pra_ci_review_extraction_record\ncontract"]
   con_pra_pull_request_anchor_record["pra_pull_request_anchor_record\ncontract"]
@@ -2186,6 +2201,7 @@ flowchart TD
   con_prl_eval_case["prl_eval_case\ncontract"]
   con_prl_eval_generation_record["prl_eval_generation_record\ncontract"]
   con_prl_gate_result["prl_gate_result\ncontract"]
+  con_prl_lrt_failure_packet["prl_lrt_failure_packet\ncontract"]
   con_prl_repair_candidate["prl_repair_candidate\ncontract"]
   con_prm_ai_prompt_admissibility_result["prm_ai_prompt_admissibility_result\ncontract"]
   con_prm_ai_task_registry_record["prm_ai_task_registry_record\ncontract"]
@@ -2688,8 +2704,13 @@ flowchart TD
   art_admission_replay_validation_record -. governed_by .-> con_admission_replay_validation_record
   art_aex_tlc_handoff_integrity_record -. governed_by .-> con_aex_tlc_handoff_integrity_record
   art_agency_critique_profile -. governed_by .-> con_agency_critique_profile
+  art_agent_3ls_path_measurement_record -. governed_by .-> con_agent_3ls_path_measurement_record
+  art_agent_core_loop_run_record -. governed_by .-> con_agent_core_loop_run_record
   art_agent_execution_trace -. governed_by .-> con_agent_execution_trace
   art_agent_failure_record -. governed_by .-> con_agent_failure_record
+  art_agent_pr_precheck_result -. governed_by .-> con_agent_pr_precheck_result
+  art_agent_pr_ready_result -. governed_by .-> con_agent_pr_ready_result
+  art_agent_pr_update_ready_result -. governed_by .-> con_agent_pr_update_ready_result
   art_ai_model_request -. governed_by .-> con_ai_model_request
   art_ai_model_response -. governed_by .-> con_ai_model_response
   art_ai_programming_governance_rollup_record -. governed_by .-> con_ai_programming_governance_rollup_record
@@ -2887,6 +2908,7 @@ flowchart TD
   art_control_surface_manifest -. governed_by .-> con_control_surface_manifest
   art_control_surface_obedience_result -. governed_by .-> con_control_surface_obedience_result
   art_core_loop_alignment_record -. governed_by .-> con_core_loop_alignment_record
+  art_core_loop_pre_pr_gate_result -. governed_by .-> con_core_loop_pre_pr_gate_result
   art_core_system_integration_validation -. governed_by .-> con_core_system_integration_validation
   art_correction_mining_report -. governed_by .-> con_correction_mining_report
   art_correction_pattern_record -. governed_by .-> con_correction_pattern_record
@@ -3458,6 +3480,7 @@ flowchart TD
   art_pqx_strategy_status_artifact -. governed_by .-> con_pqx_strategy_status_artifact
   art_pqx_triage_plan_record -. governed_by .-> con_pqx_triage_plan_record
   art_pr_failure_capture_record -. governed_by .-> con_pr_failure_capture_record
+  art_pr_test_shard_result -. governed_by .-> con_pr_test_shard_result
   art_pra_changed_scope_extraction_record -. governed_by .-> con_pra_changed_scope_extraction_record
   art_pra_ci_review_extraction_record -. governed_by .-> con_pra_ci_review_extraction_record
   art_pra_pull_request_anchor_record -. governed_by .-> con_pra_pull_request_anchor_record
@@ -3505,6 +3528,7 @@ flowchart TD
   art_prl_eval_case -. governed_by .-> con_prl_eval_case
   art_prl_eval_generation_record -. governed_by .-> con_prl_eval_generation_record
   art_prl_gate_result -. governed_by .-> con_prl_gate_result
+  art_prl_lrt_failure_packet -. governed_by .-> con_prl_lrt_failure_packet
   art_prl_repair_candidate -. governed_by .-> con_prl_repair_candidate
   art_prm_ai_prompt_admissibility_result -. governed_by .-> con_prm_ai_prompt_admissibility_result
   art_prm_ai_task_registry_record -. governed_by .-> con_prm_ai_task_registry_record
@@ -4007,8 +4031,13 @@ flowchart TD
   con_admission_replay_validation_record -->|validates| art_admission_replay_validation_record
   con_aex_tlc_handoff_integrity_record -->|validates| art_aex_tlc_handoff_integrity_record
   con_agency_critique_profile -->|validates| art_agency_critique_profile
+  con_agent_3ls_path_measurement_record -->|validates| art_agent_3ls_path_measurement_record
+  con_agent_core_loop_run_record -->|validates| art_agent_core_loop_run_record
   con_agent_execution_trace -->|validates| art_agent_execution_trace
   con_agent_failure_record -->|validates| art_agent_failure_record
+  con_agent_pr_precheck_result -->|validates| art_agent_pr_precheck_result
+  con_agent_pr_ready_result -->|validates| art_agent_pr_ready_result
+  con_agent_pr_update_ready_result -->|validates| art_agent_pr_update_ready_result
   con_ai_model_request -->|validates| art_ai_model_request
   con_ai_model_response -->|validates| art_ai_model_response
   con_ai_programming_governance_rollup_record -->|validates| art_ai_programming_governance_rollup_record
@@ -4206,6 +4235,7 @@ flowchart TD
   con_control_surface_manifest -->|validates| art_control_surface_manifest
   con_control_surface_obedience_result -->|validates| art_control_surface_obedience_result
   con_core_loop_alignment_record -->|validates| art_core_loop_alignment_record
+  con_core_loop_pre_pr_gate_result -->|validates| art_core_loop_pre_pr_gate_result
   con_core_system_integration_validation -->|validates| art_core_system_integration_validation
   con_correction_mining_report -->|validates| art_correction_mining_report
   con_correction_pattern_record -->|validates| art_correction_pattern_record
@@ -4777,6 +4807,7 @@ flowchart TD
   con_pqx_strategy_status_artifact -->|validates| art_pqx_strategy_status_artifact
   con_pqx_triage_plan_record -->|validates| art_pqx_triage_plan_record
   con_pr_failure_capture_record -->|validates| art_pr_failure_capture_record
+  con_pr_test_shard_result -->|validates| art_pr_test_shard_result
   con_pra_changed_scope_extraction_record -->|validates| art_pra_changed_scope_extraction_record
   con_pra_ci_review_extraction_record -->|validates| art_pra_ci_review_extraction_record
   con_pra_pull_request_anchor_record -->|validates| art_pra_pull_request_anchor_record
@@ -4824,6 +4855,7 @@ flowchart TD
   con_prl_eval_case -->|validates| art_prl_eval_case
   con_prl_eval_generation_record -->|validates| art_prl_eval_generation_record
   con_prl_gate_result -->|validates| art_prl_gate_result
+  con_prl_lrt_failure_packet -->|validates| art_prl_lrt_failure_packet
   con_prl_repair_candidate -->|validates| art_prl_repair_candidate
   con_prm_ai_prompt_admissibility_result -->|validates| art_prm_ai_prompt_admissibility_result
   con_prm_ai_task_registry_record -->|validates| art_prm_ai_task_registry_record
