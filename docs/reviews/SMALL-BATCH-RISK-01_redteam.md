@@ -111,8 +111,10 @@ inside its observation envelope.
 ### MF-08 — authority vocabulary leak
 - **Risk:** the schema, example, builder, or test could carry the
   reserved authority verb cluster forbidden by the contract
-  vocabulary policy (e.g., approve, certify, promote and the
-  remaining cluster terms listed in the test's lint constant).
+  vocabulary policy (the cluster terms listed in the test's lint
+  constant). Risk record must remain measurement-only; readiness
+  observations and canonical authority remain with the current owner
+  systems.
 - **Mitigation:** lint tests assert that none of those tokens appear
   in the schema, example, builder, or test (outside of the lint
   constant itself).
