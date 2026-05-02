@@ -14854,6 +14854,19 @@
       "notes": "ADV-001 deterministic sim_diff_record artifact contract."
     },
     {
+      "artifact_type": "small_batch_risk_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "SMALL-BATCH-RISK-01",
+      "last_updated_in": "SMALL-BATCH-RISK-01",
+      "example_path": "contracts/examples/small_batch_risk_record.example.json",
+      "notes": "SMALL-BATCH-RISK-01 observation-only measurement of governed PR surface breadth. Records changed_file_count, changed_paths, governed_surface_classes, governed_surface_count, generated_artifact_touch_count, per-surface touch counts (schema/example/manifest/runtime/script/test/docs/workflow/dashboard), the contract/generated/workflow/dashboard surface_touched flags, an observation-only risk_level (low|medium|high|very_high|unknown), reason_codes, an observation-only split_recommendation (keep_together|consider_split|split_recommended|human_review_required), split_findings, and recommended_batches as observations only. risk_level=unknown requires reason_codes; high/very_high require at least one split_finding and one recommended_batch. authority_scope: observation_only."
+    },
+    {
       "artifact_type": "sim_policy_impact_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",

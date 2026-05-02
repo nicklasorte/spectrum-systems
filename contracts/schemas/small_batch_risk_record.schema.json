@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/small_batch_risk_record.schema.json",
+  "title": "Small Batch Risk Record",
+  "description": "SMALL-BATCH-RISK-01 observation-only measurement of governed PR surface breadth. Records the changed file count, surface class counts, governed-surface flags, an observation-only risk_level, observation-only split_recommendation, split_findings, and recommended_batches. The artifact does not block PRs and does not gate any upstream readiness check; it is consumed as a measurement input only. Canonical ownership of admission, execution closure, eval evidence, policy/scope, continuation/closure, and final-gate signal remains with the systems declared in docs/architecture/system_registry.md. risk_level=unknown requires at least one reason_code; risk_level=high or risk_level=very_high require at least one split_finding and at least one recommended_batch entry. authority_scope is fixed to observation_only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "created_at",
+    "base_ref",
+    "head_ref",
+    "changed_file_count",
+    "changed_paths",
+    "governed_surface_classes",
+    "governed_surface_count",
+    "generated_artifact_touch_count",
+    "schema_touch_count",
+    "example_touch_count",
+    "manifest_touch_count",
+    "runtime_touch_count",
+    "script_touch_count",
+    "test_touch_count",
+    "docs_touch_count",
+    "workflow_touch_count",
+    "dashboard_touch_count",
+    "contract_surface_touched",
+    "generated_surface_touched",
+    "workflow_surface_touched",
+    "dashboard_surface_touched",
+    "risk_level",
+    "reason_codes",
+    "split_recommendation",
+    "split_findings",
+    "recommended_batches",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "small_batch_risk_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "head_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_file_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "changed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "governed_surface_classes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "contracts_schemas",
+          "contracts_examples",
+          "standards_manifest",
+          "runtime",
+          "scripts",
+          "tests",
+          "docs_reviews",
+          "docs_review_actions",
+          "docs_governance",
+          "generated_artifacts",
+          "github_workflows",
+          "dashboard",
+          "other"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "governed_surface_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "generated_artifact_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "schema_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "example_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "manifest_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "runtime_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "script_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "test_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "docs_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "workflow_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "dashboard_touch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "contract_surface_touched": {
+      "type": "boolean"
+    },
+    "generated_surface_touched": {
+      "type": "boolean"
+    },
+    "workflow_surface_touched": {
+      "type": "boolean"
+    },
+    "dashboard_surface_touched": {
+      "type": "boolean"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "very_high", "unknown"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "split_recommendation": {
+      "type": "string",
+      "enum": [
+        "keep_together",
+        "consider_split",
+        "split_recommended",
+        "human_review_required"
+      ]
+    },
+    "split_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding", "evidence_paths", "observation_only"],
+        "properties": {
+          "finding": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "observation_only": {
+            "type": "boolean",
+            "const": true
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "recommended_batches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["batch_name", "paths", "observation_only"],
+        "properties": {
+          "batch_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "observation_only": {
+            "type": "boolean",
+            "const": true
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "authority_scope": {
+      "type": "string",
+      "const": "observation_only"
+    }
+  },
+  "allOf": [
+    {
+      "description": "risk_level=unknown requires at least one reason_code.",
+      "if": {
+        "properties": {
+          "risk_level": {
+            "const": "unknown"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "risk_level high or very_high requires at least one split_finding and one recommended_batch entry.",
+      "if": {
+        "properties": {
+          "risk_level": {
+            "enum": ["high", "very_high"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "split_findings": {
+            "type": "array",
+            "minItems": 1
+          },
+          "recommended_batches": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}
