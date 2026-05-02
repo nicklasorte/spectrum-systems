@@ -98,7 +98,6 @@
           "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
-          "scripts/build_gate_shard_parity_record.py",
           "scripts/build_selection_coverage_record.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
@@ -146,7 +145,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 126,
+      "evidence_count": 125,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -346,7 +345,6 @@
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_rank_maturity_alignment.py",
-          "scripts/build_gate_shard_parity_record.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
@@ -394,7 +392,7 @@
           "tests/test_certification.py"
         ]
       },
-      "evidence_count": 125,
+      "evidence_count": 124,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -886,7 +884,6 @@
         ],
         "scripts": [
           "scripts/build_agent_3ls_path_measurement.py",
-          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_contract_enforcement.py",
@@ -921,7 +918,7 @@
           "tests/test_nx_control_chain.py"
         ]
       },
-      "evidence_count": 113,
+      "evidence_count": 112,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
@@ -1345,7 +1342,6 @@
         ],
         "scripts": [
           "scripts/build_agent_3ls_path_measurement.py",
-          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/validate_system_registry.py",
@@ -1379,7 +1375,7 @@
           "tests/test_nt_trust_regression_pack.py"
         ]
       },
-      "evidence_count": 108,
+      "evidence_count": 107,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "LIN"
@@ -1881,7 +1877,6 @@
           "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
-          "scripts/build_gate_shard_parity_record.py",
           "scripts/build_preflight_pqx_wrapper.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
@@ -1902,7 +1897,8 @@
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_next_governed_cycle.py",
           "scripts/run_next_roadmap_batch.py",
-          "scripts/run_operator_shakeout.py"
+          "scripts/run_operator_shakeout.py",
+          "scripts/run_ops_master_01.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -2352,7 +2348,6 @@
         ],
         "scripts": [
           "scripts/build_agent_3ls_path_measurement.py",
-          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/replay_aex_admission.py",
           "scripts/run_agent_pr_precheck.py",
@@ -2387,7 +2382,7 @@
           "tests/test_rfx_certification_gate.py"
         ]
       },
-      "evidence_count": 109,
+      "evidence_count": 108,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "REP"
@@ -2768,7 +2763,6 @@
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_control_surface_gap_packet.py",
           "scripts/build_d3l_mvp_graph.py",
-          "scripts/build_gate_shard_parity_record.py",
           "scripts/build_selection_coverage_record.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
@@ -2788,7 +2782,8 @@
           "scripts/run_review_artifact_validation.py",
           "scripts/run_review_fix_loop_36_explicit.py",
           "scripts/run_rh_kernel_24_01.py",
-          "scripts/run_sel_orchestration.py"
+          "scripts/run_sel_orchestration.py",
+          "scripts/run_sel_replay_gate.py"
         ],
         "tests": [
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
@@ -3184,7 +3179,6 @@
           "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
-          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/refresh_tpa_source_authority_digests.py",
@@ -3233,7 +3227,7 @@
           "tests/test_done_certification.py"
         ]
       },
-      "evidence_count": 124,
+      "evidence_count": 123,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"
