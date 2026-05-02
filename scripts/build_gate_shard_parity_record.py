@@ -14,11 +14,10 @@ The builder is observation-only:
 - It MUST NOT mutate any input artifact.
 - It MUST NOT compute readiness or any gate signal.
 
-Canonical authority remains with AEX (admission), PQX (bounded execution
-closure), EVL (eval evidence), TPA (policy/scope), CDE
-(continuation/closure), SEL (final gate signal), LIN (lineage), REP
-(replay), and GOV per ``docs/architecture/system_registry.md``. M3L
-emits measurement observations only.
+Canonical owner systems remain unchanged; see
+``docs/architecture/system_registry.md`` for the canonical registry.
+The parity builder reads existing artifact refs only and emits
+measurement observations only.
 
 Exit codes
 ----------
