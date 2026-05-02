@@ -53,11 +53,11 @@
           "docs/review-actions/AUTH-AUTHORING-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
+          "docs/review-actions/F3L-01_fix_actions.md",
           "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
           "docs/review-actions/PLAN-AFX-02-ARTIFACT-SPINE-2026-04-09.md",
-          "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
-          "docs/review-actions/PLAN-AUTHENTICITY-HARDGATE-24-01-2026-04-11.md"
+          "docs/review-actions/PLAN-AIG-001-2026-04-15.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -575,8 +575,8 @@
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/AUTH-AUTHORING-01_fix_actions.md",
-          "docs/review-actions/M3L-03_fix_actions.md",
-          "docs/review-actions/PLAN-AIG-001-2026-04-15.md"
+          "docs/review-actions/F3L-01_fix_actions.md",
+          "docs/review-actions/M3L-03_fix_actions.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -1296,6 +1296,7 @@
           "docs/governance/cdx_02_3ls_roadmap.json",
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
+          "docs/review-actions/F3L-01_fix_actions.md",
           "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CANONICAL-ID-STANDARD-REFINED-2026-03-18.md",
@@ -1307,8 +1308,7 @@
           "docs/review-actions/PLAN-PMH-003-2026-04-17.md",
           "docs/review-actions/PLAN-PRA-NSX-PRG-001-2026-04-17.md",
           "docs/review-actions/PLAN-R100-001-2026-04-15.md",
-          "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
-          "docs/review-actions/PLAN-RWA-001-2026-04-16.md"
+          "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -2038,6 +2038,7 @@
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
+          "docs/review-actions/F3L-01_fix_actions.md",
           "docs/review-actions/PAR-CI-01_fix_actions.md",
           "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
           "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md",
@@ -2046,7 +2047,8 @@
           "docs/reviews/CLP-01_core_loop_pre_pr_gate_final_report.md",
           "docs/reviews/CLP-01_core_loop_pre_pr_gate_redteam.md",
           "docs/reviews/CLP-02_require_pre_pr_gate_final_report.md",
-          "docs/reviews/CLP-02_require_pre_pr_gate_redteam.md"
+          "docs/reviews/CLP-02_require_pre_pr_gate_redteam.md",
+          "docs/reviews/F3L-01_redteam.md"
         ],
         "modules": [
           "spectrum_systems/modules/prl/__init__.py",
@@ -2073,6 +2075,7 @@
         "schemas": [],
         "scripts": [
           "scripts/check_agent_pr_ready.py",
+          "scripts/check_agent_pr_update_ready.py",
           "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_github_pr_autofix_contract_preflight.py",
           "scripts/run_pre_pr_reliability_gate.py"
@@ -2087,6 +2090,7 @@
           "tests/prl/test_repair_generator.py",
           "tests/test_cde_decision_flow.py",
           "tests/test_check_agent_pr_ready.py",
+          "tests/test_check_agent_pr_update_ready.py",
           "tests/test_contract_enforcement.py",
           "tests/test_core_loop_pre_pr_gate.py",
           "tests/test_core_loop_pre_pr_gate_policy.py",
@@ -2097,7 +2101,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 64,
+      "evidence_count": 68,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"
@@ -2300,6 +2304,7 @@
           "docs/governance/cdx_02_3ls_roadmap.json",
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
+          "docs/review-actions/F3L-01_fix_actions.md",
           "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
@@ -2313,8 +2318,7 @@
           "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
           "docs/review-actions/PLAN-RWA-001-2026-04-16.md",
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
-          "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md",
-          "docs/review-actions/batch-sys-enf-02_registry_to_impl_conformance_scan.md"
+          "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md"
         ],
         "modules": [
           "spectrum_systems/aex/admission_replay.py",
