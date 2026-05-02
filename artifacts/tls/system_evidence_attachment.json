@@ -566,6 +566,7 @@
           "docs/governance/agent_pr_update_policy.json",
           "docs/governance/cdx_02_3ls_roadmap.json",
           "docs/governance/core_loop_pre_pr_gate_policy.json",
+          "docs/governance/preflight_required_surface_test_overrides.json",
           "docs/hop/hop006_issue_extraction_design.md",
           "docs/reliability/eval-ci-gate.md",
           "docs/reliability/eval-coverage-and-slices.md",
@@ -575,8 +576,7 @@
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/AUTH-AUTHORING-01_fix_actions.md",
-          "docs/review-actions/EVL-RT-01_fix_actions.md",
-          "docs/review-actions/F3L-01_fix_actions.md"
+          "docs/review-actions/EVL-RT-01_fix_actions.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
