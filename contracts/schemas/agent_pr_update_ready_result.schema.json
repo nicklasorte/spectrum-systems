@@ -93,6 +93,63 @@
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
     },
+    "prl_auto_invocation": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason",
+        "auto_run_enabled",
+        "authority_scope"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["ran", "skipped", "error"]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command": {
+          "type": ["string", "null"]
+        },
+        "exit_code": {
+          "type": ["integer", "null"]
+        },
+        "prl_gate_result_path": {
+          "type": ["string", "null"]
+        },
+        "log_excerpt": {
+          "type": ["string", "null"]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "invoked_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "auto_run_enabled": {
+          "type": "boolean"
+        },
+        "authority_scope": {
+          "const": "observation_only"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "error" } }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
     "readiness_status": {
       "enum": ["ready", "not_ready", "human_review_required"]
     },

@@ -16,6 +16,18 @@
   "prl_failure_packet_refs": [],
   "prl_repair_candidate_refs": [],
   "prl_eval_candidate_refs": [],
+  "prl_auto_invocation": {
+    "status": "skipped",
+    "reason": "clp_not_blocking",
+    "command": null,
+    "exit_code": null,
+    "prl_gate_result_path": null,
+    "log_excerpt": null,
+    "reason_codes": [],
+    "invoked_at": "2026-05-02T16:57:00Z",
+    "auto_run_enabled": true,
+    "authority_scope": "observation_only"
+  },
   "readiness_status": "ready",
   "clp_status": "pass",
   "reason_codes": [],
