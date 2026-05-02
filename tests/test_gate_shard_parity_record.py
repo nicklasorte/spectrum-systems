@@ -529,3 +529,213 @@ def test_detect_parity_pure_unit():
     assert clp_gh is False
     assert findings == []
     assert reasons == []
+
+
+# ---------------------------------------------------------------------------
+# M3L-03D — Pytest selection mapping coverage for the M3L-03 changed-path set.
+# Regression coverage for the contract preflight failure where adding a new
+# governed contract surface (the gate_shard_parity_record schema/example/builder)
+# did not bind tests/test_contracts.py to the selection, producing
+# pytest_selection_missing / PYTEST_SELECTION_MISMATCH. Each test below pins
+# the artifact-backed mapping evidence so the binding cannot regress silently.
+# ---------------------------------------------------------------------------
+
+
+_OVERRIDE_PATH = REPO_ROOT / "docs" / "governance" / "preflight_required_surface_test_overrides.json"
+_POLICY_PATH = REPO_ROOT / "docs" / "governance" / "pytest_pr_selection_integrity_policy.json"
+
+_M3L_03_PATHS: tuple[str, ...] = (
+    "scripts/build_gate_shard_parity_record.py",
+    "contracts/schemas/gate_shard_parity_record.schema.json",
+    "contracts/examples/gate_shard_parity_record.example.json",
+    "tests/test_gate_shard_parity_record.py",
+)
+
+
+def _load_override_map() -> dict[str, list[str]]:
+    return json.loads(_OVERRIDE_PATH.read_text(encoding="utf-8"))
+
+
+def _load_policy_surface_rules() -> dict[str, list[str]]:
+    policy = json.loads(_POLICY_PATH.read_text(encoding="utf-8"))
+    rules: dict[str, list[str]] = {}
+    for rule in policy.get("surface_rules") or []:
+        if not isinstance(rule, dict):
+            continue
+        prefix = rule.get("path_prefix")
+        targets = rule.get("required_test_targets") or []
+        if isinstance(prefix, str) and isinstance(targets, list):
+            rules[prefix] = [t for t in targets if isinstance(t, str)]
+    return rules
+
+
+def test_m3l_03_schema_path_maps_to_test_contracts_and_parity_test() -> None:
+    overrides = _load_override_map()
+    targets = overrides.get("contracts/schemas/gate_shard_parity_record.schema.json", [])
+    assert "tests/test_contracts.py" in targets, (
+        "schema must map to test_contracts.py so contract preflight selects it"
+    )
+    assert "tests/test_gate_shard_parity_record.py" in targets
+
+
+def test_m3l_03_example_path_maps_to_test_contracts_and_parity_test() -> None:
+    overrides = _load_override_map()
+    targets = overrides.get("contracts/examples/gate_shard_parity_record.example.json", [])
+    assert "tests/test_contracts.py" in targets
+    assert "tests/test_gate_shard_parity_record.py" in targets
+
+
+def test_m3l_03_builder_script_maps_to_parity_test() -> None:
+    overrides = _load_override_map()
+    targets = overrides.get("scripts/build_gate_shard_parity_record.py", [])
+    assert "tests/test_gate_shard_parity_record.py" in targets
+
+
+def test_m3l_03_paths_have_explicit_selection_integrity_surface_rules() -> None:
+    rules = _load_policy_surface_rules()
+    for prefix in (
+        "scripts/build_gate_shard_parity_record.py",
+        "contracts/schemas/gate_shard_parity_record.schema.json",
+        "contracts/examples/gate_shard_parity_record.example.json",
+    ):
+        assert prefix in rules, f"missing surface_rule for {prefix}"
+        assert "tests/test_gate_shard_parity_record.py" in rules[prefix]
+    # Schema and example must additionally pin tests/test_contracts.py.
+    for prefix in (
+        "contracts/schemas/gate_shard_parity_record.schema.json",
+        "contracts/examples/gate_shard_parity_record.example.json",
+    ):
+        assert "tests/test_contracts.py" in rules[prefix]
+
+
+def test_m3l_03_changed_path_set_produces_allow_selection_integrity() -> None:
+    """The full M3L-03 governed changed-path set must produce ALLOW once the
+    required test targets are selected."""
+    from spectrum_systems.modules.runtime.pytest_selection_integrity import (
+        evaluate_pytest_selection_integrity,
+    )
+
+    selected = [
+        "tests/test_contracts.py",
+        "tests/test_gate_shard_parity_record.py",
+    ]
+    result = evaluate_pytest_selection_integrity(
+        changed_paths=list(_M3L_03_PATHS) + ["contracts/standards-manifest.json"],
+        selected_test_targets=selected,
+        required_test_targets=selected,
+        pytest_execution_record={"executed": True, "selection_reason_codes": []},
+        policy_path=_POLICY_PATH,
+        generated_at="2026-05-02T00:00:00Z",
+    )
+    assert result.decision == "ALLOW", result.blocking_reasons
+    assert result.blocking_reasons == []
+
+
+def test_m3l_03_paths_select_tests_via_resolve_required_tests() -> None:
+    """End-to-end mapping observation: resolve_required_tests must include the
+    paired contracts/parity test targets after the override file edit."""
+    from spectrum_systems.modules.runtime.pr_test_selection import resolve_required_tests
+
+    targets_by_path = resolve_required_tests(REPO_ROOT, list(_M3L_03_PATHS))
+    schema_targets = set(targets_by_path["contracts/schemas/gate_shard_parity_record.schema.json"])
+    example_targets = set(targets_by_path["contracts/examples/gate_shard_parity_record.example.json"])
+    builder_targets = set(targets_by_path["scripts/build_gate_shard_parity_record.py"])
+    assert "tests/test_contracts.py" in schema_targets
+    assert "tests/test_gate_shard_parity_record.py" in schema_targets
+    assert "tests/test_contracts.py" in example_targets
+    assert "tests/test_gate_shard_parity_record.py" in example_targets
+    assert "tests/test_gate_shard_parity_record.py" in builder_targets
+
+
+# ---------------------------------------------------------------------------
+# Generated artifact family mapping — pre-existing needle-match coverage.
+# These tests pin the observation that representative generated artifact paths
+# resolve to at least one required test target through the canonical needle
+# match, AND that they remain non-governed (so they do NOT silently expand the
+# integrity policy's governed_surface_prefixes set).
+# ---------------------------------------------------------------------------
+
+
+_GENERATED_FAMILY_REPRESENTATIVES: tuple[tuple[str, str], ...] = (
+    (
+        "artifacts/tls/system_evidence_attachment.json",
+        "tls",
+    ),
+    (
+        "artifacts/certification_judgment_40_explicit/checkpoint-1.json",
+        "certification_judgment_40_explicit",
+    ),
+    (
+        "artifacts/review_fix_loop_36_explicit/checkpoint-1.json",
+        "review_fix_loop_36_explicit",
+    ),
+    (
+        "artifacts/ops_master_01/checkpoint-1.json",
+        "ops_master_01",
+    ),
+    (
+        "artifacts/rdx_runs/AUTHENTICITY-HARDGATE-24-01-artifact-trace.json",
+        "rdx_runs",
+    ),
+    (
+        "governance/reports/ecosystem-architecture-graph.json",
+        "governance_reports",
+    ),
+    (
+        "docs/governance-reports/ecosystem-dashboard.md",
+        "docs_governance_reports",
+    ),
+    (
+        "ecosystem/dependency-graph.json",
+        "ecosystem",
+    ),
+)
+
+
+def test_generated_artifact_families_resolve_to_at_least_one_test_target() -> None:
+    """Each representative generated artifact path must resolve to at least one
+    required test target via needle matching, so the contract preflight's
+    pytest_selection_missing diagnostic does not surface them as orphans."""
+    from spectrum_systems.modules.runtime.pr_test_selection import resolve_required_tests
+
+    paths = [path for path, _label in _GENERATED_FAMILY_REPRESENTATIVES]
+    targets_by_path = resolve_required_tests(REPO_ROOT, paths)
+    for path, label in _GENERATED_FAMILY_REPRESENTATIVES:
+        assert targets_by_path.get(path), (
+            f"{label} representative {path} resolved no required tests via needle match"
+        )
+
+
+def test_generated_artifact_families_remain_non_governed() -> None:
+    """Generated artifact families must NOT be silently promoted into the
+    governed surface set — broadening governed scope would force every
+    timestamp-only regen to require a test selection."""
+    from spectrum_systems.modules.runtime.pr_test_selection import (
+        classify_changed_path,
+        is_governed_path,
+    )
+
+    for path, label in _GENERATED_FAMILY_REPRESENTATIVES:
+        classification = classify_changed_path(path)
+        assert classification["is_governed"] is False, (
+            f"{label} representative {path} classified as governed; mapping "
+            "would expand governed scope without explicit policy review"
+        )
+        assert is_governed_path(path) is False, (
+            f"{label} representative {path} matches a governed surface prefix"
+        )
+
+
+def test_unrelated_random_path_is_not_classified_as_governed_generated_artifact() -> None:
+    """Smoke test that a random non-governance path does not land in any of
+    the generated artifact mapping branches."""
+    from spectrum_systems.modules.runtime.pr_test_selection import (
+        classify_changed_path,
+        is_governed_path,
+    )
+
+    sentinel = "examples/some_unrelated_module/notes.txt"
+    classification = classify_changed_path(sentinel)
+    assert classification["is_governed"] is False
+    assert is_governed_path(sentinel) is False
+    assert classification["surface"] == "other"

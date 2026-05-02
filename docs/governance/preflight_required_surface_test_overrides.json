@@ -298,5 +298,25 @@
   ],
   "docs/review-actions/SMALL-BATCH-RISK-01_fix_actions.md": [
     "tests/test_small_batch_risk_record.py"
+  ],
+  "scripts/build_gate_shard_parity_record.py": [
+    "tests/test_gate_shard_parity_record.py"
+  ],
+  "contracts/schemas/gate_shard_parity_record.schema.json": [
+    "tests/test_contracts.py",
+    "tests/test_gate_shard_parity_record.py"
+  ],
+  "contracts/examples/gate_shard_parity_record.example.json": [
+    "tests/test_contracts.py",
+    "tests/test_gate_shard_parity_record.py"
+  ],
+  "tests/test_gate_shard_parity_record.py": [
+    "tests/test_gate_shard_parity_record.py"
+  ],
+  "docs/reviews/M3L-03_redteam.md": [
+    "tests/test_gate_shard_parity_record.py"
+  ],
+  "docs/review-actions/M3L-03_fix_actions.md": [
+    "tests/test_gate_shard_parity_record.py"
   ]
 }
