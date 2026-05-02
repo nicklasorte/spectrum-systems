@@ -1,0 +1,48 @@
+{
+  "artifact_type": "gate_shard_parity_record",
+  "schema_version": "1.0.0",
+  "record_id": "m3l-parity-EXAMPLE-ALIGNED-0001",
+  "created_at": "2026-05-02T00:00:00Z",
+  "work_item_id": "M3L-03-EXAMPLE",
+  "base_ref": "origin/main",
+  "head_ref": "HEAD",
+  "apr_result_ref": "outputs/agent_pr_precheck/agent_pr_precheck_result.json",
+  "clp_result_ref": "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+  "m3l_result_ref": "outputs/agent_3ls_path_measurement/agent_3ls_path_measurement_record.json",
+  "shard_summary_ref": "outputs/pr_test_shards/pr_test_shards_summary.json",
+  "shard_artifact_refs": [
+    "outputs/pr_test_shards/changed_scope.json",
+    "outputs/pr_test_shards/contract.json",
+    "outputs/pr_test_shards/governance.json",
+    "outputs/pr_test_shards/pr_test_shards_summary.json"
+  ],
+  "apr_shard_refs": [
+    "outputs/pr_test_shards/changed_scope.json",
+    "outputs/pr_test_shards/contract.json",
+    "outputs/pr_test_shards/governance.json",
+    "outputs/pr_test_shards/pr_test_shards_summary.json"
+  ],
+  "clp_shard_refs": [
+    "outputs/pr_test_shards/changed_scope.json",
+    "outputs/pr_test_shards/contract.json",
+    "outputs/pr_test_shards/governance.json",
+    "outputs/pr_test_shards/pr_test_shards_summary.json"
+  ],
+  "github_shard_refs": [
+    "outputs/pr_test_shards/changed_scope.json",
+    "outputs/pr_test_shards/contract.json",
+    "outputs/pr_test_shards/governance.json",
+    "outputs/pr_test_shards/pr_test_shards_summary.json"
+  ],
+  "apr_status": "pass",
+  "clp_status": "pass",
+  "github_shard_status": "pass",
+  "parity_status": "aligned",
+  "github_escape": false,
+  "apr_clp_mismatch": false,
+  "clp_github_mismatch": false,
+  "missing_artifact_refs": [],
+  "mismatch_findings": [],
+  "reason_codes": [],
+  "authority_scope": "observation_only"
+}

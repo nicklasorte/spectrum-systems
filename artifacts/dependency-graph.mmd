@@ -518,6 +518,7 @@ flowchart TD
   art_fre_tpa_sel_pqx_structure_fix_pack["fre_tpa_sel_pqx_structure_fix_pack\ncoordination"]
   art_freeze_record["freeze_record\ngovernance"]
   art_fused_signal_record["fused_signal_record\ncoordination"]
+  art_gate_shard_parity_record["gate_shard_parity_record\ncoordination"]
   art_generated_eval_admission_record["generated_eval_admission_record\ngovernance"]
   art_generated_eval_candidate_assessment_record["generated_eval_candidate_assessment_record\ncoordination"]
   art_generated_eval_candidate_queue["generated_eval_candidate_queue\ncoordination"]
@@ -1188,6 +1189,7 @@ flowchart TD
   art_sec_autonomous_safety_guardrail_record["sec_autonomous_safety_guardrail_record\ngovernance"]
   art_sec_control_integration_signal["sec_control_integration_signal\ngovernance"]
   art_sec_guardrail_event_record["sec_guardrail_event_record\ngovernance"]
+  art_selection_coverage_record["selection_coverage_record\ngovernance"]
   art_service_level_objective["service_level_objective\ncoordination"]
   art_sim_diff_record["sim_diff_record\ncoordination"]
   art_sim_policy_impact_report["sim_policy_impact_report\ncoordination"]
@@ -1217,6 +1219,7 @@ flowchart TD
   art_slo_roadmap_quality_budget_posture["slo_roadmap_quality_budget_posture\ncoordination"]
   art_slo_tighter_error_budget_posture["slo_tighter_error_budget_posture\ncoordination"]
   art_slo_umbrella_boundary_budget_breach_forecast["slo_umbrella_boundary_budget_breach_forecast\ncoordination"]
+  art_small_batch_risk_record["small_batch_risk_record\ngovernance"]
   art_stage_contract["stage_contract\ngovernance"]
   art_stakeholder_critique_artifact["stakeholder_critique_artifact\ncoordination"]
   art_stale_assumption_report["stale_assumption_report\ncoordination"]
@@ -1855,6 +1858,7 @@ flowchart TD
   con_fre_tpa_sel_pqx_structure_fix_pack["fre_tpa_sel_pqx_structure_fix_pack\ncontract"]
   con_freeze_record["freeze_record\ncontract"]
   con_fused_signal_record["fused_signal_record\ncontract"]
+  con_gate_shard_parity_record["gate_shard_parity_record\ncontract"]
   con_generated_eval_admission_record["generated_eval_admission_record\ncontract"]
   con_generated_eval_candidate_assessment_record["generated_eval_candidate_assessment_record\ncontract"]
   con_generated_eval_candidate_queue["generated_eval_candidate_queue\ncontract"]
@@ -2518,6 +2522,7 @@ flowchart TD
   con_sec_autonomous_safety_guardrail_record["sec_autonomous_safety_guardrail_record\ncontract"]
   con_sec_control_integration_signal["sec_control_integration_signal\ncontract"]
   con_sec_guardrail_event_record["sec_guardrail_event_record\ncontract"]
+  con_selection_coverage_record["selection_coverage_record\ncontract"]
   con_service_level_objective["service_level_objective\ncontract"]
   con_sim_diff_record["sim_diff_record\ncontract"]
   con_sim_policy_impact_report["sim_policy_impact_report\ncontract"]
@@ -2547,6 +2552,7 @@ flowchart TD
   con_slo_roadmap_quality_budget_posture["slo_roadmap_quality_budget_posture\ncontract"]
   con_slo_tighter_error_budget_posture["slo_tighter_error_budget_posture\ncontract"]
   con_slo_umbrella_boundary_budget_breach_forecast["slo_umbrella_boundary_budget_breach_forecast\ncontract"]
+  con_small_batch_risk_record["small_batch_risk_record\ncontract"]
   con_stage_contract["stage_contract\ncontract"]
   con_stakeholder_critique_artifact["stakeholder_critique_artifact\ncontract"]
   con_stale_assumption_report["stale_assumption_report\ncontract"]
@@ -3182,6 +3188,7 @@ flowchart TD
   art_fre_tpa_sel_pqx_structure_fix_pack -. governed_by .-> con_fre_tpa_sel_pqx_structure_fix_pack
   art_freeze_record -. governed_by .-> con_freeze_record
   art_fused_signal_record -. governed_by .-> con_fused_signal_record
+  art_gate_shard_parity_record -. governed_by .-> con_gate_shard_parity_record
   art_generated_eval_admission_record -. governed_by .-> con_generated_eval_admission_record
   art_generated_eval_candidate_assessment_record -. governed_by .-> con_generated_eval_candidate_assessment_record
   art_generated_eval_candidate_queue -. governed_by .-> con_generated_eval_candidate_queue
@@ -3845,6 +3852,7 @@ flowchart TD
   art_sec_autonomous_safety_guardrail_record -. governed_by .-> con_sec_autonomous_safety_guardrail_record
   art_sec_control_integration_signal -. governed_by .-> con_sec_control_integration_signal
   art_sec_guardrail_event_record -. governed_by .-> con_sec_guardrail_event_record
+  art_selection_coverage_record -. governed_by .-> con_selection_coverage_record
   art_service_level_objective -. governed_by .-> con_service_level_objective
   art_sim_diff_record -. governed_by .-> con_sim_diff_record
   art_sim_policy_impact_report -. governed_by .-> con_sim_policy_impact_report
@@ -3874,6 +3882,7 @@ flowchart TD
   art_slo_roadmap_quality_budget_posture -. governed_by .-> con_slo_roadmap_quality_budget_posture
   art_slo_tighter_error_budget_posture -. governed_by .-> con_slo_tighter_error_budget_posture
   art_slo_umbrella_boundary_budget_breach_forecast -. governed_by .-> con_slo_umbrella_boundary_budget_breach_forecast
+  art_small_batch_risk_record -. governed_by .-> con_small_batch_risk_record
   art_stage_contract -. governed_by .-> con_stage_contract
   art_stakeholder_critique_artifact -. governed_by .-> con_stakeholder_critique_artifact
   art_stale_assumption_report -. governed_by .-> con_stale_assumption_report
@@ -4509,6 +4518,7 @@ flowchart TD
   con_fre_tpa_sel_pqx_structure_fix_pack -->|validates| art_fre_tpa_sel_pqx_structure_fix_pack
   con_freeze_record -->|validates| art_freeze_record
   con_fused_signal_record -->|validates| art_fused_signal_record
+  con_gate_shard_parity_record -->|validates| art_gate_shard_parity_record
   con_generated_eval_admission_record -->|validates| art_generated_eval_admission_record
   con_generated_eval_candidate_assessment_record -->|validates| art_generated_eval_candidate_assessment_record
   con_generated_eval_candidate_queue -->|validates| art_generated_eval_candidate_queue
@@ -5172,6 +5182,7 @@ flowchart TD
   con_sec_autonomous_safety_guardrail_record -->|validates| art_sec_autonomous_safety_guardrail_record
   con_sec_control_integration_signal -->|validates| art_sec_control_integration_signal
   con_sec_guardrail_event_record -->|validates| art_sec_guardrail_event_record
+  con_selection_coverage_record -->|validates| art_selection_coverage_record
   con_service_level_objective -->|validates| art_service_level_objective
   con_sim_diff_record -->|validates| art_sim_diff_record
   con_sim_policy_impact_report -->|validates| art_sim_policy_impact_report
@@ -5201,6 +5212,7 @@ flowchart TD
   con_slo_roadmap_quality_budget_posture -->|validates| art_slo_roadmap_quality_budget_posture
   con_slo_tighter_error_budget_posture -->|validates| art_slo_tighter_error_budget_posture
   con_slo_umbrella_boundary_budget_breach_forecast -->|validates| art_slo_umbrella_boundary_budget_breach_forecast
+  con_small_batch_risk_record -->|validates| art_small_batch_risk_record
   con_stage_contract -->|validates| art_stage_contract
   con_stakeholder_critique_artifact -->|validates| art_stakeholder_critique_artifact
   con_stale_assumption_report -->|validates| art_stale_assumption_report

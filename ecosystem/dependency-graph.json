@@ -3769,6 +3769,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "gate_shard_parity_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `gate_shard_parity_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "generated_eval_admission_record",
       "artifact_class": "governance",
       "description": "Governed artifact for contract `generated_eval_admission_record`.",
@@ -8500,6 +8507,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "selection_coverage_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `selection_coverage_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "service_level_objective",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `service_level_objective`.",
@@ -8699,6 +8713,13 @@
       "artifact_type": "slo_umbrella_boundary_budget_breach_forecast",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `slo_umbrella_boundary_budget_breach_forecast`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "small_batch_risk_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `small_batch_risk_record`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -14686,6 +14707,14 @@
       ],
       "related_artifact_types": [
         "fused_signal_record"
+      ]
+    },
+    {
+      "contract_name": "gate_shard_parity_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [],
+      "related_artifact_types": [
+        "gate_shard_parity_record"
       ]
     },
     {
@@ -21342,6 +21371,16 @@
       ]
     },
     {
+      "contract_name": "selection_coverage_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "selection_coverage_record"
+      ]
+    },
+    {
       "contract_name": "service_level_objective",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -21625,6 +21664,16 @@
       ],
       "related_artifact_types": [
         "slo_umbrella_boundary_budget_breach_forecast"
+      ]
+    },
+    {
+      "contract_name": "small_batch_risk_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "small_batch_risk_record"
       ]
     },
     {
@@ -26467,6 +26516,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "gate_shard_parity_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "gate_shard_parity_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "generated_eval_admission_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -31108,6 +31164,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "selection_coverage_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "selection_coverage_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "service_level_objective",
       "relation": "governed_by",
       "to_type": "contract",
@@ -31308,6 +31371,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "slo_umbrella_boundary_budget_breach_forecast"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "small_batch_risk_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "small_batch_risk_record"
     },
     {
       "from_type": "artifact",
@@ -35756,6 +35826,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "gate_shard_parity_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "gate_shard_parity_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "generated_eval_admission_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -40397,6 +40474,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "selection_coverage_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "selection_coverage_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "service_level_objective",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -40597,6 +40681,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "slo_umbrella_boundary_budget_breach_forecast"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "small_batch_risk_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "small_batch_risk_record"
     },
     {
       "from_type": "contract",

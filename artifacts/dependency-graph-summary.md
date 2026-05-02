@@ -522,6 +522,7 @@
 - fre_tpa_sel_pqx_structure_fix_pack [coordination] producers: —; consumers: —; Governed artifact for contract `fre_tpa_sel_pqx_structure_fix_pack`.
 - freeze_record [governance] producers: —; consumers: —; Governed artifact for contract `freeze_record`.
 - fused_signal_record [coordination] producers: —; consumers: —; Governed artifact for contract `fused_signal_record`.
+- gate_shard_parity_record [coordination] producers: —; consumers: —; Governed artifact for contract `gate_shard_parity_record`.
 - generated_eval_admission_record [governance] producers: —; consumers: —; Governed artifact for contract `generated_eval_admission_record`.
 - generated_eval_candidate_assessment_record [coordination] producers: —; consumers: —; Governed artifact for contract `generated_eval_candidate_assessment_record`.
 - generated_eval_candidate_queue [coordination] producers: —; consumers: —; Governed artifact for contract `generated_eval_candidate_queue`.
@@ -1192,6 +1193,7 @@
 - sec_autonomous_safety_guardrail_record [governance] producers: —; consumers: —; Governed artifact for contract `sec_autonomous_safety_guardrail_record`.
 - sec_control_integration_signal [governance] producers: —; consumers: —; Governed artifact for contract `sec_control_integration_signal`.
 - sec_guardrail_event_record [governance] producers: —; consumers: —; Governed artifact for contract `sec_guardrail_event_record`.
+- selection_coverage_record [governance] producers: —; consumers: —; Governed artifact for contract `selection_coverage_record`.
 - service_level_objective [coordination] producers: —; consumers: —; Governed artifact for contract `service_level_objective`.
 - sim_diff_record [coordination] producers: —; consumers: —; Governed artifact for contract `sim_diff_record`.
 - sim_policy_impact_report [coordination] producers: —; consumers: —; Governed artifact for contract `sim_policy_impact_report`.
@@ -1221,6 +1223,7 @@
 - slo_roadmap_quality_budget_posture [coordination] producers: —; consumers: —; Governed artifact for contract `slo_roadmap_quality_budget_posture`.
 - slo_tighter_error_budget_posture [coordination] producers: —; consumers: —; Governed artifact for contract `slo_tighter_error_budget_posture`.
 - slo_umbrella_boundary_budget_breach_forecast [coordination] producers: —; consumers: —; Governed artifact for contract `slo_umbrella_boundary_budget_breach_forecast`.
+- small_batch_risk_record [governance] producers: —; consumers: —; Governed artifact for contract `small_batch_risk_record`.
 - stage_contract [governance] producers: —; consumers: —; Governed artifact for contract `stage_contract`.
 - stakeholder_critique_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `stakeholder_critique_artifact`.
 - stale_assumption_report [coordination] producers: —; consumers: —; Governed artifact for contract `stale_assumption_report`.
@@ -1861,6 +1864,7 @@
 - fre_tpa_sel_pqx_structure_fix_pack [coordination] intended consumers: spectrum-systems; artifacts: fre_tpa_sel_pqx_structure_fix_pack
 - freeze_record [governance] intended consumers: spectrum-systems; artifacts: freeze_record
 - fused_signal_record [coordination] intended consumers: spectrum-systems; artifacts: fused_signal_record
+- gate_shard_parity_record [coordination] intended consumers: —; artifacts: gate_shard_parity_record
 - generated_eval_admission_record [governance] intended consumers: spectrum-systems; artifacts: generated_eval_admission_record
 - generated_eval_candidate_assessment_record [coordination] intended consumers: spectrum-systems; artifacts: generated_eval_candidate_assessment_record
 - generated_eval_candidate_queue [coordination] intended consumers: spectrum-systems; artifacts: generated_eval_candidate_queue
@@ -2524,6 +2528,7 @@
 - sec_autonomous_safety_guardrail_record [governance] intended consumers: spectrum-systems; artifacts: sec_autonomous_safety_guardrail_record
 - sec_control_integration_signal [governance] intended consumers: spectrum-systems; artifacts: sec_control_integration_signal
 - sec_guardrail_event_record [governance] intended consumers: spectrum-systems; artifacts: sec_guardrail_event_record
+- selection_coverage_record [governance] intended consumers: spectrum-systems; artifacts: selection_coverage_record
 - service_level_objective [coordination] intended consumers: spectrum-systems; artifacts: service_level_objective
 - sim_diff_record [coordination] intended consumers: spectrum-systems; artifacts: sim_diff_record
 - sim_policy_impact_report [coordination] intended consumers: spectrum-systems; artifacts: sim_policy_impact_report
@@ -2553,6 +2558,7 @@
 - slo_roadmap_quality_budget_posture [coordination] intended consumers: spectrum-systems; artifacts: slo_roadmap_quality_budget_posture
 - slo_tighter_error_budget_posture [coordination] intended consumers: spectrum-systems; artifacts: slo_tighter_error_budget_posture
 - slo_umbrella_boundary_budget_breach_forecast [coordination] intended consumers: spectrum-systems; artifacts: slo_umbrella_boundary_budget_breach_forecast
+- small_batch_risk_record [governance] intended consumers: spectrum-systems; artifacts: small_batch_risk_record
 - stage_contract [governance] intended consumers: spectrum-systems; artifacts: stage_contract
 - stakeholder_critique_artifact [coordination] intended consumers: spectrum-systems; artifacts: stakeholder_critique_artifact
 - stale_assumption_report [coordination] intended consumers: spectrum-systems; artifacts: stale_assumption_report

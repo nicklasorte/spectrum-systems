@@ -182,6 +182,26 @@
         "tests/test_contracts.py",
         "tests/test_small_batch_risk_record.py"
       ]
+    },
+    {
+      "path_prefix": "scripts/build_gate_shard_parity_record.py",
+      "required_test_targets": [
+        "tests/test_gate_shard_parity_record.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/schemas/gate_shard_parity_record.schema.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_gate_shard_parity_record.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/examples/gate_shard_parity_record.example.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_gate_shard_parity_record.py"
+      ]
     }
   ],
   "bounded_equivalence": [

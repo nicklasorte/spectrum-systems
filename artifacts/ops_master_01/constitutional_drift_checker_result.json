@@ -1,7 +1,7 @@
 {
   "artifact_type": "constitutional_drift_checker_result",
   "batch_id": "OPS-MASTER-01",
-  "generated_at": "2026-05-02T00:33:52Z",
+  "generated_at": "2026-05-02T09:44:59Z",
   "ownership_violations": [],
   "prep_as_decision_misuse": [],
   "enforcement_misuse": [],
