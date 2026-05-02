@@ -556,6 +556,153 @@ def build_selection_artifact(
     }
 
 
+def build_selection_coverage_record(
+    *,
+    repo_root: Path,
+    base_ref: str,
+    head_ref: str,
+    changed_paths: list[str],
+    record_id: str,
+    created_at: str,
+    fallback_used: bool = False,
+    fallback_targets: list[str] | None = None,
+) -> dict[str, Any]:
+    """Build a ``selection_coverage_record`` artifact dict.
+
+    Reuses the canonical selector (``resolve_required_tests``,
+    ``classify_changed_path``) and the canonical override map
+    (``load_override_map``). Does not run pytest, mutate mappings, or
+    auto-repair. Authority scope is observation_only.
+
+    coverage_status semantics:
+      - ``complete``  — every governed changed path is matched and the
+        unmatched_changed_paths list is empty.
+      - ``partial``   — some governed changed paths are matched but at
+        least one is unmatched.
+      - ``missing``   — at least one governed changed path is unmatched
+        and no governed paths are matched at all.
+      - ``unknown``   — no changed paths supplied (cannot prove coverage).
+
+    ``recommended_mapping_candidates`` are observation-only suggestions
+    derived from ``classify_changed_path`` surfaces; consumers must not
+    treat them as mappings to apply.
+    """
+    fallback_targets = list(fallback_targets or [])
+    overrides = load_override_map(repo_root)
+    targets_by_path = resolve_required_tests(repo_root, list(changed_paths))
+
+    # Contract surface paths (schemas/examples) are mapped via override or
+    # contract test bindings, mirroring APR's AEX semantics.
+    contract_surfaces: set[str] = {
+        p
+        for p in changed_paths
+        if p.startswith("contracts/schemas/") or p.startswith("contracts/examples/")
+    }
+
+    matched_paths: list[str] = []
+    unmatched_changed_paths: list[str] = []
+    attempted_surface_rules: list[dict[str, Any]] = []
+    selected_test_targets_set: set[str] = set()
+    recommended: list[dict[str, Any]] = []
+
+    for path in sorted(set(changed_paths)):
+        classification = classify_changed_path(path)
+        is_governed = bool(classification.get("is_governed"))
+        surface = classification.get("surface", "other")
+        targets = list(targets_by_path.get(path, []))
+
+        if path in overrides:
+            rule_source = "override_map"
+        elif path.startswith("tests/test_") and path.endswith(".py"):
+            rule_source = "self_test_file"
+        elif targets:
+            rule_source = "needle_match"
+        else:
+            rule_source = "no_rule_attempted"
+
+        is_matched = bool(targets) or (path in contract_surfaces and path in overrides)
+        attempted_surface_rules.append(
+            {
+                "path": path,
+                "rule_source": rule_source,
+                "matched": is_matched,
+                "is_governed": is_governed,
+                "surface": surface,
+            }
+        )
+
+        if is_matched:
+            matched_paths.append(path)
+            selected_test_targets_set.update(targets)
+            continue
+
+        # Not matched — only record as a coverage gap when the path is governed
+        # AND not a contract surface (contract surfaces are addressed by the
+        # contract-test bindings).
+        if is_governed and path not in contract_surfaces:
+            unmatched_changed_paths.append(path)
+            recommended.append(
+                {
+                    "path": path,
+                    "candidate_test_targets": ["tests/<recommended_mapping_candidate>"],
+                    "observation_only": True,
+                    "rationale": (
+                        f"governed surface '{surface}' had no override/needle match; "
+                        "add an entry to "
+                        "docs/governance/preflight_required_surface_test_overrides.json "
+                        "or docs/governance/pytest_pr_selection_integrity_policy.json"
+                    ),
+                }
+            )
+        elif not is_governed:
+            # Non-governed unmatched paths are not coverage gaps; surface them in
+            # attempted_surface_rules but do not add to unmatched_changed_paths.
+            continue
+        else:
+            matched_paths.append(path)
+
+    selection_reason_codes: list[str] = []
+    if not changed_paths:
+        coverage_status = "unknown"
+        selection_reason_codes.append("no_changed_paths_resolved")
+    elif unmatched_changed_paths:
+        if matched_paths:
+            coverage_status = "partial"
+            selection_reason_codes.append("missing_required_surface_mapping")
+        else:
+            coverage_status = "missing"
+            selection_reason_codes.append("missing_required_surface_mapping")
+            selection_reason_codes.append("no_governed_paths_matched")
+    else:
+        coverage_status = "complete"
+
+    if fallback_used:
+        selection_reason_codes.append("fallback_used")
+
+    record = {
+        "artifact_type": "selection_coverage_record",
+        "schema_version": "1.0.0",
+        "record_id": record_id,
+        "created_at": created_at,
+        "base_ref": base_ref,
+        "head_ref": head_ref,
+        "changed_paths": sorted(set(changed_paths)),
+        "matched_paths": sorted(set(matched_paths)),
+        "unmatched_changed_paths": sorted(set(unmatched_changed_paths)),
+        "attempted_surface_rules": attempted_surface_rules,
+        "selected_test_targets": sorted(selected_test_targets_set),
+        "fallback_used": bool(fallback_used),
+        "fallback_targets": sorted(set(fallback_targets)),
+        "pytest_selection_missing_count": len(unmatched_changed_paths),
+        "missing_required_surface_mapping_count": len(unmatched_changed_paths),
+        "selection_reason_codes": sorted(set(selection_reason_codes)),
+        "coverage_status": coverage_status,
+        "recommended_mapping_candidates": recommended,
+        "authority_scope": "observation_only",
+    }
+    return record
+
+
 def compare_parity(
     ci_selection: dict[str, Any],
     precheck_selection: dict[str, Any],

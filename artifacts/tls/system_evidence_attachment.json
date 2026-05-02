@@ -98,6 +98,7 @@
           "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
+          "scripts/build_selection_coverage_record.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
@@ -144,7 +145,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 124,
+      "evidence_count": 125,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -2760,6 +2761,7 @@
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_control_surface_gap_packet.py",
           "scripts/build_d3l_mvp_graph.py",
+          "scripts/build_selection_coverage_record.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
@@ -2779,8 +2781,7 @@
           "scripts/run_review_fix_loop_36_explicit.py",
           "scripts/run_rh_kernel_24_01.py",
           "scripts/run_sel_orchestration.py",
-          "scripts/run_sel_replay_gate.py",
-          "scripts/run_shift_left_memory_24_01.py"
+          "scripts/run_sel_replay_gate.py"
         ],
         "tests": [
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
