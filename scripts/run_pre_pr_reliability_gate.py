@@ -15,8 +15,25 @@ Exit codes:
   1  — failed_gate or gate_hold
   2  — gate_warn (non-zero to surface warnings in CI; can be overridden per policy)
 
-All output is emitted to stdout as newline-delimited JSON artifact records.
-The final line is the prl_gate_result.
+Output (F3L-03):
+  All NDJSON records continue to be emitted to stdout for backwards
+  compatibility. When ``--output-dir`` is supplied (default
+  ``outputs/prl/``), each artifact is also persisted to a stable file
+  path so APU and replay consumers do not depend on the stdout NDJSON:
+
+    <output-dir>/prl_gate_result.json                 — final gate result
+    <output-dir>/captures/<id>.json                   — pr_failure_capture_record
+    <output-dir>/failure_packets/<id>.json            — pre_pr_failure_packet
+    <output-dir>/repair_candidates/<id>.json          — prl_repair_candidate
+    <output-dir>/eval_candidates/<id>.json            — eval_case_candidate
+    <output-dir>/eval_cases/<id>.json                 — prl_eval_case
+    <output-dir>/eval_generation_records/<id>.json    — prl_eval_generation_record
+
+  ``failure_packet_refs`` / ``repair_candidate_refs`` /
+  ``eval_candidate_refs`` in the prl_gate_result include the
+  filesystem paths so APU can ingest them directly without parsing
+  NDJSON. Existing ``<artifact_type>:<id>`` style refs continue to be
+  emitted alongside the file paths to preserve backwards compatibility.
 """
 
 from __future__ import annotations
@@ -60,6 +77,18 @@ import jsonschema
 
 _PRL_SCHEMA_DIR = REPO_ROOT / "contracts" / "schemas"
 
+# F3L-03 — Stable artifact subdirectory layout under ``--output-dir``.
+_PRL_ARTIFACT_SUBDIRS: dict[str, str] = {
+    "pr_failure_capture_record": "captures",
+    "pre_pr_failure_packet": "failure_packets",
+    "prl_repair_candidate": "repair_candidates",
+    "eval_case_candidate": "eval_candidates",
+    "prl_eval_case": "eval_cases",
+    "prl_eval_generation_record": "eval_generation_records",
+}
+
+DEFAULT_PRL_OUTPUT_DIR = "outputs/prl"
+
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -73,6 +102,40 @@ def _new_run_id() -> str:
 
 def _new_trace_id() -> str:
     return f"trace-prl-{uuid.uuid4().hex[:16]}"
+
+
+def _persist_artifact(
+    artifact: dict[str, Any],
+    *,
+    output_dir: Path | None,
+) -> str | None:
+    """Write ``artifact`` to a stable file path under ``output_dir``.
+
+    Returns the artifact path relative to ``REPO_ROOT`` when persisted,
+    or ``None`` when ``output_dir`` is ``None`` or the artifact_type
+    has no canonical subdir (in which case stdout NDJSON remains the
+    sole output).
+    """
+    if output_dir is None:
+        return None
+    artifact_type = artifact.get("artifact_type")
+    subdir = _PRL_ARTIFACT_SUBDIRS.get(str(artifact_type))
+    if not subdir:
+        return None
+    artifact_id = artifact.get("id")
+    if not isinstance(artifact_id, str) or not artifact_id:
+        return None
+    target_dir = output_dir / subdir
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target_path = target_dir / f"{artifact_id}.json"
+    target_path.write_text(
+        json.dumps(artifact, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    try:
+        return str(target_path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(target_path)
 
 
 def _emit(artifact: dict[str, Any]) -> None:
@@ -216,14 +279,26 @@ def run_gate(
     base_ref: str = "origin/main",
     head_ref: str = "HEAD",
     clp_result_path: Path | None = None,
+    output_dir: Path | None = None,
 ) -> dict[str, Any]:
-    """Execute the full pre-PR reliability gate. Returns the prl_gate_result artifact."""
+    """Execute the full pre-PR reliability gate. Returns the prl_gate_result artifact.
+
+    F3L-03 — When ``output_dir`` is supplied, each emitted artifact is
+    also persisted to a stable file path under that directory so APU
+    and replay consumers can ingest file-based evidence rather than
+    parsing the stdout NDJSON. The final ``prl_gate_result.json`` is
+    written at ``output_dir/prl_gate_result.json``. NDJSON to stdout
+    is preserved for backwards compatibility.
+    """
     all_signals: list[str] = []
     failure_classes: list[str] = []
     failure_packet_refs: list[str] = []
     repair_candidate_refs: list[str] = []
     eval_candidate_refs: list[str] = []
     blocking_reasons: list[str] = []
+
+    if output_dir is not None:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     checks = _build_preflight_checks(base_ref, head_ref)
     if not skip_pytest:
@@ -259,6 +334,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(capture)
+        _persist_artifact(capture, output_dir=output_dir)
         packet = build_failure_packet(
             capture_record=capture,
             classification=classification,
@@ -266,6 +342,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(packet)
+        packet_path = _persist_artifact(packet, output_dir=output_dir)
         repair = generate_repair_candidate(
             failure_packet=packet,
             classification=classification,
@@ -273,6 +350,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(repair)
+        repair_path = _persist_artifact(repair, output_dir=output_dir)
         candidate = generate_eval_case_candidate(
             failure_packet=packet,
             classification=classification,
@@ -280,6 +358,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(candidate)
+        candidate_path = _persist_artifact(candidate, output_dir=output_dir)
         gated = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
@@ -288,6 +367,7 @@ def run_gate(
         )
         if gated is not None:
             _emit(gated)
+            _persist_artifact(gated, output_dir=output_dir)
         gen_record = build_generation_record(
             failure_packet=packet,
             candidate=candidate,
@@ -296,11 +376,18 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(gen_record)
+        _persist_artifact(gen_record, output_dir=output_dir)
         all_signals.append(classification.gate_signal)
         failure_classes.append(classification.failure_class)
         failure_packet_refs.append(f"pre_pr_failure_packet:{packet['id']}")
+        if packet_path:
+            failure_packet_refs.append(packet_path)
         repair_candidate_refs.append(f"prl_repair_candidate:{repair['id']}")
+        if repair_path:
+            repair_candidate_refs.append(repair_path)
         eval_candidate_refs.append(f"eval_case_candidate:{candidate['id']}")
+        if candidate_path:
+            eval_candidate_refs.append(candidate_path)
         if classification.gate_signal == "failed_gate":
             blocking_reasons.append(
                 f"{classification.failure_class}: {parsed.normalized_message}"
@@ -325,6 +412,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(capture)
+            _persist_artifact(capture, output_dir=output_dir)
 
             packet = build_failure_packet(
                 capture_record=capture,
@@ -333,6 +421,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(packet)
+            packet_path = _persist_artifact(packet, output_dir=output_dir)
 
             repair = generate_repair_candidate(
                 failure_packet=packet,
@@ -341,6 +430,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(repair)
+            repair_path = _persist_artifact(repair, output_dir=output_dir)
 
             candidate = generate_eval_case_candidate(
                 failure_packet=packet,
@@ -349,6 +439,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(candidate)
+            candidate_path = _persist_artifact(candidate, output_dir=output_dir)
 
             gated = advance_to_eval_case(
                 candidate=candidate,
@@ -358,6 +449,7 @@ def run_gate(
             )
             if gated is not None:
                 _emit(gated)
+                _persist_artifact(gated, output_dir=output_dir)
 
             gen_record = build_generation_record(
                 failure_packet=packet,
@@ -367,12 +459,19 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(gen_record)
+            _persist_artifact(gen_record, output_dir=output_dir)
 
             all_signals.append(classification.gate_signal)
             failure_classes.append(classification.failure_class)
             failure_packet_refs.append(f"pre_pr_failure_packet:{packet['id']}")
+            if packet_path:
+                failure_packet_refs.append(packet_path)
             repair_candidate_refs.append(f"prl_repair_candidate:{repair['id']}")
+            if repair_path:
+                repair_candidate_refs.append(repair_path)
             eval_candidate_refs.append(f"eval_case_candidate:{candidate['id']}")
+            if candidate_path:
+                eval_candidate_refs.append(candidate_path)
 
             if classification.gate_signal == "failed_gate":
                 blocking_reasons.append(
@@ -392,6 +491,13 @@ def run_gate(
         blocking_reasons=blocking_reasons,
     )
     _emit(gate_result)
+
+    if output_dir is not None:
+        gate_result_path = output_dir / "prl_gate_result.json"
+        gate_result_path.write_text(
+            json.dumps(gate_result, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     return gate_result
 
 
@@ -434,6 +540,18 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--output-dir",
+        default=DEFAULT_PRL_OUTPUT_DIR,
+        help=(
+            "F3L-03 — directory under which PRL artifacts are persisted "
+            "(default: outputs/prl). Each artifact is also written to a "
+            "stable file path so downstream consumers (APU, replay) can "
+            "ingest file-based evidence rather than parsing stdout NDJSON. "
+            "Pass an empty string to disable file persistence and emit "
+            "only the legacy stdout NDJSON stream."
+        ),
+    )
+    parser.add_argument(
         "pytest_args",
         nargs=argparse.REMAINDER,
         help="Additional arguments passed to pytest (use -- before pytest flags)",
@@ -457,6 +575,13 @@ def main() -> int:
             candidate = REPO_ROOT / candidate
         clp_result_path = candidate
 
+    output_dir: Path | None = None
+    if args.output_dir:
+        out = Path(args.output_dir)
+        if not out.is_absolute():
+            out = REPO_ROOT / out
+        output_dir = out
+
     try:
         gate_result = run_gate(
             run_id=run_id,
@@ -466,6 +591,7 @@ def main() -> int:
             base_ref=args.base_ref,
             head_ref=args.head_ref,
             clp_result_path=clp_result_path,
+            output_dir=output_dir,
         )
     except Exception as exc:
         error_record = {
