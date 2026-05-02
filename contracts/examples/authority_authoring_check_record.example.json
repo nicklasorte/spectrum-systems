@@ -1,0 +1,40 @@
+{
+  "artifact_type": "authority_authoring_check_record",
+  "schema_version": "1.0.0",
+  "record_id": "auth-authoring-check-example-0001",
+  "created_at": "2026-05-02T00:00:00Z",
+  "base_ref": "origin/main",
+  "head_ref": "HEAD",
+  "changed_files": [
+    "docs/reviews/example.md",
+    "scripts/run_authority_authoring_check.py",
+    "outputs/contract_preflight/contract_preflight_report.json"
+  ],
+  "scanned_files": [
+    "docs/reviews/example.md"
+  ],
+  "skipped_files": [
+    {
+      "file": "outputs/contract_preflight/contract_preflight_report.json",
+      "skip_reason": "generated_artifact"
+    },
+    {
+      "file": "scripts/run_authority_authoring_check.py",
+      "skip_reason": "owner_path"
+    }
+  ],
+  "unsafe_findings": [],
+  "protected_owner_findings": [],
+  "status": "pass",
+  "reason_codes": [],
+  "output_artifact_refs": [
+    "outputs/authority_authoring_check/authority_authoring_check_record.json"
+  ],
+  "authority_scope": "observation_only",
+  "summary": {
+    "unsafe_finding_count": 0,
+    "protected_owner_finding_count": 0,
+    "scanned_file_count": 1,
+    "skipped_file_count": 2
+  }
+}

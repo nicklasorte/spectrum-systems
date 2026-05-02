@@ -17193,6 +17193,19 @@
       "notes": "AEX-PQX-01: records a specific governance loop violation for a repo-mutating AI programming work item. MET observation only; does not claim enforcement (SEL) or decision (CDE) authority."
     },
     {
+      "artifact_type": "authority_authoring_check_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AUTH-AUTHORING-01",
+      "last_updated_in": "AUTH-AUTHORING-01",
+      "example_path": "contracts/examples/authority_authoring_check_record.example.json",
+      "notes": "AUTH-AUTHORING-01: observation-only authoring-time signal record. Detects reserved authority vocabulary and protected owner-acronym usage in non-owner files. Does not replace authority_shape_preflight, authority_leak_guard, or system_registry_guard. Non-owning."
+    },
+    {
       "artifact_type": "authority_preflight_failure_packet",
       "artifact_class": "governance",
       "schema_version": "1.0.0",

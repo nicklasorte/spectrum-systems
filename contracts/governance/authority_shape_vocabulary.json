@@ -48,7 +48,12 @@
       "scripts/authority_shape_detector.py",
       "scripts/run_system_registry_guard.py",
       "scripts/run_authority_shape_preflight.py",
+      "scripts/run_authority_authoring_check.py",
       "scripts/run_contract_preflight.py",
+      "contracts/schemas/authority_authoring_check_record.schema.json",
+      "contracts/examples/authority_authoring_check_record.example.json",
+      "docs/reviews/AUTH-AUTHORING-01_redteam.md",
+      "docs/review-actions/AUTH-AUTHORING-01_fix_actions.md",
       "contracts/governance/authority_registry.json",
       "contracts/governance/authority_shape_vocabulary.json",
       "contracts/governance/system_registry_guard_policy.json",
@@ -707,8 +712,13 @@
         "scripts/authority_shape_detector.py",
         "scripts/run_system_registry_guard.py",
         "scripts/run_authority_shape_preflight.py",
+        "scripts/run_authority_authoring_check.py",
         "contracts/governance/",
-        "docs/architecture/system_registry.md"
+        "contracts/schemas/authority_authoring_check_record.schema.json",
+        "contracts/examples/authority_authoring_check_record.example.json",
+        "docs/architecture/system_registry.md",
+        "docs/reviews/AUTH-AUTHORING-01_redteam.md",
+        "docs/review-actions/AUTH-AUTHORING-01_fix_actions.md"
       ]
     }
   }

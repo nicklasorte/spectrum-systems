@@ -50,14 +50,14 @@
           "docs/review-actions/AGL-01_fix_actions.md",
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
+          "docs/review-actions/AUTH-AUTHORING-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
           "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
           "docs/review-actions/PLAN-AFX-02-ARTIFACT-SPINE-2026-04-09.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
-          "docs/review-actions/PLAN-AUTHENTICITY-HARDGATE-24-01-2026-04-11.md",
-          "docs/review-actions/PLAN-AUTO-KERNEL-24-01-2026-04-11.md"
+          "docs/review-actions/PLAN-AUTHENTICITY-HARDGATE-24-01-2026-04-11.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -107,6 +107,7 @@
           "scripts/replay_aex_admission.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
+          "scripts/run_authority_authoring_check.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_ops_master_01.py",
@@ -145,7 +146,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 125,
+      "evidence_count": 126,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -350,6 +351,7 @@
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
+          "scripts/run_authority_authoring_check.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_merge_conflict_pressure_scan.py",
@@ -385,14 +387,14 @@
           "tests/test_agent_pr_precheck.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
+          "tests/test_authority_authoring_check.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_authority_repair_candidate_generator.py",
           "tests/test_authority_shape_preflight.py",
-          "tests/test_cde_decision_flow.py",
-          "tests/test_certification.py"
+          "tests/test_cde_decision_flow.py"
         ]
       },
-      "evidence_count": 124,
+      "evidence_count": 125,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -572,9 +574,9 @@
           "docs/review-actions/AGL-01_fix_actions.md",
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
+          "docs/review-actions/AUTH-AUTHORING-01_fix_actions.md",
           "docs/review-actions/M3L-03_fix_actions.md",
-          "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
-          "docs/review-actions/PLAN-BAE-2026-03-22.md"
+          "docs/review-actions/PLAN-AIG-001-2026-04-15.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -615,6 +617,7 @@
           "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
+          "scripts/run_authority_authoring_check.py",
           "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_done_certification.py",
           "scripts/run_eval_ci_gate.py",
@@ -652,7 +655,7 @@
           "tests/test_authority_drift_regression.py"
         ]
       },
-      "evidence_count": 116,
+      "evidence_count": 117,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -1885,6 +1888,7 @@
           "scripts/pqx_runner.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
+          "scripts/run_authority_authoring_check.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_codex_to_pqx_wrapper.py",
           "scripts/run_contract_preflight.py",
@@ -1897,8 +1901,7 @@
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_next_governed_cycle.py",
           "scripts/run_next_roadmap_batch.py",
-          "scripts/run_operator_shakeout.py",
-          "scripts/run_ops_master_01.py"
+          "scripts/run_operator_shakeout.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -2769,6 +2772,7 @@
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
+          "scripts/run_authority_authoring_check.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_contract_preflight.py",
           "scripts/run_control_surface_enforcement.py",
@@ -2782,8 +2786,7 @@
           "scripts/run_review_artifact_validation.py",
           "scripts/run_review_fix_loop_36_explicit.py",
           "scripts/run_rh_kernel_24_01.py",
-          "scripts/run_sel_orchestration.py",
-          "scripts/run_sel_replay_gate.py"
+          "scripts/run_sel_orchestration.py"
         ],
         "tests": [
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
@@ -2803,14 +2806,14 @@
           "tests/test_agent_pr_precheck.py",
           "tests/test_artifact_boundary_workflow_policy_observation.py",
           "tests/test_authenticity_hardgate_24_01.py",
+          "tests/test_authority_authoring_check.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_authority_shape_preflight.py",
           "tests/test_certification_judgment_40_explicit.py",
           "tests/test_check_agent_pr_update_ready.py",
           "tests/test_clx_all_01_redteam.py",
           "tests/test_contract_enforcement.py",
-          "tests/test_contract_preflight.py",
-          "tests/test_contracts.py"
+          "tests/test_contract_preflight.py"
         ]
       },
       "evidence_count": 127,
@@ -3184,6 +3187,7 @@
           "scripts/refresh_tpa_source_authority_digests.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_authenticity_hardgate_24_01.py",
+          "scripts/run_authority_authoring_check.py",
           "scripts/run_certification_judgment_40_explicit.py",
           "scripts/run_contract_preflight.py",
           "scripts/run_core_loop_pre_pr_gate.py",
@@ -3215,6 +3219,7 @@
           "tests/test_agent_instruction_apr_m3l_required.py",
           "tests/test_agent_pr_precheck.py",
           "tests/test_authenticity_hardgate_24_01.py",
+          "tests/test_authority_authoring_check.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_certification_judgment_40_explicit.py",
           "tests/test_check_agent_pr_update_ready.py",
@@ -3223,11 +3228,10 @@
           "tests/test_core_loop_pre_pr_gate_policy.py",
           "tests/test_d3l_mvp_graph.py",
           "tests/test_d3l_priority_freshness_gate.py",
-          "tests/test_d3l_ranking_report.py",
-          "tests/test_done_certification.py"
+          "tests/test_d3l_ranking_report.py"
         ]
       },
-      "evidence_count": 123,
+      "evidence_count": 124,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"
