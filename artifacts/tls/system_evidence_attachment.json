@@ -1518,12 +1518,12 @@
           "tests/test_error_taxonomy.py",
           "tests/test_evaluation_auto_generation.py",
           "tests/test_evaluation_enforcement_bridge.py",
+          "tests/test_gate_shard_parity_record.py",
           "tests/test_map_projection_hardening.py",
           "tests/test_mnt_trust_integration.py",
           "tests/test_nx_eval_spine.py",
           "tests/test_nx_registry_red_team.py",
-          "tests/test_oc_bottleneck_classifier.py",
-          "tests/test_pqx_fix_gate.py"
+          "tests/test_oc_bottleneck_classifier.py"
         ]
       },
       "evidence_count": 128,
