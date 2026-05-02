@@ -139,6 +139,9 @@ def _make_coverage(
     selection_reason_codes: list[str] | None = None,
     coverage_status: str = "complete",
     changed_paths: list[str] | None = None,
+    unmatched_changed_paths: list[str] | None = None,
+    attempted_surface_rules: list[dict[str, Any]] | None = None,
+    recommended_mapping_candidates: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     return {
         "artifact_type": "selection_coverage_record",
@@ -149,8 +152,8 @@ def _make_coverage(
         "head_ref": "HEAD",
         "changed_paths": changed_paths or ["scripts/example.py"],
         "matched_paths": changed_paths or ["scripts/example.py"],
-        "unmatched_changed_paths": [],
-        "attempted_surface_rules": [],
+        "unmatched_changed_paths": unmatched_changed_paths or [],
+        "attempted_surface_rules": attempted_surface_rules or [],
         "selected_test_targets": selected
         if selected is not None
         else ["tests/test_a.py", "tests/test_b.py"],
@@ -160,7 +163,7 @@ def _make_coverage(
         "missing_required_surface_mapping_count": 0,
         "selection_reason_codes": selection_reason_codes or [],
         "coverage_status": coverage_status,
-        "recommended_mapping_candidates": [],
+        "recommended_mapping_candidates": recommended_mapping_candidates or [],
         "authority_scope": "observation_only",
     }
 
@@ -614,3 +617,422 @@ def test_builder_module_imports_without_side_effects() -> None:
     importlib.reload(builder)
     assert hasattr(builder, "build_runtime_budget_observation")
     assert callable(builder.build_runtime_budget_observation)
+
+
+# ---------------------------------------------------------------------------
+# 11. EVL-RT-02 — fallback_justification section
+# ---------------------------------------------------------------------------
+
+
+def test_fallback_justification_section_required_in_schema() -> None:
+    """The schema must require the fallback_justification section."""
+    schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert "fallback_justification" in schema["required"]
+    assert "fallback_justification" in schema["properties"]
+    section = schema["properties"]["fallback_justification"]
+    assert section["additionalProperties"] is False
+    required = set(section["required"])
+    expected = {
+        "fallback_scope",
+        "fallback_used",
+        "full_suite_detected",
+        "fallback_reason_codes",
+        "selection_coverage_ref",
+        "shard_summary_ref",
+        "unmatched_changed_paths",
+        "missing_surface_mappings",
+        "selected_test_targets",
+        "recommended_mapping_candidates",
+        "recommended_shard_candidates",
+        "evidence_hash",
+    }
+    assert expected.issubset(required), (
+        f"fallback_justification missing required fields: {expected - required}"
+    )
+
+
+def test_fallback_justification_fallback_used_true_requires_reason_codes() -> None:
+    record = _base_record()
+    record["fallback_justification"]["fallback_used"] = True
+    record["fallback_justification"]["fallback_reason_codes"] = []
+    # Provide refs so the present-fallback-requires-refs rule does not trip
+    # before reason-codes rule is evaluated.
+    record["fallback_justification"]["selection_coverage_ref"] = (
+        "outputs/selection_coverage/selection_coverage_record.json"
+    )
+    with pytest.raises(ValidationError):
+        validate_artifact(record, "pr_test_runtime_budget_observation")
+
+
+def test_fallback_justification_full_suite_detected_requires_reason_codes() -> None:
+    record = _base_record()
+    record["fallback_justification"]["full_suite_detected"] = True
+    record["fallback_justification"]["fallback_reason_codes"] = []
+    record["fallback_justification"]["selection_coverage_ref"] = (
+        "outputs/selection_coverage/selection_coverage_record.json"
+    )
+    with pytest.raises(ValidationError):
+        validate_artifact(record, "pr_test_runtime_budget_observation")
+
+
+def test_fallback_justification_unknown_scope_requires_reason_codes() -> None:
+    record = _base_record()
+    record["fallback_justification"]["fallback_scope"] = "unknown"
+    record["fallback_justification"]["fallback_reason_codes"] = []
+    with pytest.raises(ValidationError):
+        validate_artifact(record, "pr_test_runtime_budget_observation")
+
+
+def test_fallback_justification_present_fallback_requires_evidence_ref() -> None:
+    """When fallback_used true the section must reference selection_coverage_ref
+    or shard_summary_ref so present fallback justification carries evidence."""
+    record = _base_record()
+    record["fallback_justification"]["fallback_used"] = True
+    record["fallback_justification"]["fallback_reason_codes"] = [
+        "selector_reported_fallback_used"
+    ]
+    record["fallback_justification"]["selection_coverage_ref"] = None
+    record["fallback_justification"]["shard_summary_ref"] = None
+    with pytest.raises(ValidationError):
+        validate_artifact(record, "pr_test_runtime_budget_observation")
+
+
+def test_fallback_justification_full_suite_present_requires_evidence_ref() -> None:
+    record = _base_record()
+    record["fallback_justification"]["full_suite_detected"] = True
+    record["fallback_justification"]["fallback_reason_codes"] = [
+        "selected_target_full_suite:tests"
+    ]
+    record["fallback_justification"]["selection_coverage_ref"] = None
+    record["fallback_justification"]["shard_summary_ref"] = None
+    with pytest.raises(ValidationError):
+        validate_artifact(record, "pr_test_runtime_budget_observation")
+
+
+def test_fallback_justification_scope_enum_rejects_unknown_value() -> None:
+    record = _base_record()
+    record["fallback_justification"]["fallback_scope"] = "made_up_scope"
+    with pytest.raises(ValidationError):
+        validate_artifact(record, "pr_test_runtime_budget_observation")
+
+
+# ---------------------------------------------------------------------------
+# 12. EVL-RT-02 — builder fallback scope classification
+# ---------------------------------------------------------------------------
+
+
+def test_builder_classifies_full_suite_scope_with_evidence_refs() -> None:
+    summary = _make_summary(total=120.0)
+    coverage = _make_coverage(
+        selected=["tests"],
+        fallback_used=True,
+        fallback_targets=["select_all_tests"],
+        selection_reason_codes=["fallback_full_suite"],
+    )
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert just["fallback_scope"] == "full_suite"
+    assert just["full_suite_detected"] is True
+    assert just["fallback_used"] is True
+    assert just["fallback_reason_codes"], (
+        "full_suite scope must surface at least one fallback_reason_code"
+    )
+    assert (
+        just["selection_coverage_ref"]
+        == "outputs/selection_coverage/selection_coverage_record.json"
+    )
+    assert (
+        just["shard_summary_ref"]
+        == "outputs/pr_test_shards/pr_test_shards_summary.json"
+    )
+
+
+def test_builder_classifies_broad_pytest_scope_for_select_all_tests() -> None:
+    summary = _make_summary(total=80.0)
+    coverage = _make_coverage(
+        selected=["tests/test_a.py"],
+        fallback_used=True,
+        fallback_targets=["select_all_tests"],
+        selection_reason_codes=["fallback_used"],
+    )
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    # 'select_all_tests' is in the selected fallback targets — broad pytest scope.
+    assert just["fallback_scope"] in {"broad_pytest", "full_suite"}
+    assert just["fallback_used"] is True
+    assert just["fallback_reason_codes"], (
+        "broad_pytest scope must surface at least one fallback_reason_code"
+    )
+
+
+def test_builder_classifies_shard_fallback_scope_when_selector_only_reports() -> None:
+    summary = _make_summary(total=50.0)
+    coverage = _make_coverage(
+        selected=["tests/test_a.py"],
+        fallback_used=True,
+        fallback_targets=["resolution_mode:git_diff_unavailable"],
+        selection_reason_codes=["fallback_used"],
+    )
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert just["fallback_scope"] == "shard_fallback"
+    assert just["fallback_used"] is True
+    assert just["fallback_reason_codes"], (
+        "shard_fallback scope must surface at least one fallback_reason_code"
+    )
+
+
+def test_builder_classifies_none_scope_for_clean_focused_run() -> None:
+    summary = _make_summary(total=12.0)
+    coverage = _make_coverage(
+        selected=["tests/test_a.py", "tests/test_b.py"],
+        fallback_used=False,
+    )
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert just["fallback_scope"] == "none"
+    assert just["fallback_used"] is False
+    assert just["full_suite_detected"] is False
+    assert just["fallback_reason_codes"] == []
+
+
+def test_builder_classifies_unknown_scope_when_inputs_missing() -> None:
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=None,
+        selection_coverage=None,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref=None,
+        selection_coverage_ref=None,
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert just["fallback_scope"] == "unknown"
+    assert just["fallback_reason_codes"], (
+        "unknown scope must surface at least one fallback_reason_code"
+    )
+
+
+# ---------------------------------------------------------------------------
+# 13. EVL-RT-02 — builder surfaces unmatched paths & missing mappings
+# ---------------------------------------------------------------------------
+
+
+def test_builder_surfaces_unmatched_changed_paths_from_coverage() -> None:
+    summary = _make_summary(total=42.0)
+    coverage = _make_coverage(
+        selected=["tests/test_a.py"],
+        changed_paths=["scripts/example.py", "scripts/orphan.py"],
+        unmatched_changed_paths=["scripts/orphan.py"],
+        coverage_status="partial",
+        selection_reason_codes=["selection_coverage_partial"],
+    )
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert "scripts/orphan.py" in just["unmatched_changed_paths"]
+
+
+def test_builder_surfaces_missing_surface_mappings_from_attempted_rules() -> None:
+    summary = _make_summary(total=42.0)
+    coverage = _make_coverage(
+        selected=["tests/test_a.py"],
+        attempted_surface_rules=[
+            {
+                "path": "scripts/example.py",
+                "rule_source": "needle_match",
+                "matched": True,
+                "is_governed": True,
+                "surface": "governance",
+            },
+            {
+                "path": "scripts/orphan.py",
+                "rule_source": "no_rule_attempted",
+                "matched": False,
+                "is_governed": True,
+            },
+        ],
+        unmatched_changed_paths=["scripts/orphan.py"],
+        coverage_status="partial",
+        selection_reason_codes=["selection_coverage_partial"],
+    )
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert "scripts/orphan.py" in just["missing_surface_mappings"]
+    assert "scripts/example.py" not in just["missing_surface_mappings"]
+
+
+def test_builder_surfaces_recommended_mapping_candidates_observation_only() -> None:
+    summary = _make_summary(total=42.0)
+    coverage = _make_coverage(
+        selected=["tests/test_a.py"],
+        recommended_mapping_candidates=[
+            {
+                "path": "scripts/orphan.py",
+                "candidate_test_targets": ["tests/test_orphan.py"],
+                "observation_only": True,
+                "rationale": "operator hint",
+            }
+        ],
+    )
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert just["recommended_mapping_candidates"]
+    for cand in just["recommended_mapping_candidates"]:
+        assert cand["observation_only"] is True
+
+
+def test_builder_emits_recommended_shard_candidates_for_full_suite_scope() -> None:
+    summary = _make_summary(total=400.0, slowest="changed_scope", slowest_duration=300.0)
+    coverage = _make_coverage(
+        selected=["tests"],
+        fallback_used=True,
+        fallback_targets=["select_all_tests"],
+        selection_reason_codes=["fallback_full_suite"],
+    )
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert just["recommended_shard_candidates"]
+    for cand in just["recommended_shard_candidates"]:
+        assert cand["observation_only"] is True
+    actions = {c.get("candidate_action") for c in just["recommended_shard_candidates"]}
+    assert "narrow_selection" in actions or "split_shard" in actions
+
+
+# ---------------------------------------------------------------------------
+# 14. EVL-RT-02 — fallback justification preserves observation-only authority
+# ---------------------------------------------------------------------------
+
+
+def test_fallback_justification_evidence_hash_present() -> None:
+    summary = _make_summary(total=12.0)
+    coverage = _make_coverage()
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    validate_artifact(artifact, "pr_test_runtime_budget_observation")
+    just = artifact["fallback_justification"]
+    assert isinstance(just["evidence_hash"], str)
+    assert just["evidence_hash"].startswith("sha256:")
+
+
+def test_fallback_justification_does_not_mutate_selection_or_run_pytest() -> None:
+    raw = _BUILDER_PATH.read_text(encoding="utf-8")
+    forbidden_patterns = (
+        "import subprocess",
+        "from subprocess",
+        "subprocess.run",
+        "subprocess.Popen",
+        '"-m", "pytest"',
+        "'-m', 'pytest'",
+        "pytest.main(",
+    )
+    for pattern in forbidden_patterns:
+        assert pattern not in raw, (
+            f"fallback_justification builder must not reference {pattern!r}"
+        )
+    for symbol in _SELECTOR_PRIVATE_SYMBOLS:
+        assert f"def {symbol}(" not in raw, (
+            f"Builder must not redefine selector symbol {symbol!r} when "
+            "computing fallback_justification — no duplicate selector logic."
+        )
+
+
+def test_fallback_justification_authority_scope_preserved() -> None:
+    """The artifact-level authority_scope must remain observation_only even
+    after the fallback_justification section is added."""
+    summary = _make_summary(total=12.0)
+    coverage = _make_coverage()
+    artifact = builder.build_runtime_budget_observation(
+        base_ref="origin/main",
+        head_ref="HEAD",
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=300.0,
+        shard_summary_ref="outputs/pr_test_shards/pr_test_shards_summary.json",
+        selection_coverage_ref="outputs/selection_coverage/selection_coverage_record.json",
+    )
+    assert artifact["authority_scope"] == "observation_only"
+    just = artifact["fallback_justification"]
+    for cand in just["recommended_mapping_candidates"]:
+        assert cand["observation_only"] is True
+    for cand in just["recommended_shard_candidates"]:
+        assert cand["observation_only"] is True

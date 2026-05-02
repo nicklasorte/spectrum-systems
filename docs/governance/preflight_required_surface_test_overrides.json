@@ -351,5 +351,11 @@
   ],
   "docs/review-actions/EVL-RT-01_fix_actions.md": [
     "tests/test_pr_test_runtime_budget_observation.py"
+  ],
+  "docs/reviews/EVL-RT-02_redteam.md": [
+    "tests/test_pr_test_runtime_budget_observation.py"
+  ],
+  "docs/review-actions/EVL-RT-02_fix_actions.md": [
+    "tests/test_pr_test_runtime_budget_observation.py"
   ]
 }
