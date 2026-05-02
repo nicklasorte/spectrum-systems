@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prl/prl_eval_regression_intake_record.schema.json",
+  "title": "PRL Eval Regression Intake Record",
+  "description": "F3L-04 — observation-only intake record that proves PRL eval candidates produced from CLP/PRL failures have been routed into a governed regression-coverage intake surface for future EVL/CLP/APU detection. Emitted by scripts/run_pre_pr_reliability_gate.py at the end of every PRL run that persists artifacts to disk. PRL retains classification and eval-candidate authority only; final eval acceptance, coverage, and dataset semantics remain with EVL per docs/architecture/system_registry.md. The record carries no gate authority and may not be substituted by PR body prose.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "run_id",
+    "trace_id",
+    "generated_at",
+    "source_system",
+    "source_failure_packet_refs",
+    "eval_candidate_refs",
+    "prl_artifact_index_ref",
+    "intake_status",
+    "candidate_count",
+    "accepted_candidate_refs",
+    "rejected_candidate_refs",
+    "reason_codes",
+    "coverage_intent",
+    "authority_scope",
+    "evidence_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prl_eval_regression_intake_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^prl-eri-[a-f0-9]{16}$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_system": {
+      "const": "PRL"
+    },
+    "source_failure_packet_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "eval_candidate_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "prl_artifact_index_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "prl_gate_result_ref": {
+      "type": ["string", "null"]
+    },
+    "intake_status": {
+      "type": "string",
+      "enum": ["present", "partial", "missing", "unknown"]
+    },
+    "candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "accepted_candidate_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "rejected_candidate_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "coverage_intent": {
+      "type": "string",
+      "enum": ["regression_candidate", "manual_review_required", "not_applicable"]
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    },
+    "evidence_hash": {
+      "type": "string",
+      "pattern": "^sha256-[a-f0-9]{64}$"
+    },
+    "gate_recommendation": {
+      "type": ["string", "null"],
+      "enum": ["passed_gate", "gate_warn", "gate_hold", "failed_gate", null]
+    }
+  },
+  "allOf": [
+    {
+      "description": "intake_status=present requires non-empty eval_candidate_refs (no prose substitution).",
+      "if": {
+        "properties": { "intake_status": { "const": "present" } },
+        "required": ["intake_status"]
+      },
+      "then": {
+        "properties": {
+          "eval_candidate_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    {
+      "description": "intake_status=partial requires at least one reason_code.",
+      "if": {
+        "properties": { "intake_status": { "const": "partial" } },
+        "required": ["intake_status"]
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    {
+      "description": "intake_status=missing requires at least one reason_code.",
+      "if": {
+        "properties": { "intake_status": { "const": "missing" } },
+        "required": ["intake_status"]
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    {
+      "description": "intake_status=unknown requires at least one reason_code.",
+      "if": {
+        "properties": { "intake_status": { "const": "unknown" } },
+        "required": ["intake_status"]
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  ]
+}

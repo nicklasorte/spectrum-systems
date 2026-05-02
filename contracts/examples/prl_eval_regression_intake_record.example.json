@@ -1,0 +1,28 @@
+{
+  "artifact_type": "prl_eval_regression_intake_record",
+  "schema_version": "1.0.0",
+  "id": "prl-eri-0123456789abcdef",
+  "run_id": "prl-gate-20260502T170000Z-deadbeef",
+  "trace_id": "trace-prl-0123456789abcdef",
+  "generated_at": "2026-05-02T17:00:00Z",
+  "source_system": "PRL",
+  "source_failure_packet_refs": [
+    "outputs/prl/failure_packets/pre-pr-failure-packet-aaaa1111bbbb2222.json"
+  ],
+  "eval_candidate_refs": [
+    "outputs/prl/eval_candidates/eval-case-candidate-eeee5555ffff6666.json"
+  ],
+  "prl_artifact_index_ref": "outputs/prl/prl_artifact_index.json",
+  "prl_gate_result_ref": "outputs/prl/prl_gate_result.json",
+  "intake_status": "present",
+  "candidate_count": 1,
+  "accepted_candidate_refs": [
+    "outputs/prl/eval_candidates/eval-case-candidate-eeee5555ffff6666.json"
+  ],
+  "rejected_candidate_refs": [],
+  "reason_codes": [],
+  "coverage_intent": "regression_candidate",
+  "authority_scope": "observation_only",
+  "evidence_hash": "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "gate_recommendation": "failed_gate"
+}

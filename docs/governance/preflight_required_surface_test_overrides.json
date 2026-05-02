@@ -108,6 +108,12 @@
   "contracts/schemas/prl_eval_generation_record.schema.json": [
     "tests/test_contracts.py"
   ],
+  "contracts/schemas/prl_eval_regression_intake_record.schema.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/examples/prl_eval_regression_intake_record.example.json": [
+    "tests/test_contracts.py"
+  ],
   "contracts/schemas/prl_gate_result.schema.json": [
     "tests/test_contracts.py"
   ],
