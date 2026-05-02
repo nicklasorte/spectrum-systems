@@ -206,6 +206,9 @@ def _ref_relative_to(path: Path, repo_root: Path) -> str:
 _SELECTION_COVERAGE_REL_PATH = (
     "outputs/selection_coverage/selection_coverage_record.json"
 )
+_SMALL_BATCH_RISK_REL_PATH = (
+    "outputs/small_batch_risk/small_batch_risk_record.json"
+)
 
 
 def _write_selection_coverage_record(
@@ -240,6 +243,43 @@ def _write_selection_coverage_record(
         json.dumps(record, indent=2) + "\n", encoding="utf-8"
     )
     return coverage_path
+
+
+def _write_small_batch_risk_record(
+    *,
+    repo_root: Path,
+    changed_paths: list[str],
+    base_ref: str,
+    head_ref: str,
+) -> Path:
+    """Build and write a ``small_batch_risk_record`` artifact.
+
+    Reuses the canonical ``build_small_batch_risk_record`` helper from
+    ``scripts/build_small_batch_risk_record.py``. The artifact is
+    observation-only and never blocks APR; it is added to the AEX
+    phase output_artifact_refs for downstream consumers.
+    """
+    from scripts.build_small_batch_risk_record import (
+        build_small_batch_risk_record,
+    )
+
+    sbr_path = (repo_root / _SMALL_BATCH_RISK_REL_PATH).resolve()
+    sbr_path.parent.mkdir(parents=True, exist_ok=True)
+    created_at = utc_now_iso()
+    raw = f"{base_ref}|{head_ref}|{created_at}|sbr".encode("utf-8")
+    record_id = "sbr-" + hashlib.sha256(raw).hexdigest()[:16]
+    record = build_small_batch_risk_record(
+        base_ref=base_ref,
+        head_ref=head_ref,
+        changed_paths=list(changed_paths),
+        record_id=record_id,
+        created_at=created_at,
+    )
+    validate_artifact(record, "small_batch_risk_record")
+    sbr_path.write_text(
+        json.dumps(record, indent=2) + "\n", encoding="utf-8"
+    )
+    return sbr_path
 
 
 def aex_required_surface_check(
@@ -312,9 +352,27 @@ def aex_required_surface_check(
         # mapping check; the coverage artifact is simply not produced.
         coverage_ref = None
 
+    sbr_ref: str | None = None
+    try:
+        sbr_path = _write_small_batch_risk_record(
+            repo_root=repo_root,
+            changed_paths=list(changed_paths),
+            base_ref=base_ref,
+            head_ref=head_ref,
+        )
+        sbr_ref = _ref_relative_to(sbr_path, repo_root)
+    except Exception:
+        # The small-batch risk record is observation-only and never
+        # blocks AEX. If the builder fails, the AEX result still
+        # reflects the canonical mapping check; the risk artifact is
+        # simply not produced.
+        sbr_ref = None
+
     output_refs = [_ref_relative_to(artifact_path, repo_root)]
     if coverage_ref is not None and coverage_ref not in output_refs:
         output_refs.append(coverage_ref)
+    if sbr_ref is not None and sbr_ref not in output_refs:
+        output_refs.append(sbr_ref)
 
     if unmapped:
         suggested = {p: ["tests/<add an explicit binding here>"] for p in unmapped}

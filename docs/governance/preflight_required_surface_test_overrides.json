@@ -278,5 +278,25 @@
   ],
   "tests/test_selection_coverage_record.py": [
     "tests/test_selection_coverage_record.py"
+  ],
+  "scripts/build_small_batch_risk_record.py": [
+    "tests/test_small_batch_risk_record.py"
+  ],
+  "contracts/schemas/small_batch_risk_record.schema.json": [
+    "tests/test_contracts.py",
+    "tests/test_small_batch_risk_record.py"
+  ],
+  "contracts/examples/small_batch_risk_record.example.json": [
+    "tests/test_contracts.py",
+    "tests/test_small_batch_risk_record.py"
+  ],
+  "tests/test_small_batch_risk_record.py": [
+    "tests/test_small_batch_risk_record.py"
+  ],
+  "docs/reviews/SMALL-BATCH-RISK-01_redteam.md": [
+    "tests/test_small_batch_risk_record.py"
+  ],
+  "docs/review-actions/SMALL-BATCH-RISK-01_fix_actions.md": [
+    "tests/test_small_batch_risk_record.py"
   ]
 }

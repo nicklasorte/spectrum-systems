@@ -162,6 +162,26 @@
         "tests/test_contracts.py",
         "tests/test_selection_coverage_record.py"
       ]
+    },
+    {
+      "path_prefix": "scripts/build_small_batch_risk_record.py",
+      "required_test_targets": [
+        "tests/test_small_batch_risk_record.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/schemas/small_batch_risk_record.schema.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_small_batch_risk_record.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/examples/small_batch_risk_record.example.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_small_batch_risk_record.py"
+      ]
     }
   ],
   "bounded_equivalence": [

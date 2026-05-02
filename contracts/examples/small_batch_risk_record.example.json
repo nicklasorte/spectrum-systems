@@ -1,0 +1,113 @@
+{
+  "artifact_type": "small_batch_risk_record",
+  "schema_version": "1.0.0",
+  "record_id": "sbr-2026-05-02-example-001",
+  "created_at": "2026-05-02T00:00:00Z",
+  "base_ref": "origin/main",
+  "head_ref": "HEAD",
+  "changed_file_count": 12,
+  "changed_paths": [
+    "contracts/schemas/small_batch_risk_record.schema.json",
+    "contracts/examples/small_batch_risk_record.example.json",
+    "contracts/standards-manifest.json",
+    "spectrum_systems/modules/runtime/example_runtime_module.py",
+    "scripts/build_small_batch_risk_record.py",
+    "tests/test_small_batch_risk_record.py",
+    "docs/reviews/SMALL-BATCH-RISK-01_redteam.md",
+    "docs/review-actions/SMALL-BATCH-RISK-01_fix_actions.md",
+    "docs/governance/example_policy.json",
+    "artifacts/tls/system_dependency_priority_report.json",
+    ".github/workflows/example-workflow.yml",
+    "apps/dashboard-3ls/app/page.tsx"
+  ],
+  "governed_surface_classes": [
+    "contracts_schemas",
+    "contracts_examples",
+    "standards_manifest",
+    "runtime",
+    "scripts",
+    "tests",
+    "docs_reviews",
+    "docs_review_actions",
+    "docs_governance",
+    "generated_artifacts",
+    "github_workflows",
+    "dashboard"
+  ],
+  "governed_surface_count": 12,
+  "generated_artifact_touch_count": 1,
+  "schema_touch_count": 1,
+  "example_touch_count": 1,
+  "manifest_touch_count": 1,
+  "runtime_touch_count": 1,
+  "script_touch_count": 1,
+  "test_touch_count": 1,
+  "docs_touch_count": 3,
+  "workflow_touch_count": 1,
+  "dashboard_touch_count": 1,
+  "contract_surface_touched": true,
+  "generated_surface_touched": true,
+  "workflow_surface_touched": true,
+  "dashboard_surface_touched": true,
+  "risk_level": "very_high",
+  "reason_codes": [
+    "many_governed_surface_classes",
+    "schema_runtime_generated_workflow_combination"
+  ],
+  "split_recommendation": "split_recommended",
+  "split_findings": [
+    {
+      "finding": "schema, runtime, generated, and workflow surfaces all touched in one batch",
+      "evidence_paths": [
+        "contracts/schemas/small_batch_risk_record.schema.json",
+        "spectrum_systems/modules/runtime/example_runtime_module.py",
+        "artifacts/tls/system_dependency_priority_report.json",
+        ".github/workflows/example-workflow.yml"
+      ],
+      "observation_only": true,
+      "rationale": "broad combination historically increases sequential failures across guards"
+    },
+    {
+      "finding": "dashboard surface touched alongside contract and runtime surfaces",
+      "evidence_paths": [
+        "apps/dashboard-3ls/app/page.tsx",
+        "contracts/schemas/small_batch_risk_record.schema.json",
+        "spectrum_systems/modules/runtime/example_runtime_module.py"
+      ],
+      "observation_only": true,
+      "rationale": "dashboard changes are easier to review independently of contract/runtime work"
+    }
+  ],
+  "recommended_batches": [
+    {
+      "batch_name": "contract_and_manifest_only",
+      "paths": [
+        "contracts/schemas/small_batch_risk_record.schema.json",
+        "contracts/examples/small_batch_risk_record.example.json",
+        "contracts/standards-manifest.json"
+      ],
+      "observation_only": true,
+      "rationale": "isolate schema/manifest churn so contract preflight runs against a narrow surface"
+    },
+    {
+      "batch_name": "runtime_and_scripts",
+      "paths": [
+        "spectrum_systems/modules/runtime/example_runtime_module.py",
+        "scripts/build_small_batch_risk_record.py",
+        "tests/test_small_batch_risk_record.py"
+      ],
+      "observation_only": true,
+      "rationale": "runtime and script changes share required-surface mappings and are tested together"
+    },
+    {
+      "batch_name": "workflow_and_dashboard",
+      "paths": [
+        ".github/workflows/example-workflow.yml",
+        "apps/dashboard-3ls/app/page.tsx"
+      ],
+      "observation_only": true,
+      "rationale": "workflow and dashboard surfaces are reviewed independently of contract churn"
+    }
+  ],
+  "authority_scope": "observation_only"
+}
