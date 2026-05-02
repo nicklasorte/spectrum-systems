@@ -1112,3 +1112,129 @@ def test_prl_evidence_changes_evidence_hash(policy: dict[str, Any]) -> None:
         prl_result_ref="outputs/prl/prl_gate_result.json",
     )
     assert ev_a["evidence_hash"] != ev_b["evidence_hash"]
+
+
+# ---------------------------------------------------------------------------
+# F3L-02 — Auto-invocation record handling
+# ---------------------------------------------------------------------------
+
+
+def test_prl_auto_invocation_error_surfaces_reason_codes(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-02: A PRL auto-invocation error must add reason codes and a
+    PRL follow-up so APU does not infer readiness from silence.
+    """
+    auto = {
+        "status": "error",
+        "reason": "prl_subprocess_launch_failed",
+        "command": "python scripts/run_pre_pr_reliability_gate.py",
+        "exit_code": None,
+        "prl_gate_result_path": None,
+        "log_excerpt": None,
+        "reason_codes": ["prl_subprocess_launch_failed", "detail:FileNotFoundError"],
+        "invoked_at": "2026-05-02T16:57:00Z",
+        "auto_run_enabled": True,
+        "authority_scope": "observation_only",
+    }
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=None,
+        prl_auto_invocation=auto,
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "prl_auto_invocation_failed" in ev["reason_codes"]
+    assert "prl_subprocess_launch_failed" in ev["reason_codes"]
+    follow_actions = [
+        f["action_type"] for f in ev["required_follow_up"] if f.get("owner_system") == "PRL"
+    ]
+    assert "rerun_prl_after_auto_invocation_failure" in follow_actions
+
+
+def test_prl_auto_invocation_skipped_does_not_surface_reasons(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-02: A skipped auto-invocation (e.g. CLP not blocking) must not
+    contribute extra reason codes.
+    """
+    auto = {
+        "status": "skipped",
+        "reason": "clp_not_blocking",
+        "command": None,
+        "exit_code": None,
+        "prl_gate_result_path": None,
+        "log_excerpt": None,
+        "reason_codes": [],
+        "invoked_at": "2026-05-02T16:57:00Z",
+        "auto_run_enabled": True,
+        "authority_scope": "observation_only",
+    }
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=None,
+        prl_auto_invocation=auto,
+    )
+    assert ev["readiness_status"] == "ready", ev["reason_codes"]
+    assert "prl_auto_invocation_failed" not in ev["reason_codes"]
+
+
+def test_prl_auto_invocation_record_serialized_into_artifact(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-02: The auto-invocation record must round-trip onto the
+    agent_pr_update_ready_result artifact and validate against the schema.
+    """
+    auto = {
+        "status": "ran",
+        "reason": "prl_gate_result_persisted",
+        "command": "python scripts/run_pre_pr_reliability_gate.py --skip-pytest --output-dir outputs/prl",
+        "exit_code": 1,
+        "prl_gate_result_path": "outputs/prl/prl_gate_result.json",
+        "log_excerpt": "...",
+        "reason_codes": [],
+        "invoked_at": "2026-05-02T16:57:00Z",
+        "auto_run_enabled": True,
+        "authority_scope": "observation_only",
+    }
+    prl = _prl_gate_result(
+        gate_recommendation="gate_warn",
+        failure_classes=["pytest_selection_missing"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-aa00bb00cc00dd99"],
+        repair_candidate_refs=["prl_repair_candidate:prl-rc-aa00bb00cc00dd99"],
+        eval_candidate_refs=["eval_case_candidate:prl-ec-aa00bb00cc00dd99"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+        prl_auto_invocation=auto,
+    )
+    artifact = build_agent_pr_update_ready_result(
+        work_item_id="F3L-02-AUTO",
+        agent_type="claude",
+        policy_ref=DEFAULT_POLICY_REL_PATH,
+        evaluation=ev,
+        clp_result_ref="outputs/clp.json",
+        agl_record_ref="outputs/agl.json",
+        agent_pr_ready_result_ref=None,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+        prl_auto_invocation=auto,
+    )
+    validate_artifact(artifact, "agent_pr_update_ready_result")
+    assert artifact["prl_auto_invocation"]["status"] == "ran"
+    assert (
+        artifact["prl_auto_invocation"]["prl_gate_result_path"]
+        == "outputs/prl/prl_gate_result.json"
+    )

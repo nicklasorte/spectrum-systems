@@ -52,6 +52,9 @@ from spectrum_systems.modules.runtime.agent_pr_update_policy import (  # noqa: E
     load_prl_result,
     readiness_status_to_exit_code,
 )
+from spectrum_systems.modules.runtime.prl_auto_invoker import (  # noqa: E402
+    auto_run_prl_if_clp_blocked,
+)
 
 
 def _parse_args() -> argparse.Namespace:
@@ -111,6 +114,25 @@ def _parse_args() -> argparse.Namespace:
             "left unknown (which yields not_ready by policy)."
         ),
     )
+    parser.add_argument(
+        "--auto-run-prl-on-clp-block",
+        dest="auto_run_prl_on_clp_block",
+        action="store_true",
+        default=True,
+        help=(
+            "F3L-02 — When CLP gate_status=block and repo_mutating is true, "
+            "auto-invoke scripts/run_pre_pr_reliability_gate.py before "
+            "evaluating PR-update readiness. PRL retains all repair / eval "
+            "authority; this flag closes the manual seam so APU has "
+            "artifact-backed PRL evidence to observe. Default: enabled."
+        ),
+    )
+    parser.add_argument(
+        "--no-auto-run-prl-on-clp-block",
+        dest="auto_run_prl_on_clp_block",
+        action="store_false",
+        help="Disable F3L-02 auto-run (e.g. for tests or replay).",
+    )
     return parser.parse_args()
 
 
@@ -162,6 +184,24 @@ def main() -> int:
     clp_result = load_clp_result(clp_path)
     agl_record = load_agl_record(agl_path)
     agent_pr_ready = load_agent_pr_ready(pr_ready_path)
+
+    repo_mutating = _resolve_repo_mutating(
+        args.repo_mutating, clp_result=clp_result, agl_record=agl_record
+    )
+
+    # F3L-02 — auto-invoke PRL when CLP blocks and PRL evidence is missing.
+    # The auto-invoker is observation-only and never claims PRL authority;
+    # PRL retains all classification, repair-candidate, and eval-candidate
+    # authority. The invocation record is recorded on the readiness artifact
+    # so APU does not infer readiness from silence.
+    auto_invocation = auto_run_prl_if_clp_blocked(
+        clp_result=clp_result,
+        repo_mutating=repo_mutating,
+        prl_path=prl_path,
+        clp_path=clp_path,
+        auto_run_enabled=bool(args.auto_run_prl_on_clp_block),
+    )
+
     prl_result = load_prl_result(prl_path)
 
     def _ref(path: Path, loaded: object | None) -> str | None:
@@ -177,9 +217,7 @@ def main() -> int:
     pr_ready_ref = _ref(pr_ready_path, agent_pr_ready)
     prl_ref = _ref(prl_path, prl_result)
 
-    repo_mutating = _resolve_repo_mutating(
-        args.repo_mutating, clp_result=clp_result, agl_record=agl_record
-    )
+    auto_invocation_record = auto_invocation.to_dict()
 
     evaluation = evaluate_pr_update_ready(
         policy=policy,
@@ -193,6 +231,7 @@ def main() -> int:
         policy_ref=policy_ref,
         prl_result=prl_result,
         prl_result_ref=prl_ref,
+        prl_auto_invocation=auto_invocation_record,
     )
     artifact = build_agent_pr_update_ready_result(
         work_item_id=args.work_item_id,
@@ -203,6 +242,7 @@ def main() -> int:
         agl_record_ref=agl_ref,
         agent_pr_ready_result_ref=pr_ready_ref,
         prl_result_ref=prl_ref,
+        prl_auto_invocation=auto_invocation_record,
     )
     validate_artifact(artifact, "agent_pr_update_ready_result")
 
@@ -219,6 +259,11 @@ def main() -> int:
         "evidence_hash": artifact["evidence_hash"],
         "prl_evidence_status": artifact["prl_evidence_status"],
         "prl_gate_recommendation": artifact["prl_gate_recommendation"],
+        "prl_auto_invocation_status": (
+            artifact["prl_auto_invocation"].get("status")
+            if isinstance(artifact.get("prl_auto_invocation"), dict)
+            else None
+        ),
         "output": str(output_path.relative_to(REPO_ROOT)),
     }
     print(json.dumps(summary, indent=2))

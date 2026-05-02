@@ -553,6 +553,7 @@ def evaluate_pr_update_ready(
     policy_ref: str | None = None,
     prl_result: Mapping[str, Any] | None = None,
     prl_result_ref: str | None = None,
+    prl_auto_invocation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Apply policy to CLP/AGL/PR-ready evidence. Returns the evaluation payload.
 
@@ -821,6 +822,27 @@ def evaluate_pr_update_ready(
     if prl_observation["human_review_required"]:
         human_review = True
 
+    # F3L-02 — auto-invocation observation. When the auto-invoker
+    # attempted to run PRL but encountered an error, surface the
+    # error reason codes so APU does not infer readiness from silence.
+    # Skipped/ran statuses are non-blocking; only "error" status
+    # advances reason codes here. Canonical PRL authority is unchanged.
+    if isinstance(prl_auto_invocation, Mapping):
+        if prl_auto_invocation.get("status") == "error":
+            if "prl_auto_invocation_failed" not in reasons:
+                reasons.append("prl_auto_invocation_failed")
+            for code in prl_auto_invocation.get("reason_codes") or []:
+                if isinstance(code, str) and code and code not in reasons:
+                    reasons.append(code)
+            follow_up.append(
+                {
+                    "owner_system": "PRL",
+                    "action_type": "rerun_prl_after_auto_invocation_failure",
+                    "reason_code": "prl_auto_invocation_failed",
+                    "source_failure_ref": clp_result_ref or DEFAULT_CLP_RESULT_REL_PATH,
+                }
+            )
+
     # Agent PR-ready guard passthrough.
     if isinstance(agent_pr_ready, Mapping):
         pr_ready_status = agent_pr_ready.get("pr_ready_status")
@@ -924,6 +946,7 @@ def build_agent_pr_update_ready_result(
     agl_record_ref: str | None,
     agent_pr_ready_result_ref: str | None,
     prl_result_ref: str | None = None,
+    prl_auto_invocation: Mapping[str, Any] | None = None,
     source_artifact_refs: Iterable[str] | None = None,
     trace_refs: Iterable[str] | None = None,
     replay_refs: Iterable[str] | None = None,
@@ -961,6 +984,7 @@ def build_agent_pr_update_ready_result(
         "agl_record_ref": agl_record_ref,
         "agent_pr_ready_result_ref": agent_pr_ready_result_ref,
         "prl_result_ref": prl_result_ref,
+        "prl_auto_invocation": dict(prl_auto_invocation) if prl_auto_invocation else None,
         "prl_evidence_status": evaluation.get("prl_evidence_status", "missing"),
         "prl_gate_recommendation": evaluation.get("prl_gate_recommendation"),
         "prl_failure_classes": list(evaluation.get("prl_failure_classes") or []),

@@ -229,6 +229,10 @@
   "spectrum_systems/modules/runtime/agent_pr_update_policy.py": [
     "tests/test_check_agent_pr_update_ready.py"
   ],
+  "spectrum_systems/modules/runtime/prl_auto_invoker.py": [
+    "tests/test_prl_auto_invoker.py",
+    "tests/test_check_agent_pr_update_ready.py"
+  ],
   "contracts/schemas/agent_pr_update_ready_result.schema.json": [
     "tests/test_contracts.py",
     "tests/test_check_agent_pr_update_ready.py"
