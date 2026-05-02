@@ -104,6 +104,9 @@
     "generated_at": {
       "type": "string",
       "minLength": 1
+    },
+    "evl_shard_evidence": {
+      "$ref": "#/$defs/evl_shard_evidence"
     }
   },
   "allOf": [
@@ -144,7 +147,8 @@
             "contract_enforcement",
             "tls_generated_artifact_freshness",
             "contract_preflight",
-            "selected_tests"
+            "selected_tests",
+            "evl_shard_artifacts"
           ]
         },
         "owner_system": {
@@ -215,6 +219,58 @@
           }
         }
       ]
+    },
+    "evl_shard_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Narrow EVL shard evidence section consumed from outputs/pr_test_shards/. CLP records artifact-backed shard observations; it does not recompute shard results. evl_shard_status mirrors the upstream summary's overall_status.",
+      "required": [
+        "evl_shard_artifact_refs",
+        "evl_shard_summary_ref",
+        "evl_shard_status",
+        "evl_required_shards",
+        "evl_missing_shards",
+        "evl_failed_shards",
+        "evl_unknown_shards",
+        "evl_skipped_shards",
+        "evl_shard_reason_codes"
+      ],
+      "properties": {
+        "evl_shard_artifact_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_shard_summary_ref": {
+          "type": ["string", "null"]
+        },
+        "evl_shard_status": {
+          "enum": ["pass", "block", "unknown"]
+        },
+        "evl_required_shards": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_missing_shards": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_failed_shards": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_unknown_shards": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_skipped_shards": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_shard_reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
     },
     "follow_up": {
       "type": "object",

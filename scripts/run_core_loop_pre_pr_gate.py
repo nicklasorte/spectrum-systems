@@ -41,6 +41,7 @@ from spectrum_systems.contracts import validate_artifact  # noqa: E402
 from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (  # noqa: E402
     build_check,
     build_gate_result,
+    consume_shard_artifacts,
     diff_hash_maps,
     gate_status_to_exit_code,
     hash_paths,
@@ -428,6 +429,60 @@ def _check_contract_preflight(
     )
 
 
+def _check_evl_shard_artifacts(
+    *,
+    output_dir: Path,
+    base_ref: str,
+    head_ref: str,
+    required_shards: list[str],
+    allowed_skipped_shards: list[str],
+    invoke_runner_if_missing: bool,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """CLP-side EVL shard evidence consumer.
+
+    CLP consumes existing shard artifacts written by
+    ``scripts/run_pr_test_shards.py``. It does NOT recompute shard
+    selection or per-shard pytest results. Per the active CLP policy,
+    the runner may be invoked here only as an evidence-production
+    convenience when the artifacts are absent — the artifacts emitted
+    are still the canonical observation surface.
+    """
+    shard_dir = REPO_ROOT / "outputs" / "pr_test_shards"
+    summary_path = shard_dir / "pr_test_shards_summary.json"
+
+    if not summary_path.is_file() and invoke_runner_if_missing:
+        log_path = output_dir / "evl_shard_artifacts_runner.log"
+        cmd = [
+            sys.executable,
+            "scripts/run_pr_test_shards.py",
+            "--base-ref",
+            base_ref,
+            "--head-ref",
+            head_ref,
+            "--output-dir",
+            str(shard_dir.relative_to(REPO_ROOT)),
+        ]
+        _run_subcommand(cmd=cmd, log_path=log_path)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=REPO_ROOT,
+        required_shards=tuple(required_shards),
+        allowed_skipped_shards=tuple(allowed_skipped_shards),
+    )
+
+    obs_path = output_dir / "evl_shard_artifacts_observation.json"
+    write_json(
+        obs_path,
+        {
+            "artifact_type": "evl_shard_artifacts_observation",
+            "authority_scope": "observation_only",
+            "evl_shard_evidence": evidence,
+        },
+    )
+    return evidence, check
+
+
 def _check_selected_tests(
     *, changed_files: list[str], output_dir: Path
 ) -> dict[str, Any]:
@@ -504,7 +559,7 @@ def main() -> int:
 
     policy_path = (REPO_ROOT / args.policy).resolve()
     try:
-        load_policy(policy_path)
+        policy = load_policy(policy_path)
     except PolicyLoadError as exc:
         # Fail-closed: refuse to emit a CLP result without a valid policy ref.
         print(
@@ -520,6 +575,16 @@ def main() -> int:
         )
         return 2
     policy_ref = str(policy_path.relative_to(REPO_ROOT))
+    shard_policy = policy.get("evl_shard_evidence") or {}
+    required_shards: list[str] = list(
+        shard_policy.get("required_shards") or ["contract", "governance", "changed_scope"]
+    )
+    allowed_skipped_shards: list[str] = list(
+        shard_policy.get("allowed_skipped_shards") or []
+    )
+    invoke_runner_if_missing: bool = bool(
+        shard_policy.get("invoke_runner_if_missing", False)
+    )
 
     try:
         changed_files = resolve_changed_files(
@@ -566,6 +631,17 @@ def main() -> int:
         checks.append(
             _check_selected_tests(changed_files=changed_files, output_dir=output_dir)
         )
+    evl_shard_evidence: dict[str, Any] | None = None
+    if "evl_shard_artifacts" not in skip:
+        evl_shard_evidence, evl_shard_check = _check_evl_shard_artifacts(
+            output_dir=output_dir,
+            base_ref=args.base_ref,
+            head_ref=args.head_ref,
+            required_shards=required_shards,
+            allowed_skipped_shards=allowed_skipped_shards,
+            invoke_runner_if_missing=invoke_runner_if_missing,
+        )
+        checks.append(evl_shard_check)
 
     emitted_path = output_dir / "core_loop_pre_pr_gate_result.json"
     source_artifacts = list(args.source_artifact or [])
@@ -582,6 +658,7 @@ def main() -> int:
         source_artifacts_used=source_artifacts,
         emitted_artifacts=[str(emitted_path.relative_to(REPO_ROOT))],
         generated_at=utc_now_iso(),
+        evl_shard_evidence=evl_shard_evidence,
     )
     validate_artifact(artifact, "core_loop_pre_pr_gate_result")
     write_json(emitted_path, artifact)

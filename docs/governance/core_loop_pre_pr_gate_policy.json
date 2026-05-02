@@ -47,7 +47,8 @@
     "contract_compliance_observation",
     "tls_generated_artifact_freshness_observation",
     "contract_preflight_observation",
-    "selected_tests_observation"
+    "selected_tests_observation",
+    "evl_shard_artifacts_observation"
   ],
   "allowed_warn_reason_codes": [],
   "block_reason_codes": [
@@ -70,7 +71,15 @@
     "no_tests_selected_for_governed_changes",
     "selected_test_failure",
     "policy_mismatch",
-    "system_registry_mismatch"
+    "system_registry_mismatch",
+    "evl_shard_evidence_missing",
+    "evl_shard_evidence_invalid",
+    "evl_required_shard_failed",
+    "evl_required_shard_missing",
+    "evl_required_shard_unknown",
+    "evl_required_shard_skipped",
+    "evl_pass_shard_missing_artifact_refs",
+    "evl_non_pass_shard_missing_reason_codes"
   ],
   "max_repair_attempts": 0,
   "rules": {
@@ -85,7 +94,22 @@
     "schema_violation_blocks": true,
     "authority_shape_violation_blocks": true,
     "authority_leak_guard_failure_blocks": true,
-    "authority_scope_must_be_observation_only": true
+    "authority_scope_must_be_observation_only": true,
+    "evl_shard_evidence_required": true,
+    "evl_shard_missing_blocks": true,
+    "evl_shard_failed_blocks": true,
+    "evl_shard_unknown_blocks": true,
+    "evl_shard_skipped_blocks_unless_allowed": true
+  },
+  "evl_shard_evidence": {
+    "required_shards": [
+      "contract",
+      "governance",
+      "changed_scope"
+    ],
+    "allowed_skipped_shards": [],
+    "invoke_runner_if_missing": false,
+    "notes": "CLP consumes existing pr_test_shard_result and pr_test_shards_summary artifacts from outputs/pr_test_shards/. CLP does not recompute shard results. invoke_runner_if_missing controls whether CLP may invoke scripts/run_pr_test_shards.py when the summary is absent; the canonical shard runner remains owned by EVL."
   },
   "must_not_do": [
     "claim_review_observation_authority",
