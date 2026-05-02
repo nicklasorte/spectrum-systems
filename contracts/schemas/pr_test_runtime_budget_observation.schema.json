@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pr_test_runtime_budget_observation.schema.json",
+  "title": "PR Test Runtime Budget Observation",
+  "description": "EVL-RT-01 observation-only PR test runtime budget artifact. Records the changed files, selected test targets, shard durations, slowest shard, full-suite/fallback usage, the configured runtime budget in seconds, the resulting budget_status (within_budget | over_budget | unknown), reason codes, and improvement recommendations. The artifact reuses the existing pr_test_shards_summary and selection_coverage_record artifacts; the builder does not run pytest, mutate selection, or duplicate selector logic. authority_scope is observation_only: this artifact emits runtime, fallback, and recommendation observations only. Present shard evidence requires shard_summary_ref or at least one shard_result_refs entry; budget_status unknown requires reason_codes; full_suite_detected true requires fallback_reason_codes and surfaces it visibly. Improvement recommendations are observation-only and never reassign tests, change selection, or block PRs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "created_at",
+    "authority_scope",
+    "base_ref",
+    "head_ref",
+    "changed_files",
+    "selected_test_targets",
+    "shard_result_refs",
+    "shard_summary_ref",
+    "full_suite_detected",
+    "fallback_used",
+    "fallback_reason_codes",
+    "total_duration_seconds",
+    "slowest_shard",
+    "slowest_shard_duration_seconds",
+    "shard_duration_by_name",
+    "runtime_budget_seconds",
+    "budget_status",
+    "reason_codes",
+    "improvement_recommendations",
+    "evidence_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "pr_test_runtime_budget_observation"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_scope": {
+      "type": "string",
+      "const": "observation_only"
+    },
+    "base_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "head_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "selected_test_targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "shard_result_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "shard_summary_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "full_suite_detected": {
+      "type": "boolean"
+    },
+    "fallback_used": {
+      "type": "boolean"
+    },
+    "fallback_reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "total_duration_seconds": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "slowest_shard": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "slowest_shard_duration_seconds": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "shard_duration_by_name": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0
+      }
+    },
+    "runtime_budget_seconds": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "budget_status": {
+      "type": "string",
+      "enum": [
+        "within_budget",
+        "over_budget",
+        "unknown"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "improvement_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "details",
+          "observation_only"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "details": {
+            "type": "object"
+          },
+          "observation_only": {
+            "type": "boolean",
+            "const": true
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "evidence_hash": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "description": "When a non-null shard_summary_ref is recorded the artifact must also reference at least one shard_result_refs entry so present shard evidence carries an artifact ref.",
+      "if": {
+        "properties": {
+          "shard_summary_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "shard_summary_ref"
+        ]
+      },
+      "then": {
+        "properties": {
+          "shard_result_refs": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "budget_status unknown must carry at least one reason_code so unknown is never silently treated as within_budget.",
+      "if": {
+        "properties": {
+          "budget_status": {
+            "const": "unknown"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "budget_status over_budget must carry at least one reason_code so over-budget runs are explainable.",
+      "if": {
+        "properties": {
+          "budget_status": {
+            "const": "over_budget"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "full_suite_detected true must surface at least one fallback_reason_code so full-suite/broad-fallback usage is never hidden.",
+      "if": {
+        "properties": {
+          "full_suite_detected": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "fallback_reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "fallback_used true must surface at least one fallback_reason_code so fallback usage is never hidden.",
+      "if": {
+        "properties": {
+          "fallback_used": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "fallback_reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

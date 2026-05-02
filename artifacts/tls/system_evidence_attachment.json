@@ -575,8 +575,8 @@
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/AUTH-AUTHORING-01_fix_actions.md",
-          "docs/review-actions/F3L-01_fix_actions.md",
-          "docs/review-actions/F3L-02_fix_actions.md"
+          "docs/review-actions/EVL-RT-01_fix_actions.md",
+          "docs/review-actions/F3L-01_fix_actions.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -615,6 +615,7 @@
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
           "scripts/build_gate_shard_parity_record.py",
+          "scripts/build_pr_test_runtime_budget_observation.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_authority_authoring_check.py",
@@ -656,7 +657,7 @@
           "tests/test_agent_pr_precheck.py"
         ]
       },
-      "evidence_count": 118,
+      "evidence_count": 119,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -1476,6 +1477,7 @@
           "schemas/comment-schema.json"
         ],
         "scripts": [
+          "scripts/build_pr_test_runtime_budget_observation.py",
           "scripts/ingest-claude-review.js",
           "scripts/run_3ls_authority_preflight.py",
           "scripts/run_authenticity_hardgate_24_01.py",
@@ -1499,8 +1501,7 @@
           "scripts/validate_ecosystem_registry.py",
           "scripts/validate_governance_manifest.py",
           "scripts/validate_module_architecture.py",
-          "scripts/validate_orchestration_boundaries.py",
-          "scripts/validate_system_registry_boundaries.py"
+          "scripts/validate_orchestration_boundaries.py"
         ],
         "tests": [
           "tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json",

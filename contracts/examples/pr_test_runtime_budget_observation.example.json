@@ -1,0 +1,52 @@
+{
+  "artifact_type": "pr_test_runtime_budget_observation",
+  "schema_version": "1.0.0",
+  "id": "pr-rt-budget-2026-05-02-example-001",
+  "created_at": "2026-05-02T00:00:00Z",
+  "authority_scope": "observation_only",
+  "base_ref": "origin/main",
+  "head_ref": "HEAD",
+  "changed_files": [
+    "scripts/build_pr_test_runtime_budget_observation.py",
+    "contracts/schemas/pr_test_runtime_budget_observation.schema.json",
+    "tests/test_pr_test_runtime_budget_observation.py"
+  ],
+  "selected_test_targets": [
+    "tests/test_pr_test_runtime_budget_observation.py",
+    "tests/test_pr_test_shards.py",
+    "tests/test_selection_coverage_record.py"
+  ],
+  "shard_result_refs": [
+    "outputs/pr_test_shards/contract.json",
+    "outputs/pr_test_shards/governance.json",
+    "outputs/pr_test_shards/changed_scope.json",
+    "outputs/pr_test_shards/pr_test_shards_summary.json"
+  ],
+  "shard_summary_ref": "outputs/pr_test_shards/pr_test_shards_summary.json",
+  "full_suite_detected": false,
+  "fallback_used": false,
+  "fallback_reason_codes": [],
+  "total_duration_seconds": 42.0,
+  "slowest_shard": "changed_scope",
+  "slowest_shard_duration_seconds": 28.0,
+  "shard_duration_by_name": {
+    "changed_scope": 28.0,
+    "contract": 6.0,
+    "governance": 8.0
+  },
+  "runtime_budget_seconds": 300.0,
+  "budget_status": "within_budget",
+  "reason_codes": [],
+  "improvement_recommendations": [
+    {
+      "code": "slowest_shard_observed",
+      "details": {
+        "shard": "changed_scope",
+        "duration_seconds": 28.0
+      },
+      "observation_only": true,
+      "rationale": "changed_scope is the slowest shard for this PR; observation only — operators may consider focused mapping or splitting this shard if it becomes a recurring bottleneck."
+    }
+  ],
+  "evidence_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+}
