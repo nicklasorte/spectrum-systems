@@ -26,7 +26,12 @@
     "authority_scope",
     "human_review_required",
     "pr_evidence_section_markdown",
-    "generated_at"
+    "generated_at",
+    "prl_evidence_status",
+    "prl_failure_classes",
+    "prl_failure_packet_refs",
+    "prl_repair_candidate_refs",
+    "prl_eval_candidate_refs"
   ],
   "properties": {
     "artifact_type": {
@@ -61,6 +66,32 @@
     },
     "agent_pr_ready_result_ref": {
       "type": ["string", "null"]
+    },
+    "prl_result_ref": {
+      "type": ["string", "null"]
+    },
+    "prl_evidence_status": {
+      "enum": ["present", "partial", "missing", "unknown"]
+    },
+    "prl_gate_recommendation": {
+      "type": ["string", "null"],
+      "enum": ["passed_gate", "gate_warn", "gate_hold", "failed_gate", null]
+    },
+    "prl_failure_classes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "prl_failure_packet_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "prl_repair_candidate_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "prl_eval_candidate_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
     },
     "readiness_status": {
       "enum": ["ready", "not_ready", "human_review_required"]
@@ -157,6 +188,20 @@
           "human_review_required": { "const": false },
           "reason_codes": { "maxItems": 0 }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "prl_evidence_status": { "const": "present" }
+        },
+        "required": ["prl_evidence_status"]
+      },
+      "then": {
+        "properties": {
+          "prl_result_ref": { "type": "string", "minLength": 1 }
+        },
+        "required": ["prl_result_ref"]
       }
     }
   ],

@@ -60,6 +60,7 @@ DEFAULT_AGL_RECORD_REL_PATH = (
 DEFAULT_AGENT_PR_READY_REL_PATH = (
     "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json"
 )
+DEFAULT_PRL_RESULT_REL_PATH = "outputs/prl/prl_gate_result.json"
 
 # Authority-safe vocabulary for the CLP gate status passthrough. APU never
 # emits a control signal of its own; it observes CLP's gate status only.
@@ -171,6 +172,16 @@ def load_agl_record(path: Path | None) -> dict[str, Any] | None:
 
 def load_agent_pr_ready(path: Path | None) -> dict[str, Any] | None:
     return _load_json_artifact(path, "agent_pr_ready_result")
+
+
+def load_prl_result(path: Path | None) -> dict[str, Any] | None:
+    """Load a prl_gate_result artifact.
+
+    PRL emits failure-normalization evidence consumed by APU as a
+    readiness input. PRL retains all classification, repair-candidate,
+    and eval-candidate authority. APU only observes the PRL artifact.
+    """
+    return _load_json_artifact(path, "prl_gate_result")
 
 
 def _missing_leg(reason: str) -> dict[str, Any]:
@@ -392,6 +403,143 @@ def _build_pr_evidence_section(evidence: Mapping[str, Mapping[str, Any]]) -> str
     return "\n".join(lines) + "\n"
 
 
+def _evaluate_prl_evidence(
+    prl_result: Mapping[str, Any] | None,
+    *,
+    prl_result_ref: str | None,
+    repairable_classes: Iterable[str],
+    unknown_classes: Iterable[str],
+    blocking_recommendations: Iterable[str],
+    rules: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Observe PRL gate-result evidence and surface readiness signals.
+
+    Returns a dict with keys:
+      status — present | partial | missing | unknown
+      gate_recommendation — passed_gate / gate_warn / gate_hold / failed_gate / null
+      failure_packet_refs, repair_candidate_refs, eval_candidate_refs
+      reason_codes — observed failure codes (additive, not authoritative)
+      blocking_reasons — reasons APU should treat as blocking PR-update readiness
+      human_review_required — true if PRL surfaced unknown_failure
+    """
+    repairable_set = {str(c) for c in repairable_classes}
+    unknown_set = {str(c) for c in unknown_classes}
+    blocking_set = {str(c) for c in blocking_recommendations}
+
+    if not isinstance(prl_result, Mapping):
+        return {
+            "status": "missing",
+            "gate_recommendation": None,
+            "failure_packet_refs": [],
+            "repair_candidate_refs": [],
+            "eval_candidate_refs": [],
+            "failure_classes": [],
+            "reason_codes": ["prl_evidence_missing"],
+            "blocking_reasons": [],
+            "human_review_required": False,
+            "artifact_refs": [],
+        }
+
+    gate_recommendation = prl_result.get("gate_recommendation")
+    failure_classes_raw = prl_result.get("failure_classes") or []
+    failure_classes = [str(c) for c in failure_classes_raw if isinstance(c, str) and c]
+    failure_packet_refs = [
+        str(r)
+        for r in (prl_result.get("failure_packet_refs") or [])
+        if isinstance(r, str) and r
+    ]
+    repair_candidate_refs = [
+        str(r)
+        for r in (prl_result.get("repair_candidate_refs") or [])
+        if isinstance(r, str) and r
+    ]
+    eval_candidate_refs = [
+        str(r)
+        for r in (prl_result.get("eval_candidate_refs") or [])
+        if isinstance(r, str) and r
+    ]
+    artifact_refs: list[str] = []
+    if prl_result_ref:
+        artifact_refs.append(prl_result_ref)
+    artifact_refs.extend(failure_packet_refs)
+    artifact_refs.extend(repair_candidate_refs)
+    artifact_refs.extend(eval_candidate_refs)
+
+    reason_codes: list[str] = []
+    blocking_reasons: list[str] = []
+    human_review = False
+
+    has_failure_packets = bool(failure_packet_refs) or (
+        isinstance(prl_result.get("failure_count"), int)
+        and prl_result.get("failure_count", 0) > 0
+    )
+
+    repairable_classes_seen = [c for c in failure_classes if c in repairable_set]
+    unknown_classes_seen = [c for c in failure_classes if c in unknown_set]
+
+    if rules.get("prl_evidence_requires_failure_packet_refs", True) and (
+        not failure_packet_refs and failure_classes
+    ):
+        blocking_reasons.append("prl_failure_packets_missing_for_clp_block")
+
+    if (
+        rules.get("prl_known_repairable_failure_requires_repair_candidate_refs", True)
+        and repairable_classes_seen
+        and not repair_candidate_refs
+    ):
+        blocking_reasons.append("prl_repair_candidates_missing_for_repairable_failure")
+
+    if (
+        rules.get("prl_known_repairable_failure_requires_eval_candidate_refs", True)
+        and repairable_classes_seen
+        and not eval_candidate_refs
+    ):
+        blocking_reasons.append("prl_eval_candidates_missing_for_repairable_failure")
+
+    if (
+        rules.get("prl_blocking_gate_recommendation_blocks_pr_update_ready", True)
+        and isinstance(gate_recommendation, str)
+        and gate_recommendation in blocking_set
+    ):
+        blocking_reasons.append("prl_gate_recommendation_blocks_pr_update_ready")
+        reason_codes.append(f"prl_recommendation_{gate_recommendation}")
+
+    if (
+        rules.get("prl_unknown_failure_yields_human_review_required", True)
+        and unknown_classes_seen
+    ):
+        blocking_reasons.append("prl_unknown_failure_class_observed")
+        human_review = True
+
+    if has_failure_packets and failure_packet_refs:
+        status = "present"
+    elif failure_classes and not failure_packet_refs:
+        status = "partial"
+    elif gate_recommendation == "passed_gate" and not failure_classes:
+        status = "present"
+    else:
+        status = "partial"
+
+    if status == "partial":
+        if not blocking_reasons and not failure_classes:
+            blocking_reasons.append("prl_evidence_invalid")
+
+    return {
+        "status": status,
+        "gate_recommendation": gate_recommendation
+        if isinstance(gate_recommendation, str)
+        else None,
+        "failure_packet_refs": failure_packet_refs,
+        "repair_candidate_refs": repair_candidate_refs,
+        "eval_candidate_refs": eval_candidate_refs,
+        "failure_classes": failure_classes,
+        "reason_codes": reason_codes,
+        "blocking_reasons": blocking_reasons,
+        "human_review_required": human_review,
+        "artifact_refs": artifact_refs,
+    }
+
+
 def evaluate_pr_update_ready(
     *,
     policy: Mapping[str, Any],
@@ -403,6 +551,8 @@ def evaluate_pr_update_ready(
     agl_record_ref: str | None = None,
     agent_pr_ready_result_ref: str | None = None,
     policy_ref: str | None = None,
+    prl_result: Mapping[str, Any] | None = None,
+    prl_result_ref: str | None = None,
 ) -> dict[str, Any]:
     """Apply policy to CLP/AGL/PR-ready evidence. Returns the evaluation payload.
 
@@ -628,6 +778,49 @@ def evaluate_pr_update_ready(
                     if code not in reasons:
                         reasons.append(code)
 
+    # PRL evidence observation (F3L-01). PRL retains all classification,
+    # repair-candidate, and eval-candidate authority. APU only observes the
+    # PRL artifact and surfaces readiness reason codes when the PRL leg is
+    # required by the CLP gate status and is missing or incomplete.
+    prl_observation = _evaluate_prl_evidence(
+        prl_result,
+        prl_result_ref=prl_result_ref,
+        repairable_classes=policy.get("prl_known_repairable_failure_classes") or [],
+        unknown_classes=policy.get("prl_unknown_failure_classes") or [],
+        blocking_recommendations=policy.get("prl_blocking_gate_recommendations") or [],
+        rules=rules,
+    )
+
+    if (
+        repo_mut_value
+        and clp_status == CLP_STATUS_BLOCK
+        and rules.get("repo_mutating_clp_block_requires_prl_evidence", True)
+    ):
+        if prl_observation["status"] == "missing":
+            if "prl_evidence_missing_for_clp_block" not in reasons:
+                reasons.append("prl_evidence_missing_for_clp_block")
+            follow_up.append(
+                {
+                    "owner_system": "PRL",
+                    "action_type": "produce_prl_evidence_for_clp_block",
+                    "reason_code": "prl_evidence_missing_for_clp_block",
+                    "source_failure_ref": clp_result_ref
+                    or DEFAULT_CLP_RESULT_REL_PATH,
+                }
+            )
+        for code in prl_observation["blocking_reasons"]:
+            if code not in reasons:
+                reasons.append(code)
+    else:
+        # CLP not blocking: PRL evidence is optional. Still surface PRL
+        # blocking-recommendation observations when present so they remain
+        # auditable; they are non-blocking when the CLP gate is not
+        # blocking-status. APU never authors a control signal of its own.
+        pass
+
+    if prl_observation["human_review_required"]:
+        human_review = True
+
     # Agent PR-ready guard passthrough.
     if isinstance(agent_pr_ready, Mapping):
         pr_ready_status = agent_pr_ready.get("pr_ready_status")
@@ -689,6 +882,14 @@ def evaluate_pr_update_ready(
         "clp_status": clp_status,
         "repo_mutating": repo_mut_value if repo_mut_known else None,
         "policy_ref": policy_ref,
+        "prl_evidence": {
+            "status": prl_observation["status"],
+            "gate_recommendation": prl_observation["gate_recommendation"],
+            "failure_classes": prl_observation["failure_classes"],
+            "failure_packet_refs": prl_observation["failure_packet_refs"],
+            "repair_candidate_refs": prl_observation["repair_candidate_refs"],
+            "eval_candidate_refs": prl_observation["eval_candidate_refs"],
+        },
     }
     evidence_hash = _evidence_hash(evidence_hash_input)
 
@@ -703,6 +904,13 @@ def evaluate_pr_update_ready(
         "human_review_required": human_review,
         "required_follow_up": follow_up,
         "evidence_hash": evidence_hash,
+        "prl_evidence_status": prl_observation["status"],
+        "prl_gate_recommendation": prl_observation["gate_recommendation"],
+        "prl_failure_classes": prl_observation["failure_classes"],
+        "prl_failure_packet_refs": prl_observation["failure_packet_refs"],
+        "prl_repair_candidate_refs": prl_observation["repair_candidate_refs"],
+        "prl_eval_candidate_refs": prl_observation["eval_candidate_refs"],
+        "prl_artifact_refs": prl_observation["artifact_refs"],
     }
 
 
@@ -715,6 +923,7 @@ def build_agent_pr_update_ready_result(
     clp_result_ref: str | None,
     agl_record_ref: str | None,
     agent_pr_ready_result_ref: str | None,
+    prl_result_ref: str | None = None,
     source_artifact_refs: Iterable[str] | None = None,
     trace_refs: Iterable[str] | None = None,
     replay_refs: Iterable[str] | None = None,
@@ -728,8 +937,17 @@ def build_agent_pr_update_ready_result(
     evidence = dict(evaluation.get("evidence") or {})
     pr_section = _build_pr_evidence_section(evidence)
     sources = list(source_artifact_refs or [])
-    for ref in (clp_result_ref, agl_record_ref, agent_pr_ready_result_ref, policy_ref):
+    for ref in (
+        clp_result_ref,
+        agl_record_ref,
+        agent_pr_ready_result_ref,
+        prl_result_ref,
+        policy_ref,
+    ):
         if ref and ref not in sources:
+            sources.append(ref)
+    for ref in evaluation.get("prl_artifact_refs") or []:
+        if isinstance(ref, str) and ref and ref not in sources:
             sources.append(ref)
     artifact: dict[str, Any] = {
         "artifact_type": "agent_pr_update_ready_result",
@@ -742,6 +960,19 @@ def build_agent_pr_update_ready_result(
         "clp_result_ref": clp_result_ref,
         "agl_record_ref": agl_record_ref,
         "agent_pr_ready_result_ref": agent_pr_ready_result_ref,
+        "prl_result_ref": prl_result_ref,
+        "prl_evidence_status": evaluation.get("prl_evidence_status", "missing"),
+        "prl_gate_recommendation": evaluation.get("prl_gate_recommendation"),
+        "prl_failure_classes": list(evaluation.get("prl_failure_classes") or []),
+        "prl_failure_packet_refs": list(
+            evaluation.get("prl_failure_packet_refs") or []
+        ),
+        "prl_repair_candidate_refs": list(
+            evaluation.get("prl_repair_candidate_refs") or []
+        ),
+        "prl_eval_candidate_refs": list(
+            evaluation.get("prl_eval_candidate_refs") or []
+        ),
         "readiness_status": evaluation.get("readiness_status", "not_ready"),
         "clp_status": evaluation.get("clp_status"),
         "reason_codes": list(evaluation.get("reason_codes") or []),
