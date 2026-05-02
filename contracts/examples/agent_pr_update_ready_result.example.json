@@ -10,6 +10,8 @@
   "agl_record_ref": "outputs/agent_core_loop/agent_core_loop_run_record.json",
   "agent_pr_ready_result_ref": "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
   "prl_result_ref": null,
+  "prl_artifact_index_ref": null,
+  "prl_artifact_index_status": "missing",
   "prl_evidence_status": "missing",
   "prl_gate_recommendation": null,
   "prl_failure_classes": [],

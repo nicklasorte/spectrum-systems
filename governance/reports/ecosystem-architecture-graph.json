@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-05-02T09:44:54Z",
+  "generated_at": "2026-05-02T18:07:43Z",
   "nodes": {
     "repositories": [
       {
@@ -577,6 +577,12 @@
       },
       {
         "id": "async_wait_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "authority_authoring_check_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -5215,6 +5221,12 @@
       },
       {
         "id": "prioritized_adoption_candidate_set",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "prl_artifact_index",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

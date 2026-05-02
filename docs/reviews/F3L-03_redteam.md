@@ -114,9 +114,106 @@ with sorted keys). No conflicting artifact is produced. The fallback
 but stdout is silent (e.g. piped). Test:
 `tests/test_prl_auto_invoker.py::test_auto_run_accepts_runner_written_file_when_stdout_silent`.
 
+### 9. APU still resolves PRL evidence via NDJSON parsing instead of a file-backed index
+
+Disposition: **closed**.
+Mechanism: `scripts/run_pre_pr_reliability_gate.py` now writes
+`outputs/prl/prl_artifact_index.json` (schema:
+`contracts/schemas/prl_artifact_index.schema.json`). The index is the
+canonical entrypoint into the PRL evidence chain on disk and lists
+every persisted artifact via file-only refs (no `<type>:<id>`
+entries). `scripts/check_agent_pr_update_ready.py` now loads the index
+via `load_prl_artifact_index` and threads it through
+`evaluate_pr_update_ready`. The evaluation surface includes
+`prl_artifact_index_status`, `prl_artifact_index_reason_codes`, and
+`prl_artifact_index_*_refs`, all populated from disk. Tests:
+`tests/prl/test_pre_pr_gate_persistence.py::test_run_gate_writes_artifact_index`
+and `::test_apu_consumes_file_backed_refs_from_index`.
+
+### 10. Missing index treated as ready when CLP blocks repo-mutating work
+
+Disposition: **closed**.
+Mechanism: when `repo_mutating=true` and `clp_status=block`, APU
+applies the rule
+`repo_mutating_clp_block_requires_prl_artifact_index` and surfaces
+`prl_artifact_index_missing_for_clp_block` in `reason_codes`,
+yielding `readiness_status=not_ready` and adding a `produce_prl_artifact_index`
+follow-up keyed to PRL. Test:
+`tests/prl/test_pre_pr_gate_persistence.py::test_missing_index_yields_not_ready_when_clp_blocks`.
+
+### 11. Stale PRL index reused after CLP changed
+
+Disposition: **closed**.
+Mechanism: F3L-02's auto-invoker already treats PRL artifacts older
+than the CLP artifact as missing and re-runs PRL (test:
+`tests/test_prl_auto_invoker.py::test_stale_prl_artifact_treated_as_missing`).
+F3L-03 layers an additional check: when the index's
+`prl_gate_result_ref` does not match the `prl_result_ref` APU is
+observing, APU surfaces
+`prl_artifact_index_gate_result_ref_mismatch`. Test:
+`tests/prl/test_pre_pr_gate_persistence.py::test_stale_index_gate_ref_mismatch_surfaces_reason_code`.
+
+### 12. Partial index (failure packets present, repair/eval candidates absent) treated as ready
+
+Disposition: **closed**.
+Mechanism: `_build_artifact_index` records a `reason_codes` array on
+the index itself when failure packets exist but repair- or
+eval-candidates are missing for a blocking gate recommendation. APU
+surfaces those reason codes verbatim in `reason_codes`, yielding
+`readiness_status=not_ready`. Test:
+`tests/prl/test_pre_pr_gate_persistence.py::test_partial_index_yields_reason_codes`.
+
+### 13. APU consumes PRL prose instead of artifact refs
+
+Disposition: **closed by design**.
+Mechanism: APU never reads PR body prose. The `prl_artifact_refs`
+collection in the evaluation is composed strictly of (a) refs supplied
+by `prl_gate_result.json`, plus (b) file-backed refs from the index
+when present. Both surfaces are file/disk-backed. Tests:
+`tests/prl/test_pre_pr_gate_persistence.py::test_index_lists_only_file_backed_refs`
+and `::test_apu_consumes_file_backed_refs_from_index`.
+
+### 14. PRL persistence bypasses current repair / eval ownership
+
+Disposition: **closed by design**.
+Mechanism: the index is observation-only and contains only refs to
+artifacts already produced by the existing
+`generate_repair_candidate`, `generate_eval_case_candidate`,
+`advance_to_eval_case`, and `build_generation_record` functions in
+`spectrum_systems/modules/prl/`. Persistence does not call into any
+new repair- or eval-generation system. PRL retains all classification,
+repair-candidate, and eval-candidate authority. Schema enforces
+`authority_scope: const "observation_only"`.
+
+### 15. Authority language regression in index artifact
+
+Disposition: **closed**.
+Mechanism: the `prl_artifact_index` schema enforces
+`authority_scope: const "observation_only"` and rejects any other
+value. APU additionally surfaces
+`prl_artifact_index_authority_scope_drift` if a malformed index
+attempts to claim a different authority scope. Test:
+`tests/prl/test_pre_pr_gate_persistence.py::test_index_authority_scope_drift_blocks_readiness`.
+
+### 16. Generated index unstable after second run
+
+Disposition: **closed**.
+Mechanism: the index ID is computed via `deterministic_id` over a
+sorted, deduplicated payload of file refs. Lists are stored
+`sorted(set(…))` so reordering is impossible. Re-running with the
+same `output_dir`, `run_id`, and `trace_id` produces an identical
+index file (modulo the `generated_at` timestamp on the artifact body
+itself, which is volatile by design). Tests:
+`tests/prl/test_pre_pr_gate_persistence.py::test_index_structure_stable_across_runs`,
+`::test_index_deterministic_when_inputs_pinned`, and
+`::test_index_disk_round_trip_preserves_evidence_hash`.
+
 ## Closure
 
 All threat scenarios listed in the F3L-03 task brief are addressed by
 the changes above. PRL artifact persistence is deterministic,
 schema-validated, and consumable by APU and replay observers without
-parsing the legacy stdout NDJSON stream.
+parsing the legacy stdout NDJSON stream. The
+`prl_artifact_index.json` artifact closes the remaining seam between
+PRL and APU: APU now resolves the PRL evidence chain from a single
+file-backed index rather than from heterogeneous `<type>:<id>` refs.

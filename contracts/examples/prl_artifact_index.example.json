@@ -1,0 +1,38 @@
+{
+  "artifact_type": "prl_artifact_index",
+  "schema_version": "1.0.0",
+  "id": "prl-index-0123456789abcdef",
+  "run_id": "prl-gate-20260502T170000Z-deadbeef",
+  "trace_id": "trace-prl-0123456789abcdef",
+  "generated_at": "2026-05-02T17:00:00Z",
+  "clp_result_ref": "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
+  "prl_gate_result_ref": "outputs/prl/prl_gate_result.json",
+  "failure_packet_refs": [
+    "outputs/prl/failure_packets/pre-pr-failure-packet-aaaa1111bbbb2222.json"
+  ],
+  "repair_candidate_refs": [
+    "outputs/prl/repair_candidates/prl-repair-candidate-cccc3333dddd4444.json"
+  ],
+  "eval_candidate_refs": [
+    "outputs/prl/eval_candidates/eval-case-candidate-eeee5555ffff6666.json"
+  ],
+  "generation_record_refs": [
+    "outputs/prl/eval_generation_records/prl-eval-generation-record-1111aaaa2222bbbb.json"
+  ],
+  "capture_record_refs": [
+    "outputs/prl/captures/pr-failure-capture-record-3333cccc4444dddd.json"
+  ],
+  "eval_case_refs": [],
+  "artifact_counts": {
+    "failure_packets": 1,
+    "repair_candidates": 1,
+    "eval_candidates": 1,
+    "generation_records": 1,
+    "capture_records": 1,
+    "eval_cases": 0
+  },
+  "evidence_hash": "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "reason_codes": [],
+  "authority_scope": "observation_only",
+  "gate_recommendation": "failed_gate"
+}

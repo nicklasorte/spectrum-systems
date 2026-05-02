@@ -2,7 +2,7 @@
   "artifact_type": "repo_write_capability_scope_policy",
   "slice_id": "AH-11",
   "owner": "TPA",
-  "generated_at": "2026-05-02T09:51:59Z",
+  "generated_at": "2026-05-02T18:16:26Z",
   "policy_scope_only": true,
   "gating_applies_to": "capability_classified_repo_write_execution"
 }
