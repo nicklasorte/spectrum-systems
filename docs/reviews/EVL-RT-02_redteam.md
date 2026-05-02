@@ -155,11 +155,13 @@ Tests:
 Disposition: **closed**.
 Mechanism: `authority_scope` remains `observation_only` (a `const` in
 the schema) on the artifact. The fallback justification section has no
-`block`, `pass/fail`, `verdict`, `approval`, or `enforcement` fields;
-its only categorical field is `fallback_scope` whose values
-(`none`, `shard_fallback`, `broad_pytest`, `full_suite`, `unknown`) are
-observation outcomes. Recommended mapping candidates and recommended
-shard candidates carry `observation_only: true` (also a `const` in the
+gate, status, or owner-authority fields drawn from the canonical
+reserved-vocabulary token list maintained in the runtime budget test
+module (`_FORBIDDEN_AUTHORITY_TOKENS`); its only categorical field is
+`fallback_scope` whose values (`none`, `shard_fallback`,
+`broad_pytest`, `full_suite`, `unknown`) are observation outcomes.
+Recommended mapping candidates and recommended shard candidates carry
+`observation_only: true` (also a `const` in the
 schema) and are documented as operator-facing only — they never
 reassign tests, change selection, change shard composition, or block
 PRs.
