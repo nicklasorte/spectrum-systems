@@ -10147,6 +10147,19 @@
       "notes": "B10 planning-only deterministic triage rack-and-stack artifact translating governed review and fix-gate outcomes into bounded insertion/defer/block recommendations without auto-execution."
     },
     {
+      "artifact_type": "pr_test_runtime_budget_observation",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "EVL-RT-01",
+      "last_updated_in": "EVL-RT-01",
+      "example_path": "contracts/examples/pr_test_runtime_budget_observation.example.json",
+      "notes": "EVL-RT-01 observation-only PR test runtime budget artifact. Records changed files, selected test targets, shard durations, slowest shard, full-suite/fallback usage, runtime budget seconds, and budget_status (within_budget | over_budget | unknown). Reuses pr_test_shards_summary and selection_coverage_record; the builder does not run pytest, mutate selection, or duplicate selector logic. Present shard evidence requires shard_summary_ref or shard_result_refs; budget_status unknown/over_budget require reason_codes; full_suite_detected/fallback_used true require fallback_reason_codes. authority_scope: observation_only."
+    },
+    {
       "artifact_type": "pr_test_shard_result",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
