@@ -52,12 +52,12 @@
           "docs/review-actions/APU-3LS-01_fix_actions.md",
           "docs/review-actions/CLP-01_fix_actions.md",
           "docs/review-actions/CLP-02_fix_actions.md",
+          "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
           "docs/review-actions/PLAN-AFX-02-ARTIFACT-SPINE-2026-04-09.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-AUTHENTICITY-HARDGATE-24-01-2026-04-11.md",
-          "docs/review-actions/PLAN-AUTO-KERNEL-24-01-2026-04-11.md",
-          "docs/review-actions/PLAN-BATCH-AEX-06-2026-04-08.md"
+          "docs/review-actions/PLAN-AUTO-KERNEL-24-01-2026-04-11.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -98,6 +98,7 @@
           "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/build_selection_coverage_record.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
@@ -145,7 +146,7 @@
           "tests/test_aex_fail_closed.py"
         ]
       },
-      "evidence_count": 125,
+      "evidence_count": 126,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "AEX"
@@ -345,6 +346,7 @@
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_rank_maturity_alignment.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
@@ -392,7 +394,7 @@
           "tests/test_certification.py"
         ]
       },
-      "evidence_count": 124,
+      "evidence_count": 125,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CDE"
@@ -572,9 +574,9 @@
           "docs/review-actions/AGL-01_fix_actions.md",
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
+          "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
-          "docs/review-actions/PLAN-BAE-2026-03-22.md",
-          "docs/review-actions/PLAN-BAF-2026-03-22.md"
+          "docs/review-actions/PLAN-BAE-2026-03-22.md"
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
@@ -612,6 +614,7 @@
           "scripts/build_d3l_mvp_graph.py",
           "scripts/build_d3l_priority_freshness_gate.py",
           "scripts/build_dashboard_3ls_with_tls.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_core_loop_pre_pr_gate.py",
@@ -651,7 +654,7 @@
           "tests/test_authority_drift_regression.py"
         ]
       },
-      "evidence_count": 115,
+      "evidence_count": 116,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -883,6 +886,7 @@
         ],
         "scripts": [
           "scripts/build_agent_3ls_path_measurement.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_contract_enforcement.py",
@@ -917,7 +921,7 @@
           "tests/test_nx_control_chain.py"
         ]
       },
-      "evidence_count": 112,
+      "evidence_count": 113,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "GOV"
@@ -1292,6 +1296,7 @@
           "docs/governance/cdx_02_3ls_roadmap.json",
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
+          "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CANONICAL-ID-STANDARD-REFINED-2026-03-18.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
@@ -1303,8 +1308,7 @@
           "docs/review-actions/PLAN-PRA-NSX-PRG-001-2026-04-17.md",
           "docs/review-actions/PLAN-R100-001-2026-04-15.md",
           "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
-          "docs/review-actions/PLAN-RWA-001-2026-04-16.md",
-          "docs/review-actions/PLAN-SLH-001-2026-04-17.md"
+          "docs/review-actions/PLAN-RWA-001-2026-04-16.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -1341,6 +1345,7 @@
         ],
         "scripts": [
           "scripts/build_agent_3ls_path_measurement.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/validate_system_registry.py",
@@ -1374,7 +1379,7 @@
           "tests/test_nt_trust_regression_pack.py"
         ]
       },
-      "evidence_count": 107,
+      "evidence_count": 108,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "LIN"
@@ -1876,6 +1881,7 @@
           "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/build_preflight_pqx_wrapper.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
@@ -1896,8 +1902,7 @@
           "scripts/run_merge_conflict_pressure_scan.py",
           "scripts/run_next_governed_cycle.py",
           "scripts/run_next_roadmap_batch.py",
-          "scripts/run_operator_shakeout.py",
-          "scripts/run_ops_master_01.py"
+          "scripts/run_operator_shakeout.py"
         ],
         "tests": [
           "tests/fixtures/chaos_fail_closed_cases.json",
@@ -2296,6 +2301,7 @@
           "docs/governance/cdx_02_3ls_roadmap.json",
           "docs/review-actions/APR-01_fix_actions.md",
           "docs/review-actions/APU-3LS-01_fix_actions.md",
+          "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
           "docs/review-actions/PLAN-CDX-02-3LS-roadmap-build.md",
@@ -2309,8 +2315,7 @@
           "docs/review-actions/PLAN-RWA-001-2026-04-16.md",
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
           "docs/review-actions/PLAN-SYS-HARDENING-2026-04-13.md",
-          "docs/review-actions/batch-sys-enf-02_registry_to_impl_conformance_scan.md",
-          "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md"
+          "docs/review-actions/batch-sys-enf-02_registry_to_impl_conformance_scan.md"
         ],
         "modules": [
           "spectrum_systems/aex/admission_replay.py",
@@ -2347,6 +2352,7 @@
         ],
         "scripts": [
           "scripts/build_agent_3ls_path_measurement.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/replay_aex_admission.py",
           "scripts/run_agent_pr_precheck.py",
@@ -2381,7 +2387,7 @@
           "tests/test_rfx_certification_gate.py"
         ]
       },
-      "evidence_count": 108,
+      "evidence_count": 109,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "REP"
@@ -2762,6 +2768,7 @@
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_control_surface_gap_packet.py",
           "scripts/build_d3l_mvp_graph.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/build_selection_coverage_record.py",
           "scripts/build_system_registry_artifact.py",
           "scripts/check_agent_pr_ready.py",
@@ -2781,8 +2788,7 @@
           "scripts/run_review_artifact_validation.py",
           "scripts/run_review_fix_loop_36_explicit.py",
           "scripts/run_rh_kernel_24_01.py",
-          "scripts/run_sel_orchestration.py",
-          "scripts/run_sel_replay_gate.py"
+          "scripts/run_sel_orchestration.py"
         ],
         "tests": [
           "tests/fixtures/autonomous_cycle/hardening/sel_boundary_proof.json",
@@ -3178,6 +3184,7 @@
           "scripts/build_agent_3ls_path_measurement.py",
           "scripts/build_ai_programming_governance_rollup.py",
           "scripts/build_d3l_mvp_graph.py",
+          "scripts/build_gate_shard_parity_record.py",
           "scripts/check_agent_pr_ready.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/refresh_tpa_source_authority_digests.py",
@@ -3226,7 +3233,7 @@
           "tests/test_done_certification.py"
         ]
       },
-      "evidence_count": 123,
+      "evidence_count": 124,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "TPA"

@@ -1,7 +1,7 @@
 {
   "artifact_type": "failure_shift_classifier",
   "batch_id": "OPS-MASTER-01",
-  "generated_at": "2026-05-02T00:33:52Z",
+  "generated_at": "2026-05-02T09:44:59Z",
   "failure_events": [
     {
       "failure_type": "schema_missing_field",
