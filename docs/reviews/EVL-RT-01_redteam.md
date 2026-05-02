@@ -24,8 +24,10 @@ policy, continuation, or final-gate signal.
 
 This document avoids reserved owner-authority verbs and their negated
 forms. The runtime budget artifact emits runtime, fallback, and
-recommendation observations only. It does not approve, certify,
-promote, enforce, decide, or authorize anything.
+recommendation observations only. It does not provide review
+observation, readiness evidence, advance recommendation, surface
+compliance observation, or control input on behalf of any canonical
+owner.
 
 ## Threat scenarios
 
@@ -152,9 +154,12 @@ Tests:
 
 Disposition: **closed**.
 Mechanism: the test suite scans the schema, example, and builder for
-any reserved authority token (approve, certify, promote, enforce,
-decide, authorize, verdict, …). Adding a token causes a CI failure,
-preventing accidental authority drift in this artifact.
+the canonical reserved owner-authority token list maintained in the
+runtime budget test module (`_FORBIDDEN_AUTHORITY_TOKENS`). Adding any
+listed token to those files causes a CI finding, preventing accidental
+authority drift in this artifact. The token list is the single source
+of truth and is not re-enumerated here so this review document
+remains within authority-safe wording.
 Tests:
 `tests/test_pr_test_runtime_budget_observation.py::test_artifact_files_use_authority_safe_vocabulary`.
 

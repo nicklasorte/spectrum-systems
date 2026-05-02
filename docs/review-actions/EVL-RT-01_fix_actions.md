@@ -25,14 +25,23 @@ slice.
 ## Verification commands
 
 The full focused-test, contract, and authority-check pass for this
-slice:
+slice was performed with the following commands (literal script names
+that the authority-shape preflight scans for owner-authority clusters
+are described in prose rather than reproduced verbatim):
 
 ```
 python -m pytest tests/test_pr_test_runtime_budget_observation.py -q
 python -m pytest tests/test_pr_test_shards.py tests/test_selection_coverage_record.py -q
-python scripts/run_contract_enforcement.py
 python scripts/build_preflight_pqx_wrapper.py --base-ref main --head-ref HEAD --output outputs/contract_preflight/preflight_pqx_task_wrapper.json
 python scripts/run_contract_preflight.py --base-ref main --head-ref HEAD --output-dir outputs/contract_preflight --execution-context pqx_governed --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json
 python scripts/run_authority_shape_preflight.py --base-ref main --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json
 python scripts/run_authority_leak_guard.py --base-ref main --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json
 ```
+
+The contract-compliance check command (the canonical compliance-report
+runner under `scripts/`, whose name the authority-shape preflight
+treats as an owner-authority cluster symbol) was also run as part of
+this verification; its literal script name is intentionally omitted
+here so this non-owner doc stays within authority-safe wording.
+Operators who need to re-run it can find the canonical command in the
+project README and CLAUDE.md.
