@@ -3,7 +3,7 @@
   "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
   "step": 20,
   "owner": "SEL",
-  "generated_at": "2026-04-29T20:24:16Z",
+  "generated_at": "2026-05-02T00:27:57Z",
   "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
   "status": "pass",
   "fail_closed": true,
