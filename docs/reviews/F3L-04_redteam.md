@@ -1,4 +1,4 @@
-# F3L-04 Red-Team — Promote PRL Eval Candidates Into Governed Regression Coverage Inputs
+# F3L-04 Red-Team — Route PRL Eval Candidates Into Governed Regression Intake
 
 Scope: red-team review of the F3L-04 slice. F3L-04 adds a governed
 observation-only intake artifact, `prl_eval_regression_intake_record`,
@@ -158,7 +158,7 @@ drift values such as `control_signal` or `APU`. Tests:
 * No GitHub workflow changes, dashboard changes, or broad EVL
   refactor.
 * APU is **not broadened** to consume the intake record in this slice.
-  A future slice can add APU-side enforcement reading
+  A future slice can add an APU-side compliance observation that reads
   `outputs/prl/prl_eval_regression_intake_record.json`.
 
 ## Summary

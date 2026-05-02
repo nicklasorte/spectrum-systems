@@ -1,4 +1,4 @@
-# F3L-04 Fix Actions — Promote PRL Eval Candidates Into Governed Regression Coverage Inputs
+# F3L-04 Fix Actions — Route PRL Eval Candidates Into Governed Regression Intake
 
 Each entry below records a must_fix finding from the F3L-04 red-team
 review (`docs/reviews/F3L-04_redteam.md`), the file changed to address
