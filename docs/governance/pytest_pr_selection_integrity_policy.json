@@ -202,6 +202,26 @@
         "tests/test_contracts.py",
         "tests/test_gate_shard_parity_record.py"
       ]
+    },
+    {
+      "path_prefix": "scripts/build_pr_test_runtime_budget_observation.py",
+      "required_test_targets": [
+        "tests/test_pr_test_runtime_budget_observation.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/schemas/pr_test_runtime_budget_observation.schema.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_pr_test_runtime_budget_observation.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/examples/pr_test_runtime_budget_observation.example.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_pr_test_runtime_budget_observation.py"
+      ]
     }
   ],
   "bounded_equivalence": [
