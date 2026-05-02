@@ -14815,6 +14815,19 @@
       "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
+      "artifact_type": "selection_coverage_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-SELECTION-COVERAGE-01",
+      "last_updated_in": "AEX-SELECTION-COVERAGE-01",
+      "example_path": "contracts/examples/selection_coverage_record.example.json",
+      "notes": "AEX-SELECTION-COVERAGE-01 observation-only selection coverage measurement; reuses the canonical selector and override policy. Records changed_paths, matched_paths, unmatched_changed_paths, attempted_surface_rules, selected_test_targets, fallback_used/fallback_targets, pytest_selection_missing_count, missing_required_surface_mapping_count, selection_reason_codes, coverage_status (complete|partial|missing|unknown), and recommended_mapping_candidates as observations only. unknown is never treated as complete. authority_scope: observation_only."
+    },
+    {
       "artifact_type": "service_level_objective",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",

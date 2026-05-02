@@ -142,6 +142,26 @@
       "required_test_targets": [
         "tests/test_ci_drift_detector.py"
       ]
+    },
+    {
+      "path_prefix": "scripts/build_selection_coverage_record.py",
+      "required_test_targets": [
+        "tests/test_selection_coverage_record.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/schemas/selection_coverage_record.schema.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_selection_coverage_record.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/examples/selection_coverage_record.example.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_selection_coverage_record.py"
+      ]
     }
   ],
   "bounded_equivalence": [

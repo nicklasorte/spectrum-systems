@@ -1,0 +1,55 @@
+{
+  "artifact_type": "selection_coverage_record",
+  "schema_version": "1.0.0",
+  "record_id": "sel-cov-2026-05-02-example-001",
+  "created_at": "2026-05-02T00:00:00Z",
+  "base_ref": "origin/main",
+  "head_ref": "HEAD",
+  "changed_paths": [
+    "scripts/run_contract_preflight.py",
+    "docs/reviews/AGENT-INSTR-01_redteam.md",
+    "tests/test_agent_3ls_path_measurement.py"
+  ],
+  "matched_paths": [
+    "scripts/run_contract_preflight.py",
+    "docs/reviews/AGENT-INSTR-01_redteam.md",
+    "tests/test_agent_3ls_path_measurement.py"
+  ],
+  "unmatched_changed_paths": [],
+  "attempted_surface_rules": [
+    {
+      "path": "scripts/run_contract_preflight.py",
+      "rule_source": "needle_match",
+      "matched": true,
+      "is_governed": true,
+      "surface": "governance"
+    },
+    {
+      "path": "docs/reviews/AGENT-INSTR-01_redteam.md",
+      "rule_source": "override_map",
+      "matched": true,
+      "is_governed": true,
+      "surface": "agent_instr_review_surface"
+    },
+    {
+      "path": "tests/test_agent_3ls_path_measurement.py",
+      "rule_source": "self_test_file",
+      "matched": true,
+      "is_governed": true,
+      "surface": "contract_tied_tests"
+    }
+  ],
+  "selected_test_targets": [
+    "tests/test_agent_3ls_path_measurement.py",
+    "tests/test_agent_instruction_apr_m3l_required.py",
+    "tests/test_contract_preflight.py"
+  ],
+  "fallback_used": false,
+  "fallback_targets": [],
+  "pytest_selection_missing_count": 0,
+  "missing_required_surface_mapping_count": 0,
+  "selection_reason_codes": [],
+  "coverage_status": "complete",
+  "recommended_mapping_candidates": [],
+  "authority_scope": "observation_only"
+}

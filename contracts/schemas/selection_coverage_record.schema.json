@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/selection_coverage_record.schema.json",
+  "title": "Selection Coverage Record",
+  "description": "AEX-SELECTION-COVERAGE-01 observation-only measurement of pytest selection coverage for a PR. Records the changed paths, the canonical selector's matched and unmatched paths, the attempted surface rules, the selected test targets, fallback usage, missing-mapping counts, and observation-only recommended mapping candidates. Reuses the canonical selector and override policy declared in spectrum_systems/modules/runtime/pr_test_selection.py and docs/governance/pytest_pr_selection_integrity_policy.json. Authority scope is observation_only: this artifact emits selection findings, mapping observations, and recommended mapping candidates only. coverage_status complete requires no unmatched governed changed paths; partial, missing, and unknown require selection_reason_codes; unknown is never treated as complete.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "created_at",
+    "base_ref",
+    "head_ref",
+    "changed_paths",
+    "matched_paths",
+    "unmatched_changed_paths",
+    "attempted_surface_rules",
+    "selected_test_targets",
+    "fallback_used",
+    "fallback_targets",
+    "pytest_selection_missing_count",
+    "missing_required_surface_mapping_count",
+    "selection_reason_codes",
+    "coverage_status",
+    "recommended_mapping_candidates",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "selection_coverage_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "head_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "matched_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "unmatched_changed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "attempted_surface_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "rule_source", "matched"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule_source": {
+            "type": "string",
+            "enum": [
+              "override_map",
+              "self_test_file",
+              "needle_match",
+              "no_rule_attempted"
+            ]
+          },
+          "matched": {
+            "type": "boolean"
+          },
+          "is_governed": {
+            "type": "boolean"
+          },
+          "surface": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "selected_test_targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "fallback_used": {
+      "type": "boolean"
+    },
+    "fallback_targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "pytest_selection_missing_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_required_surface_mapping_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "selection_reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "coverage_status": {
+      "type": "string",
+      "enum": ["complete", "partial", "missing", "unknown"]
+    },
+    "recommended_mapping_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "candidate_test_targets", "observation_only"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "candidate_test_targets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "observation_only": {
+            "type": "boolean",
+            "const": true
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "authority_scope": {
+      "type": "string",
+      "const": "observation_only"
+    }
+  },
+  "allOf": [
+    {
+      "description": "coverage_status complete requires no unmatched governed changed paths.",
+      "if": {
+        "properties": {
+          "coverage_status": {
+            "const": "complete"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unmatched_changed_paths": {
+            "type": "array",
+            "maxItems": 0
+          },
+          "missing_required_surface_mapping_count": {
+            "type": "integer",
+            "const": 0
+          }
+        }
+      }
+    },
+    {
+      "description": "Non-complete coverage_status values must carry at least one selection_reason_code.",
+      "if": {
+        "properties": {
+          "coverage_status": {
+            "enum": ["partial", "missing", "unknown"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "selection_reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "fallback_used true requires at least one fallback_target.",
+      "if": {
+        "properties": {
+          "fallback_used": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "fallback_targets": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

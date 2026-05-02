@@ -264,5 +264,19 @@
   ],
   "tests/test_agent_3ls_path_measurement.py": [
     "tests/test_agent_3ls_path_measurement.py"
+  ],
+  "scripts/build_selection_coverage_record.py": [
+    "tests/test_selection_coverage_record.py"
+  ],
+  "contracts/schemas/selection_coverage_record.schema.json": [
+    "tests/test_contracts.py",
+    "tests/test_selection_coverage_record.py"
+  ],
+  "contracts/examples/selection_coverage_record.example.json": [
+    "tests/test_contracts.py",
+    "tests/test_selection_coverage_record.py"
+  ],
+  "tests/test_selection_coverage_record.py": [
+    "tests/test_selection_coverage_record.py"
   ]
 }

@@ -70,6 +70,7 @@ from spectrum_systems.modules.runtime.agent_3ls_path_measurement import (  # noq
     write_measurement_record,
 )
 from spectrum_systems.modules.runtime.pr_test_selection import (  # noqa: E402
+    build_selection_coverage_record,
     classify_changed_path,
     load_override_map,
     resolve_required_tests,
@@ -202,11 +203,52 @@ def _ref_relative_to(path: Path, repo_root: Path) -> str:
         return str(path)
 
 
+_SELECTION_COVERAGE_REL_PATH = (
+    "outputs/selection_coverage/selection_coverage_record.json"
+)
+
+
+def _write_selection_coverage_record(
+    *,
+    repo_root: Path,
+    changed_paths: list[str],
+    base_ref: str,
+    head_ref: str,
+) -> Path:
+    """Build and write a ``selection_coverage_record`` artifact.
+
+    Reuses the canonical ``build_selection_coverage_record`` helper
+    (no duplicate selector logic). Returns the artifact path.
+    """
+    coverage_path = (repo_root / _SELECTION_COVERAGE_REL_PATH).resolve()
+    coverage_path.parent.mkdir(parents=True, exist_ok=True)
+    created_at = utc_now_iso()
+    raw = f"{base_ref}|{head_ref}|{created_at}".encode("utf-8")
+    record_id = "sel-cov-" + hashlib.sha256(raw).hexdigest()[:16]
+    record = build_selection_coverage_record(
+        repo_root=repo_root,
+        base_ref=base_ref,
+        head_ref=head_ref,
+        changed_paths=list(changed_paths),
+        record_id=record_id,
+        created_at=created_at,
+        fallback_used=False,
+        fallback_targets=[],
+    )
+    validate_artifact(record, "selection_coverage_record")
+    coverage_path.write_text(
+        json.dumps(record, indent=2) + "\n", encoding="utf-8"
+    )
+    return coverage_path
+
+
 def aex_required_surface_check(
     *,
     repo_root: Path,
     changed_paths: list[str],
     output_dir: Path,
+    base_ref: str = "origin/main",
+    head_ref: str = "HEAD",
 ) -> CheckResult:
     """Detect required-surface mapping gaps using ``pr_test_selection``.
 
@@ -214,6 +256,11 @@ def aex_required_surface_check(
     treated as missing its required-surface mapping when its resolved
     test target list is empty AND it is not itself a contract surface
     (``contracts/schemas/`` or ``contracts/examples/``).
+
+    Also emits an observation-only ``selection_coverage_record``
+    artifact and includes its path in ``output_artifact_refs`` so APR
+    consumers can reference selection coverage evidence without
+    recomputing selection. Authority scope: observation_only.
     """
     contract_surfaces = {
         p
@@ -250,6 +297,25 @@ def aex_required_surface_check(
     }
     artifact_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
+    coverage_ref: str | None = None
+    try:
+        coverage_path = _write_selection_coverage_record(
+            repo_root=repo_root,
+            changed_paths=list(changed_paths),
+            base_ref=base_ref,
+            head_ref=head_ref,
+        )
+        coverage_ref = _ref_relative_to(coverage_path, repo_root)
+    except Exception:
+        # Coverage record is observation-only and never blocks AEX. If
+        # the builder fails, the AEX result still reflects the canonical
+        # mapping check; the coverage artifact is simply not produced.
+        coverage_ref = None
+
+    output_refs = [_ref_relative_to(artifact_path, repo_root)]
+    if coverage_ref is not None and coverage_ref not in output_refs:
+        output_refs.append(coverage_ref)
+
     if unmapped:
         suggested = {p: ["tests/<add an explicit binding here>"] for p in unmapped}
         return CheckResult(
@@ -258,7 +324,7 @@ def aex_required_surface_check(
             command="in-process: pr_test_selection.resolve_required_tests",
             status="block",
             exit_code=2,
-            output_artifact_refs=[_ref_relative_to(artifact_path, repo_root)],
+            output_artifact_refs=output_refs,
             reason_codes=[
                 "MISSING_REQUIRED_SURFACE_MAPPING",
                 *[f"unmapped:{p}" for p in unmapped],
@@ -274,7 +340,7 @@ def aex_required_surface_check(
         command="in-process: pr_test_selection.resolve_required_tests",
         status="pass",
         exit_code=0,
-        output_artifact_refs=[_ref_relative_to(artifact_path, repo_root)],
+        output_artifact_refs=output_refs,
         next_action="none",
     )
 
@@ -947,6 +1013,8 @@ def main() -> int:
                 repo_root=REPO_ROOT,
                 changed_paths=changed_paths,
                 output_dir=phase_output_dir,
+                base_ref=args.base_ref,
+                head_ref=args.head_ref,
             )
         )
 
