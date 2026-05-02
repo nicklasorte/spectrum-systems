@@ -151,6 +151,9 @@
   "docs/reviews/MET-18-dashboard-usefulness-fixes.md": [
     "tests/metrics/test_met_04_18_contract_selection.py"
   ],
+  "scripts/run_authority_authoring_check.py": [
+    "tests/test_authority_authoring_check.py"
+  ],
   "scripts/run_authority_preflight_expanded.py": [
     "tests/test_authority_preflight_expanded.py"
   ],

@@ -539,6 +539,98 @@ def tpa_contract_compliance(*, output_dir: Path) -> CheckResult:
     )
 
 
+def tpa_authority_authoring_check(
+    *, base_ref: str, head_ref: str, output_dir: Path
+) -> CheckResult:
+    """Run the AUTH-AUTHORING-01 authoring-time check (observation-only).
+
+    The authoring check surfaces reserved authority vocabulary and
+    protected owner-acronym usage in non-owner authored files. It is
+    explicitly observation-only and does NOT replace
+    ``tpa_authority_shape_preflight``, ``tpa_authority_leak_guard``, or
+    ``tpa_system_registry_guard`` - all three continue to run in the
+    same TPA phase and remain canonical. APR consumes the artifact's
+    ``status`` directly; an authoring-check ``warn`` keeps APR's
+    overall rollup at ``warn`` rather than escalating it.
+    """
+    out = (
+        REPO_ROOT
+        / "outputs"
+        / "authority_authoring_check"
+        / "authority_authoring_check_record.json"
+    )
+    cmd = [
+        sys.executable,
+        "scripts/run_authority_authoring_check.py",
+        "--base-ref", base_ref,
+        "--head-ref", head_ref,
+        "--output", str(out.relative_to(REPO_ROOT)),
+    ]
+    cmd_str = " ".join(shlex.quote(p) for p in cmd)
+    rc, combined = _run_subprocess(cmd, cwd=REPO_ROOT)
+
+    output_refs: list[str] = []
+    artifact_status: str | None = None
+    artifact_reasons: list[str] = []
+    if out.is_file():
+        try:
+            payload = json.loads(out.read_text(encoding="utf-8"))
+            artifact_status = str(payload.get("status") or "")
+            artifact_reasons = [str(r) for r in payload.get("reason_codes") or []]
+        except (OSError, json.JSONDecodeError):
+            artifact_status = None
+        try:
+            output_refs.append(str(out.relative_to(REPO_ROOT)))
+        except ValueError:
+            output_refs.append(str(out))
+
+    if artifact_status == "pass":
+        return CheckResult(
+            check_name="tpa_authority_authoring_check",
+            phase="TPA",
+            command=cmd_str,
+            status="pass",
+            exit_code=rc,
+            output_artifact_refs=output_refs,
+            next_action="none",
+        )
+    if artifact_status == "warn":
+        return CheckResult(
+            check_name="tpa_authority_authoring_check",
+            phase="TPA",
+            command=cmd_str,
+            status="warn",
+            exit_code=rc,
+            output_artifact_refs=output_refs,
+            reason_codes=artifact_reasons or ["authority_authoring_finding"],
+            next_action=(
+                "review outputs/authority_authoring_check/"
+                "authority_authoring_check_record.json findings; existing "
+                "authority_shape_preflight, authority_leak_guard, and "
+                "system_registry_guard remain canonical"
+            ),
+        )
+    # status == "unknown" or artifact missing: surface as block so APR
+    # cannot infer readiness from silence. This does NOT claim authority -
+    # the canonical guards still run independently.
+    return CheckResult(
+        check_name="tpa_authority_authoring_check",
+        phase="TPA",
+        command=cmd_str,
+        status="block",
+        exit_code=rc if rc is not None else 1,
+        output_artifact_refs=output_refs,
+        reason_codes=(
+            artifact_reasons
+            or [
+                "authority_authoring_check_unknown",
+                f"subprocess_output_tail:{(combined.splitlines() or ['(no output)'])[-1][:160]}",
+            ]
+        ),
+        next_action="rerun scripts/run_authority_authoring_check.py and inspect record",
+    )
+
+
 def pqx_build_wrapper(*, base_ref: str, head_ref: str, output_dir: Path) -> CheckResult:
     out = REPO_ROOT / "outputs" / "contract_preflight" / "preflight_pqx_task_wrapper.json"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -1084,6 +1176,13 @@ def main() -> int:
             checks.append(tpa_authority_leak(base_ref=args.base_ref, head_ref=args.head_ref, output_dir=phase_output_dir))
             checks.append(tpa_system_registry(base_ref=args.base_ref, head_ref=args.head_ref, output_dir=phase_output_dir))
             checks.append(tpa_contract_compliance(output_dir=phase_output_dir))
+            checks.append(
+                tpa_authority_authoring_check(
+                    base_ref=args.base_ref,
+                    head_ref=args.head_ref,
+                    output_dir=phase_output_dir,
+                )
+            )
         if "PQX" not in skipped:
             wrapper_check = pqx_build_wrapper(base_ref=args.base_ref, head_ref=args.head_ref, output_dir=phase_output_dir)
             checks.append(wrapper_check)
