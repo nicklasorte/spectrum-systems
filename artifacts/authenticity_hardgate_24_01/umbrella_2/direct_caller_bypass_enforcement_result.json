@@ -2,7 +2,7 @@
   "artifact_type": "direct_caller_bypass_enforcement_result",
   "slice_id": "AH-09",
   "owner": "SEL",
-  "generated_at": "2026-05-02T09:51:59Z",
+  "generated_at": "2026-05-02T18:16:26Z",
   "fail_closed": true,
   "legacy_direct_caller_repo_write": "blocked"
 }

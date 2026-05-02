@@ -3,7 +3,7 @@
   "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
   "step": 22,
   "owner": "PRG",
-  "generated_at": "2026-05-02T09:52:02Z",
+  "generated_at": "2026-05-02T18:16:30Z",
   "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
   "status": "pass",
   "fail_closed": false,
