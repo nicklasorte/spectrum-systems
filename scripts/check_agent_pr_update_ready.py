@@ -41,6 +41,7 @@ from spectrum_systems.modules.runtime.agent_pr_update_policy import (  # noqa: E
     DEFAULT_CLP_RESULT_REL_PATH,
     DEFAULT_OUTPUT_REL_PATH,
     DEFAULT_POLICY_REL_PATH,
+    DEFAULT_PRL_RESULT_REL_PATH,
     PolicyLoadError,
     build_agent_pr_update_ready_result,
     evaluate_pr_update_ready,
@@ -48,6 +49,7 @@ from spectrum_systems.modules.runtime.agent_pr_update_policy import (  # noqa: E
     load_agl_record,
     load_clp_result,
     load_policy,
+    load_prl_result,
     readiness_status_to_exit_code,
 )
 
@@ -76,6 +78,17 @@ def _parse_args() -> argparse.Namespace:
         "--agent-pr-ready",
         default=DEFAULT_AGENT_PR_READY_REL_PATH,
         help="Path to the agent_pr_ready_result (CLP-02) artifact.",
+    )
+    parser.add_argument(
+        "--prl-result",
+        default=DEFAULT_PRL_RESULT_REL_PATH,
+        help=(
+            "Path to a prl_gate_result artifact. PRL evidence is required "
+            "when CLP gate_status is the blocking-status and the slice is "
+            "repo_mutating; in that case absence of PRL evidence yields "
+            "readiness_status=not_ready. PRL retains all classification, "
+            "repair-candidate, and eval-candidate authority."
+        ),
     )
     parser.add_argument(
         "--policy",
@@ -144,10 +157,12 @@ def main() -> int:
     clp_path = (REPO_ROOT / args.clp_result).resolve()
     agl_path = (REPO_ROOT / args.agl_record).resolve()
     pr_ready_path = (REPO_ROOT / args.agent_pr_ready).resolve()
+    prl_path = (REPO_ROOT / args.prl_result).resolve()
 
     clp_result = load_clp_result(clp_path)
     agl_record = load_agl_record(agl_path)
     agent_pr_ready = load_agent_pr_ready(pr_ready_path)
+    prl_result = load_prl_result(prl_path)
 
     def _ref(path: Path, loaded: object | None) -> str | None:
         if loaded is None and not path.is_file():
@@ -160,6 +175,7 @@ def main() -> int:
     clp_ref = _ref(clp_path, clp_result)
     agl_ref = _ref(agl_path, agl_record)
     pr_ready_ref = _ref(pr_ready_path, agent_pr_ready)
+    prl_ref = _ref(prl_path, prl_result)
 
     repo_mutating = _resolve_repo_mutating(
         args.repo_mutating, clp_result=clp_result, agl_record=agl_record
@@ -175,6 +191,8 @@ def main() -> int:
         agl_record_ref=agl_ref,
         agent_pr_ready_result_ref=pr_ready_ref,
         policy_ref=policy_ref,
+        prl_result=prl_result,
+        prl_result_ref=prl_ref,
     )
     artifact = build_agent_pr_update_ready_result(
         work_item_id=args.work_item_id,
@@ -184,6 +202,7 @@ def main() -> int:
         clp_result_ref=clp_ref,
         agl_record_ref=agl_ref,
         agent_pr_ready_result_ref=pr_ready_ref,
+        prl_result_ref=prl_ref,
     )
     validate_artifact(artifact, "agent_pr_update_ready_result")
 
@@ -198,6 +217,8 @@ def main() -> int:
         "reason_codes": artifact["reason_codes"],
         "human_review_required": artifact["human_review_required"],
         "evidence_hash": artifact["evidence_hash"],
+        "prl_evidence_status": artifact["prl_evidence_status"],
+        "prl_gate_recommendation": artifact["prl_gate_recommendation"],
         "output": str(output_path.relative_to(REPO_ROOT)),
     }
     print(json.dumps(summary, indent=2))

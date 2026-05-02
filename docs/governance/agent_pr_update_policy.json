@@ -49,6 +49,28 @@
   "required_agl_artifact_path_default": "outputs/agent_core_loop/agent_core_loop_run_record.json",
   "required_agent_pr_ready_artifact_type": "agent_pr_ready_result",
   "required_agent_pr_ready_artifact_path_default": "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
+  "required_prl_artifact_type": "prl_gate_result",
+  "required_prl_artifact_path_default": "outputs/prl/prl_gate_result.json",
+  "prl_known_repairable_failure_classes": [
+    "pytest_selection_missing",
+    "authority_shape_violation",
+    "system_registry_mismatch",
+    "contract_schema_violation",
+    "missing_required_artifact",
+    "trace_missing",
+    "policy_mismatch"
+  ],
+  "prl_unknown_failure_classes": [
+    "unknown_failure"
+  ],
+  "prl_clean_gate_recommendations": [
+    "passed_gate",
+    "gate_warn"
+  ],
+  "prl_blocking_gate_recommendations": [
+    "failed_gate",
+    "gate_hold"
+  ],
   "required_evidence_legs": [
     "AEX",
     "PQX",
@@ -86,7 +108,13 @@
     "pr_body_prose_is_not_artifact_evidence": true,
     "claimed_3ls_usage_without_artifact_refs_is_invalid": true,
     "missing_required_check_observation_blocks": true,
-    "authority_scope_must_be_observation_only": true
+    "authority_scope_must_be_observation_only": true,
+    "repo_mutating_clp_block_requires_prl_evidence": true,
+    "prl_evidence_requires_failure_packet_refs": true,
+    "prl_known_repairable_failure_requires_repair_candidate_refs": true,
+    "prl_known_repairable_failure_requires_eval_candidate_refs": true,
+    "prl_blocking_gate_recommendation_blocks_pr_update_ready": true,
+    "prl_unknown_failure_yields_human_review_required": true
   },
   "block_reason_codes": [
     "repo_mutating_unknown",
@@ -106,7 +134,14 @@
     "agent_pr_ready_status_not_ready",
     "missing_required_check_observation",
     "policy_ref_invalid",
-    "authority_scope_drift"
+    "authority_scope_drift",
+    "prl_evidence_missing_for_clp_block",
+    "prl_evidence_invalid",
+    "prl_failure_packets_missing_for_clp_block",
+    "prl_repair_candidates_missing_for_repairable_failure",
+    "prl_eval_candidates_missing_for_repairable_failure",
+    "prl_gate_recommendation_blocks_pr_update_ready",
+    "prl_unknown_failure_class_observed"
   ],
   "max_repair_attempts": 0,
   "must_not_do": [
@@ -125,6 +160,6 @@
     "downgrade_present_without_artifact_refs"
   ],
   "introduced_in": "APU-3LS-01",
-  "last_updated_in": "APU-3LS-01",
-  "notes": "APU-3LS-01 policy. APU is observation-only and emits PR-update readiness observations. Canonical authority remains with AEX (admission), PQX (execution closure), EVL (eval evidence), TPA (policy/scope), CDE (continuation/closure), SEL (final gate signal), LIN (lineage), REP (replay), and GOV per docs/architecture/system_registry.md. APU consumes core_loop_pre_pr_gate_result (CLP), agent_core_loop_run_record (AGL), and agent_pr_ready_result (CLP-02 guard) as readiness inputs and emits an agent_pr_update_ready_result evidence artifact. APU enforces the artifact-backed evidence invariant: 'no artifact = it did not happen'. Claimed 3LS usage without artifact refs is invalid. PR body prose, comments, and CI success cannot substitute for artifact_refs. AEX/PQX/CDE/SEL retain canonical signal authority and consume APU output as a readiness input only."
+  "last_updated_in": "F3L-01",
+  "notes": "APU-3LS-01 policy (last updated by F3L-01). APU is observation-only and emits PR-update readiness observations. Canonical authority remains with AEX (admission), PQX (execution closure), EVL (eval evidence), TPA (policy/scope), CDE (continuation/closure), SEL (final gate signal), LIN (lineage), REP (replay), and GOV per docs/architecture/system_registry.md. APU consumes core_loop_pre_pr_gate_result (CLP), agent_core_loop_run_record (AGL), agent_pr_ready_result (CLP-02 guard), and prl_gate_result (PRL) as readiness inputs and emits an agent_pr_update_ready_result evidence artifact. APU enforces the artifact-backed evidence invariant: 'no artifact = it did not happen'. Claimed 3LS usage without artifact refs is invalid. PR body prose, comments, and CI success cannot substitute for artifact_refs. F3L-01 wires PRL failure-normalization evidence into APU so a CLP-blocked repo-mutating slice cannot be observed as PR-update ready until PRL evidence (gate result, failure packet refs, repair/eval candidate refs as applicable) is present. PRL retains all classification, repair-candidate, and eval-candidate authority. AEX/PQX/CDE/SEL retain canonical signal authority and consume APU output as a readiness input only."
 }

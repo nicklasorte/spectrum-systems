@@ -710,3 +710,405 @@ def test_evidence_hash_is_deterministic(policy: dict[str, Any]) -> None:
         repo_mutating=True,
     )
     assert ev_a["evidence_hash"] == ev_b["evidence_hash"]
+
+
+# ---------------------------------------------------------------------------
+# F3L-01 — PRL evidence required on CLP block
+# ---------------------------------------------------------------------------
+
+
+def _prl_gate_result(
+    *,
+    gate_recommendation: str = "passed_gate",
+    failure_classes: list[str] | None = None,
+    failure_packet_refs: list[str] | None = None,
+    repair_candidate_refs: list[str] | None = None,
+    eval_candidate_refs: list[str] | None = None,
+) -> dict[str, Any]:
+    failure_classes = failure_classes or []
+    failure_packet_refs = failure_packet_refs or []
+    repair_candidate_refs = repair_candidate_refs or []
+    eval_candidate_refs = eval_candidate_refs or []
+    return {
+        "artifact_type": "prl_gate_result",
+        "schema_version": "1.0.0",
+        "id": "prl-gate-0123456789abcdef",
+        "timestamp": "2026-05-01T00:00:00Z",
+        "run_id": "run-test",
+        "trace_id": "trace-test",
+        "trace_refs": {"primary": "trace-test", "related": []},
+        "gate_recommendation": gate_recommendation,
+        "failure_count": len(failure_packet_refs),
+        "failure_classes": failure_classes,
+        "failure_packet_refs": failure_packet_refs,
+        "repair_candidate_refs": repair_candidate_refs,
+        "eval_candidate_refs": eval_candidate_refs,
+        "blocking_reasons": [],
+        "gate_passed": gate_recommendation == "passed_gate",
+    }
+
+
+def _block_clp_for_prl() -> dict[str, Any]:
+    return _block_clp(
+        "authority_shape_preflight",
+        "authority_shape_violation",
+        "authority_shape_review_language_lint",
+    )
+
+
+def test_clp_block_with_no_prl_evidence_yields_not_ready(policy: dict[str, Any]) -> None:
+    """F3L-01 #1: repo_mutating + CLP block + no PRL evidence => not_ready."""
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=None,
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "prl_evidence_missing_for_clp_block" in ev["reason_codes"]
+    assert ev["prl_evidence_status"] == "missing"
+
+
+def test_clp_block_with_prl_evidence_missing_failure_packet_refs_blocks(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-01 #2: PRL evidence with failure_classes but no failure_packet_refs."""
+    prl = _prl_gate_result(
+        gate_recommendation="failed_gate",
+        failure_classes=["authority_shape_violation"],
+        failure_packet_refs=[],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "prl_failure_packets_missing_for_clp_block" in ev["reason_codes"]
+    assert ev["prl_evidence_status"] == "partial"
+
+
+def test_clp_block_with_prl_unknown_failure_yields_human_review(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-01 #3: unknown PRL failure class => human_review_required."""
+    prl = _prl_gate_result(
+        gate_recommendation="gate_hold",
+        failure_classes=["unknown_failure"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-aa00aa00aa00aa00"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    assert ev["readiness_status"] == "human_review_required"
+    assert "prl_unknown_failure_class_observed" in ev["reason_codes"]
+
+
+def test_clp_block_with_prl_evidence_missing_repair_and_eval_candidates_blocks(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-01 #2b: known repairable class without repair/eval refs blocks."""
+    prl = _prl_gate_result(
+        gate_recommendation="failed_gate",
+        failure_classes=["authority_shape_violation"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-bb00bb00bb00bb00"],
+        repair_candidate_refs=[],
+        eval_candidate_refs=[],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "prl_repair_candidates_missing_for_repairable_failure" in ev["reason_codes"]
+    assert "prl_eval_candidates_missing_for_repairable_failure" in ev["reason_codes"]
+
+
+def test_clp_block_with_prl_blocking_recommendation_blocks(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-01 #4 negative: PRL gate_recommendation=failed_gate blocks readiness."""
+    prl = _prl_gate_result(
+        gate_recommendation="failed_gate",
+        failure_classes=["authority_shape_violation"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-cc00cc00cc00cc00"],
+        repair_candidate_refs=["prl_repair_candidate:prl-rc-dd00dd00dd00dd00"],
+        eval_candidate_refs=["eval_case_candidate:prl-ec-ee00ee00ee00ee00"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "prl_gate_recommendation_blocks_pr_update_ready" in ev["reason_codes"]
+
+
+def test_clp_pass_does_not_require_prl_evidence(policy: dict[str, Any]) -> None:
+    """F3L-01 #5: CLP pass does not require PRL evidence."""
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=None,
+    )
+    assert ev["readiness_status"] == "ready", ev["reason_codes"]
+    assert "prl_evidence_missing_for_clp_block" not in ev["reason_codes"]
+
+
+def test_clp_warn_policy_allowed_does_not_require_prl_evidence(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-01 #6: CLP warn (policy-allowed) does not require PRL evidence."""
+    local_policy = dict(policy)
+    local_policy["allowed_warning_reason_codes"] = ["soft_finding"]
+    ev = evaluate_pr_update_ready(
+        policy=local_policy,
+        clp_result=_warn_clp("soft_finding"),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=None,
+    )
+    assert ev["readiness_status"] == "ready", ev["reason_codes"]
+
+
+def test_pr_body_prose_is_not_prl_evidence(policy: dict[str, Any]) -> None:
+    """F3L-01 #7: A PR-body-prose payload (no schema-conformant artifact_type)
+    cannot stand in for PRL evidence. The loader returns None, so APU treats
+    it as missing.
+    """
+    from spectrum_systems.modules.runtime.agent_pr_update_policy import (
+        load_prl_result,
+    )
+
+    import tempfile
+    import os
+
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False
+    ) as fh:
+        # PR-body-style prose JSON, not a prl_gate_result artifact.
+        fh.write(
+            '{"summary": "I ran PRL", "evidence": "see PR body", '
+            '"artifact_type": "pr_body_summary"}'
+        )
+        prose_path = fh.name
+    try:
+        loaded = load_prl_result(Path(prose_path))
+        assert loaded is None
+        ev = evaluate_pr_update_ready(
+            policy=policy,
+            clp_result=_block_clp_for_prl(),
+            agl_record=_full_agl_record(all_present=True),
+            agent_pr_ready=None,
+            repo_mutating=True,
+            prl_result=loaded,
+        )
+        assert ev["readiness_status"] == "not_ready"
+        assert "prl_evidence_missing_for_clp_block" in ev["reason_codes"]
+    finally:
+        os.unlink(prose_path)
+
+
+def test_clp_block_with_complete_prl_evidence_passes_prl_observation(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-01 #4 positive: When CLP blocks but PRL evidence is complete and
+    PRL gate_recommendation is non-blocking (gate_warn) APU's PRL leg is
+    observed as present and PRL-related reason codes are absent. CLP block
+    still blocks readiness — APU emits not_ready as a readiness observation,
+    but PRL-evidence-missing reason codes do not appear.
+    """
+    prl = _prl_gate_result(
+        gate_recommendation="gate_warn",
+        failure_classes=["pytest_selection_missing"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-ff00ff00ff00ff00"],
+        repair_candidate_refs=["prl_repair_candidate:prl-rc-aa11aa11aa11aa11"],
+        eval_candidate_refs=["eval_case_candidate:prl-ec-bb22bb22bb22bb22"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    # CLP block still blocks PR-update readiness — APU is an observation.
+    assert ev["readiness_status"] == "not_ready"
+    # But PRL evidence missing-reason codes are not present:
+    assert "prl_evidence_missing_for_clp_block" not in ev["reason_codes"]
+    assert "prl_failure_packets_missing_for_clp_block" not in ev["reason_codes"]
+    assert "prl_repair_candidates_missing_for_repairable_failure" not in ev["reason_codes"]
+    assert "prl_eval_candidates_missing_for_repairable_failure" not in ev["reason_codes"]
+    assert ev["prl_evidence_status"] == "present"
+
+
+def test_prl_present_status_requires_prl_result_ref_in_artifact(
+    policy: dict[str, Any],
+) -> None:
+    """F3L-01 #8: present PRL evidence requires artifact refs.
+
+    Schema invariant: when prl_evidence_status=present, prl_result_ref
+    must be a non-empty string.
+    """
+    prl = _prl_gate_result(
+        gate_recommendation="gate_warn",
+        failure_classes=["pytest_selection_missing"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-aa00bb00cc00dd00"],
+        repair_candidate_refs=["prl_repair_candidate:prl-rc-aa00bb00cc00dd00"],
+        eval_candidate_refs=["eval_case_candidate:prl-ec-aa00bb00cc00dd00"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    artifact = build_agent_pr_update_ready_result(
+        work_item_id="F3L-01-PRL-PRESENT",
+        agent_type="claude",
+        policy_ref=DEFAULT_POLICY_REL_PATH,
+        evaluation=ev,
+        clp_result_ref="outputs/clp.json",
+        agl_record_ref="outputs/agl.json",
+        agent_pr_ready_result_ref=None,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    validate_artifact(artifact, "agent_pr_update_ready_result")
+    assert artifact["prl_evidence_status"] == "present"
+    assert artifact["prl_result_ref"] == "outputs/prl/prl_gate_result.json"
+
+    # Schema must reject present-without-ref.
+    bad = dict(artifact)
+    bad["prl_result_ref"] = None
+    with pytest.raises(Exception):
+        validate_artifact(bad, "agent_pr_update_ready_result")
+
+
+def test_prl_artifact_negated_authority_phrases_absent(policy: dict[str, Any]) -> None:
+    """F3L-01 #10: Authority-safe vocabulary preserved in changed APU output.
+
+    Reserved authority verbs and common negated forms must not appear in
+    the APU artifact when PRL evidence is observed.
+    """
+    prl = _prl_gate_result(
+        gate_recommendation="failed_gate",
+        failure_classes=["authority_shape_violation"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-aa00bb00cc00ee00"],
+        repair_candidate_refs=["prl_repair_candidate:prl-rc-aa00bb00cc00ee00"],
+        eval_candidate_refs=["eval_case_candidate:prl-ec-aa00bb00cc00ee00"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_block_clp_for_prl(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    artifact = build_agent_pr_update_ready_result(
+        work_item_id="F3L-01-AUTH",
+        agent_type="claude",
+        policy_ref=DEFAULT_POLICY_REL_PATH,
+        evaluation=ev,
+        clp_result_ref="outputs/clp.json",
+        agl_record_ref="outputs/agl.json",
+        agent_pr_ready_result_ref=None,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    blob = json.dumps(artifact).lower()
+    forbidden = [
+        '"approved"',
+        '"certified"',
+        '"promoted"',
+        '"enforced"',
+        '"approval"',
+        '"certification"',
+        '"promotion"',
+        '"enforcement"',
+        '"adjudication"',
+        '"authorization"',
+    ]
+    for term in forbidden:
+        assert term not in blob, term
+    md = artifact["pr_evidence_section_markdown"].lower()
+    for phrase in [
+        "does not approve",
+        "does not certify",
+        "does not promote",
+        "does not enforce",
+        "does not authorize",
+    ]:
+        assert phrase not in md, phrase
+
+
+def test_prl_evidence_changes_evidence_hash(policy: dict[str, Any]) -> None:
+    """PRL evidence is part of the evidence_hash input.
+
+    Two evaluations with identical CLP/AGL but different PRL evidence must
+    produce different evidence_hash values, so PRL refs are not silently
+    elided from the hash inputs.
+    """
+    prl_a = _prl_gate_result(
+        gate_recommendation="gate_warn",
+        failure_classes=["pytest_selection_missing"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-aa00aa00aa00aa00"],
+        repair_candidate_refs=["prl_repair_candidate:prl-rc-aa00aa00aa00aa00"],
+        eval_candidate_refs=["eval_case_candidate:prl-ec-aa00aa00aa00aa00"],
+    )
+    prl_b = _prl_gate_result(
+        gate_recommendation="gate_warn",
+        failure_classes=["pytest_selection_missing"],
+        failure_packet_refs=["pre_pr_failure_packet:prl-pkt-bb00bb00bb00bb00"],
+        repair_candidate_refs=["prl_repair_candidate:prl-rc-bb00bb00bb00bb00"],
+        eval_candidate_refs=["eval_case_candidate:prl-ec-bb00bb00bb00bb00"],
+    )
+    ev_a = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl_a,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    ev_b = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=prl_b,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+    )
+    assert ev_a["evidence_hash"] != ev_b["evidence_hash"]
