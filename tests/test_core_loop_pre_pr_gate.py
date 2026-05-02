@@ -53,7 +53,12 @@ def _all_pass_checks() -> list[dict]:
     ]
 
 
-def _gate(checks: list[dict], *, repo_mutating: bool = True) -> dict:
+def _gate(
+    checks: list[dict],
+    *,
+    repo_mutating: bool = True,
+    evl_shard_evidence: dict | None = None,
+) -> dict:
     art = build_gate_result(
         work_item_id="CLP-01-TEST",
         agent_type="claude",
@@ -62,6 +67,7 @@ def _gate(checks: list[dict], *, repo_mutating: bool = True) -> dict:
         head_ref="HEAD",
         changed_files=["scripts/run_core_loop_pre_pr_gate.py"],
         checks=checks,
+        evl_shard_evidence=evl_shard_evidence,
     )
     validate_artifact(art, "core_loop_pre_pr_gate_result")
     return art
@@ -124,6 +130,7 @@ def test_check_names_cover_required_set():
         "tls_generated_artifact_freshness",
         "contract_preflight",
         "selected_tests",
+        "evl_shard_artifacts",
     }
     for name, owner in CHECK_OWNER.items():
         assert owner in {
@@ -673,3 +680,472 @@ def test_clp_runner_docstring_keeps_subordination_language():
     assert "Authority scope: observation_only" not in head
     # Forbid the malformed "owns policy" or "decides policy" claims.
     assert "decide policy" not in head.lower() or "does not" in head.lower()
+
+
+# ---------------------------------------------------------------------------
+# PAR-CLP-01: EVL shard artifact evidence consumption
+# ---------------------------------------------------------------------------
+
+
+from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (  # noqa: E402
+    consume_shard_artifacts,
+)
+
+
+def _shard_artifact(
+    *,
+    shard_name: str,
+    status: str = "pass",
+    output_artifact_refs: list[str] | None = None,
+    reason_codes: list[str] | None = None,
+    selected_tests: list[str] | None = None,
+    command: str | None = "python -m pytest -q",
+    exit_code: int | None = 0,
+    duration_seconds: float = 1.0,
+) -> dict:
+    return {
+        "artifact_type": "pr_test_shard_result",
+        "schema_version": "1.0.0",
+        "shard_name": shard_name,
+        "status": status,
+        "selected_tests": list(selected_tests or ["tests/test_x.py"]),
+        "command": command,
+        "exit_code": exit_code,
+        "duration_seconds": duration_seconds,
+        "output_artifact_refs": list(
+            output_artifact_refs
+            if output_artifact_refs is not None
+            else [f"outputs/pr_test_shards/{shard_name}.json"]
+        ),
+        "reason_codes": list(reason_codes or []),
+        "created_at": "2026-05-01T00:00:00Z",
+        "authority_scope": "observation_only",
+    }
+
+
+def _shard_summary(
+    *,
+    shard_status: dict[str, str],
+    required_shards: list[str],
+    overall_status: str = "pass",
+    blocking_reasons: list[str] | None = None,
+    shard_artifact_refs: list[str] | None = None,
+) -> dict:
+    return {
+        "artifact_type": "pr_test_shards_summary",
+        "schema_version": "1.0.0",
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "shard_status": shard_status,
+        "required_shards": list(required_shards),
+        "shard_artifact_refs": list(
+            shard_artifact_refs
+            or [f"outputs/pr_test_shards/{s}.json" for s in shard_status]
+        ),
+        "overall_status": overall_status,
+        "blocking_reasons": list(blocking_reasons or []),
+        "created_at": "2026-05-01T00:00:00Z",
+        "authority_scope": "observation_only",
+    }
+
+
+def _write_shard_dir(
+    tmp_path: Path,
+    *,
+    summary: dict | None,
+    artifacts: dict[str, dict],
+) -> Path:
+    shard_dir = tmp_path / "outputs" / "pr_test_shards"
+    shard_dir.mkdir(parents=True, exist_ok=True)
+    if summary is not None:
+        (shard_dir / "pr_test_shards_summary.json").write_text(
+            json.dumps(summary), encoding="utf-8"
+        )
+    for shard_name, artifact in artifacts.items():
+        (shard_dir / f"{shard_name}.json").write_text(
+            json.dumps(artifact), encoding="utf-8"
+        )
+    return shard_dir
+
+
+REQUIRED_TEST_SHARDS = ["contract", "governance", "changed_scope"]
+
+
+def test_clp_pass_when_all_required_shard_artifacts_pass(tmp_path):
+    """1. all required shard artifacts pass -> CLP pass observation."""
+    summary = _shard_summary(
+        shard_status={s: "pass" for s in REQUIRED_TEST_SHARDS},
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="pass",
+    )
+    artifacts = {s: _shard_artifact(shard_name=s) for s in REQUIRED_TEST_SHARDS}
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+
+    assert check["status"] == "pass"
+    assert evidence["evl_shard_status"] == "pass"
+    assert evidence["evl_missing_shards"] == []
+    assert evidence["evl_failed_shards"] == []
+    assert evidence["evl_unknown_shards"] == []
+    assert evidence["evl_skipped_shards"] == []
+    assert evidence["evl_shard_summary_ref"] is not None
+    # Per-shard artifact refs are surfaced.
+    for s in REQUIRED_TEST_SHARDS:
+        assert any(s in ref for ref in evidence["evl_shard_artifact_refs"])
+
+    art = _gate(_all_pass_checks(), evl_shard_evidence=evidence)
+    assert art["gate_status"] == "pass"
+    assert art["evl_shard_evidence"]["evl_shard_status"] == "pass"
+
+
+def test_clp_blocks_on_missing_required_shard_artifact(tmp_path):
+    """2. missing shard artifact -> block."""
+    summary = _shard_summary(
+        shard_status={s: "pass" for s in REQUIRED_TEST_SHARDS},
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="pass",
+    )
+    # Write only two of the three required shard artifacts.
+    artifacts = {
+        "contract": _shard_artifact(shard_name="contract"),
+        "governance": _shard_artifact(shard_name="governance"),
+    }
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+
+    assert check["status"] == "block"
+    assert "changed_scope" in evidence["evl_missing_shards"]
+    assert any(
+        "changed_scope:required_shard_artifact_missing" in r
+        for r in evidence["evl_shard_reason_codes"]
+    )
+    assert check["failure_class"] == "evl_shard_evidence_missing"
+
+
+def test_clp_blocks_on_failed_required_shard(tmp_path):
+    """3. failed shard -> block."""
+    summary = _shard_summary(
+        shard_status={
+            "contract": "pass",
+            "governance": "fail",
+            "changed_scope": "pass",
+        },
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="block",
+        blocking_reasons=["governance:required_shard_failed"],
+    )
+    artifacts = {
+        "contract": _shard_artifact(shard_name="contract"),
+        "governance": _shard_artifact(
+            shard_name="governance",
+            status="fail",
+            exit_code=1,
+            reason_codes=["pytest_returncode_1"],
+        ),
+        "changed_scope": _shard_artifact(shard_name="changed_scope"),
+    }
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+
+    assert check["status"] == "block"
+    assert "governance" in evidence["evl_failed_shards"]
+    assert any(
+        "governance:required_shard_failed" in r
+        for r in evidence["evl_shard_reason_codes"]
+    )
+
+
+def test_clp_blocks_on_unknown_required_shard(tmp_path):
+    """4. unknown shard -> block."""
+    summary = _shard_summary(
+        shard_status={
+            "contract": "pass",
+            "governance": "unknown",
+            "changed_scope": "pass",
+        },
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="block",
+        blocking_reasons=["governance:required_shard_unknown"],
+    )
+    artifacts = {
+        "contract": _shard_artifact(shard_name="contract"),
+        "governance": _shard_artifact(
+            shard_name="governance",
+            status="unknown",
+            exit_code=None,
+            command=None,
+            reason_codes=["unknown_selector_status:none"],
+        ),
+        "changed_scope": _shard_artifact(shard_name="changed_scope"),
+    }
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+
+    assert check["status"] == "block"
+    assert "governance" in evidence["evl_unknown_shards"]
+    assert evidence["evl_shard_status"] in {"block", "unknown"}
+
+
+def test_clp_blocks_on_skipped_required_shard_without_policy_allowance(tmp_path):
+    """5. skipped shard without policy allowance -> block."""
+    summary = _shard_summary(
+        shard_status={
+            "contract": "pass",
+            "governance": "skipped",
+            "changed_scope": "pass",
+        },
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="pass",
+    )
+    artifacts = {
+        "contract": _shard_artifact(shard_name="contract"),
+        "governance": _shard_artifact(
+            shard_name="governance",
+            status="skipped",
+            exit_code=None,
+            command=None,
+            selected_tests=[],
+            reason_codes=["empty_allowed_by_selector"],
+        ),
+        "changed_scope": _shard_artifact(shard_name="changed_scope"),
+    }
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+        allowed_skipped_shards=(),
+    )
+
+    assert check["status"] == "block"
+    assert "governance" in evidence["evl_skipped_shards"]
+    assert any(
+        "governance:required_shard_skipped" in r
+        for r in evidence["evl_shard_reason_codes"]
+    )
+
+    # Same scenario, but policy explicitly allows the skip — pass.
+    evidence_allowed, check_allowed = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+        allowed_skipped_shards=("governance",),
+    )
+    assert check_allowed["status"] == "pass"
+    assert "governance" in evidence_allowed["evl_skipped_shards"]
+
+
+def test_clp_blocks_pass_shard_without_output_artifact_refs(tmp_path):
+    """6. passing shard without output_artifact_refs -> block.
+
+    A pass shard with no output_artifact_refs violates the upstream
+    contract; CLP must surface that as a block, not a pass.
+    """
+    summary = _shard_summary(
+        shard_status={s: "pass" for s in REQUIRED_TEST_SHARDS},
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="pass",
+    )
+    # Build a "pass" shard artifact directly (we cannot route this through
+    # validate_artifact since the upstream schema rejects it; CLP's job is
+    # exactly to catch that case if it ever lands on disk).
+    artifacts = {
+        "contract": _shard_artifact(
+            shard_name="contract",
+            output_artifact_refs=[],
+        ),
+        "governance": _shard_artifact(shard_name="governance"),
+        "changed_scope": _shard_artifact(shard_name="changed_scope"),
+    }
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+
+    assert check["status"] == "block"
+    assert any(
+        "contract:pass_shard_missing_output_artifact_refs" in r
+        for r in evidence["evl_shard_reason_codes"]
+    )
+
+
+def test_clp_blocks_non_pass_shard_without_reason_codes(tmp_path):
+    """7. non-pass shard without reason_codes -> block."""
+    summary = _shard_summary(
+        shard_status={
+            "contract": "pass",
+            "governance": "fail",
+            "changed_scope": "pass",
+        },
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="block",
+        blocking_reasons=["governance:required_shard_failed"],
+    )
+    artifacts = {
+        "contract": _shard_artifact(shard_name="contract"),
+        # Fail shard with no reason_codes — violates upstream contract.
+        "governance": _shard_artifact(
+            shard_name="governance",
+            status="fail",
+            exit_code=1,
+            reason_codes=[],
+        ),
+        "changed_scope": _shard_artifact(shard_name="changed_scope"),
+    }
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+
+    assert check["status"] == "block"
+    assert any(
+        "governance:non_pass_shard_missing_reason_codes" in r
+        for r in evidence["evl_shard_reason_codes"]
+    )
+
+
+def test_clp_does_not_recompute_shard_results(tmp_path, monkeypatch):
+    """8. CLP must not rerun pytest if shard artifacts exist and are valid.
+
+    Asserts that the consume helper never spawns subprocess. We patch
+    subprocess.run to fail loudly if invoked.
+    """
+    import subprocess as _subprocess
+
+    def _explode(*args, **kwargs):  # noqa: ARG001
+        raise AssertionError(
+            "consume_shard_artifacts must not invoke subprocess"
+        )
+
+    monkeypatch.setattr(_subprocess, "run", _explode)
+
+    summary = _shard_summary(
+        shard_status={s: "pass" for s in REQUIRED_TEST_SHARDS},
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="pass",
+    )
+    artifacts = {s: _shard_artifact(shard_name=s) for s in REQUIRED_TEST_SHARDS}
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+    assert check["status"] == "pass"
+    assert evidence["evl_shard_status"] == "pass"
+
+
+def test_clp_preserves_observation_only_authority_with_shard_evidence(tmp_path):
+    """9. CLP preserves observation-only authority boundary.
+
+    Even with shard evidence attached, the artifact must remain
+    observation_only and must not adopt any approval/certification/
+    promotion/enforcement vocabulary.
+    """
+    summary = _shard_summary(
+        shard_status={s: "pass" for s in REQUIRED_TEST_SHARDS},
+        required_shards=REQUIRED_TEST_SHARDS,
+        overall_status="pass",
+    )
+    artifacts = {s: _shard_artifact(shard_name=s) for s in REQUIRED_TEST_SHARDS}
+    shard_dir = _write_shard_dir(tmp_path, summary=summary, artifacts=artifacts)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+    art = _gate(_all_pass_checks(), evl_shard_evidence=evidence)
+
+    assert art["authority_scope"] == "observation_only"
+    forbidden = {
+        "approval",
+        "certification",
+        "promotion",
+        "enforcement",
+        "approved",
+        "certified",
+        "promoted",
+        "enforced",
+        "verdict",
+    }
+    payload_lower = json.dumps(art).lower()
+    for term in forbidden:
+        assert f'"{term}"' not in payload_lower, term
+    # Schema-side: bumping the gate to a forbidden authority value must
+    # still fail validation.
+    bad = dict(art)
+    bad["authority_scope"] = "binding"
+    with pytest.raises(Exception):
+        validate_artifact(bad, "core_loop_pre_pr_gate_result")
+
+
+def test_clp_blocks_when_summary_is_missing(tmp_path):
+    """No summary on disk = unknown shard evidence -> block."""
+    shard_dir = tmp_path / "outputs" / "pr_test_shards"
+    shard_dir.mkdir(parents=True, exist_ok=True)
+
+    evidence, check = consume_shard_artifacts(
+        shard_dir=shard_dir,
+        repo_root=tmp_path,
+        required_shards=tuple(REQUIRED_TEST_SHARDS),
+    )
+
+    assert check["status"] == "block"
+    assert evidence["evl_shard_status"] == "unknown"
+    assert "pr_test_shards_summary_missing" in evidence["evl_shard_reason_codes"]
+
+
+def test_clp_evl_shard_evidence_field_is_optional_in_schema():
+    """The schema must permit a CLP result without evl_shard_evidence
+    (backwards compat) — but when present, it must validate."""
+    art = _gate(_all_pass_checks())
+    assert "evl_shard_evidence" not in art
+    validate_artifact(art, "core_loop_pre_pr_gate_result")
+
+    # And present-but-malformed evidence must be rejected.
+    art2 = _gate(_all_pass_checks(), evl_shard_evidence={
+        "evl_shard_artifact_refs": [],
+        "evl_shard_summary_ref": None,
+        "evl_shard_status": "pass",
+        "evl_required_shards": [],
+        "evl_missing_shards": [],
+        "evl_failed_shards": [],
+        "evl_unknown_shards": [],
+        "evl_skipped_shards": [],
+        "evl_shard_reason_codes": [],
+    })
+    validate_artifact(art2, "core_loop_pre_pr_gate_result")
+    bad = dict(art2)
+    bad["evl_shard_evidence"] = dict(art2["evl_shard_evidence"])
+    bad["evl_shard_evidence"]["evl_shard_status"] = "approved"
+    with pytest.raises(Exception):
+        validate_artifact(bad, "core_loop_pre_pr_gate_result")

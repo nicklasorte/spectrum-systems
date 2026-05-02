@@ -30,6 +30,7 @@ REQUIRED_CHECK_NAMES: tuple[str, ...] = (
     "tls_generated_artifact_freshness",
     "contract_preflight",
     "selected_tests",
+    "evl_shard_artifacts",
 )
 
 # Re-exported gate-status constants. CLP-02 modules consume these so they do
@@ -51,6 +52,7 @@ CHECK_OWNER: dict[str, str] = {
     "tls_generated_artifact_freshness": "LIN",
     "contract_preflight": "EVL",
     "selected_tests": "EVL",
+    "evl_shard_artifacts": "EVL",
 }
 
 KNOWN_FAILURE_CLASSES: frozenset[str] = frozenset(
@@ -71,6 +73,14 @@ KNOWN_FAILURE_CLASSES: frozenset[str] = frozenset(
         "replay_mismatch",
         "rate_limited",
         "timeout",
+        "evl_shard_evidence_missing",
+        "evl_shard_evidence_invalid",
+        "evl_required_shard_failed",
+        "evl_required_shard_missing",
+        "evl_required_shard_unknown",
+        "evl_required_shard_skipped",
+        "evl_pass_shard_missing_artifact_refs",
+        "evl_non_pass_shard_missing_reason_codes",
     }
 )
 
@@ -245,6 +255,7 @@ def build_gate_result(
     replay_refs: list[str] | None = None,
     generated_at: str | None = None,
     gate_id: str | None = None,
+    evl_shard_evidence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble a fully-validated ``core_loop_pre_pr_gate_result`` payload."""
     if agent_type not in {"codex", "claude", "other", "unknown"}:
@@ -268,7 +279,7 @@ def build_gate_result(
                     or "outputs/core_loop_pre_pr_gate/missing_output_ref.json",
                 }
             )
-    return {
+    payload: dict[str, Any] = {
         "artifact_type": "core_loop_pre_pr_gate_result",
         "schema_version": "1.0.0",
         "gate_id": gid,
@@ -291,6 +302,9 @@ def build_gate_result(
         "human_review_required": human_review_required,
         "generated_at": ts,
     }
+    if evl_shard_evidence is not None:
+        payload["evl_shard_evidence"] = dict(evl_shard_evidence)
+    return payload
 
 
 def hash_paths(paths: Iterable[Path]) -> dict[str, str]:
@@ -321,3 +335,252 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
 def gate_status_to_exit_code(gate_status: str) -> int:
     """Map gate_status to script exit code (0=pass, 1=warn, 2=block)."""
     return {"pass": 0, "warn": 1, "block": 2}.get(gate_status, 2)
+
+
+# ---------------------------------------------------------------------------
+# EVL shard evidence consumption (PAR-CLP-01)
+# ---------------------------------------------------------------------------
+#
+# CLP consumes existing per-shard ``pr_test_shard_result`` artifacts and the
+# ``pr_test_shards_summary`` artifact written by ``scripts/run_pr_test_shards.py``.
+# CLP does not recompute shard results. It records artifact-backed shard
+# observations (``evl_shard_evidence``) and surfaces a derived
+# ``evl_shard_artifacts`` check for ``evaluate_gate``.
+
+_VALID_SHARD_STATUSES: frozenset[str] = frozenset(
+    {"pass", "fail", "skipped", "missing", "unknown"}
+)
+
+
+def _empty_shard_evidence() -> dict[str, Any]:
+    return {
+        "evl_shard_artifact_refs": [],
+        "evl_shard_summary_ref": None,
+        "evl_shard_status": "unknown",
+        "evl_required_shards": [],
+        "evl_missing_shards": [],
+        "evl_failed_shards": [],
+        "evl_unknown_shards": [],
+        "evl_skipped_shards": [],
+        "evl_shard_reason_codes": [],
+    }
+
+
+def _read_shard_artifact(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("artifact_type") != "pr_test_shard_result":
+        return None
+    return payload
+
+
+def _read_shard_summary(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("artifact_type") != "pr_test_shards_summary":
+        return None
+    return payload
+
+
+def consume_shard_artifacts(
+    *,
+    shard_dir: Path,
+    repo_root: Path,
+    required_shards: tuple[str, ...] | list[str],
+    allowed_skipped_shards: tuple[str, ...] | list[str] = (),
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Consume per-shard artifacts and emit (evl_shard_evidence, check) pair.
+
+    ``shard_dir`` is the directory written by ``scripts/run_pr_test_shards.py``
+    (defaults to ``outputs/pr_test_shards``). The summary artifact lives at
+    ``shard_dir / pr_test_shards_summary.json`` and per-shard artifacts at
+    ``shard_dir / <shard>.json``.
+
+    Behavior (fail-closed):
+      - Missing summary -> evl_shard_status=unknown, block check.
+      - Missing required shard artifact -> block check.
+      - Required shard status fail/missing/unknown -> block.
+      - Required shard status skipped, not in ``allowed_skipped_shards`` -> block.
+      - pass shard with empty output_artifact_refs -> block.
+      - non-pass shard with empty reason_codes -> block.
+      - Otherwise -> pass.
+
+    CLP does not recompute shard selection. The summary's overall_status is
+    used as a corroborating signal but the required-shard scan is the
+    primary readiness observation.
+    """
+    evidence = _empty_shard_evidence()
+    evidence["evl_required_shards"] = list(required_shards)
+
+    summary_path = shard_dir / "pr_test_shards_summary.json"
+    summary = _read_shard_summary(summary_path)
+    summary_ref: str | None
+    if summary is not None and summary_path.is_file():
+        try:
+            summary_ref = str(summary_path.relative_to(repo_root))
+        except ValueError:
+            summary_ref = str(summary_path)
+        evidence["evl_shard_summary_ref"] = summary_ref
+    else:
+        summary_ref = None
+
+    artifact_refs: list[str] = []
+    reason_codes: list[str] = []
+    failure_class: str | None = None
+    status = "pass"
+    next_action = "none"
+
+    if summary is None:
+        status = "block"
+        failure_class = "evl_shard_evidence_missing"
+        reason_codes.append("pr_test_shards_summary_missing")
+        evidence["evl_shard_status"] = "unknown"
+        evidence["evl_shard_reason_codes"] = list(reason_codes)
+        try:
+            output_ref = str(summary_path.relative_to(repo_root))
+        except ValueError:
+            output_ref = str(summary_path)
+        check = build_check(
+            check_name="evl_shard_artifacts",
+            command="(read outputs/pr_test_shards/pr_test_shards_summary.json)",
+            status=status,
+            output_ref=output_ref,
+            failure_class=failure_class,
+            reason_codes=reason_codes,
+            next_action="run scripts/run_pr_test_shards.py to produce shard artifacts",
+        )
+        return evidence, check
+
+    artifact_refs.append(summary_ref) if summary_ref else None
+    summary_overall = str(summary.get("overall_status") or "").lower()
+    summary_blocking = list(summary.get("blocking_reasons") or [])
+
+    allowed_skipped = set(allowed_skipped_shards)
+    missing: list[str] = []
+    failed: list[str] = []
+    unknown: list[str] = []
+    skipped: list[str] = []
+
+    for shard_name in required_shards:
+        shard_artifact_path = shard_dir / f"{shard_name}.json"
+        shard_artifact = _read_shard_artifact(shard_artifact_path)
+        if shard_artifact is None:
+            missing.append(shard_name)
+            reason_codes.append(f"{shard_name}:required_shard_artifact_missing")
+            continue
+        try:
+            ref = str(shard_artifact_path.relative_to(repo_root))
+        except ValueError:
+            ref = str(shard_artifact_path)
+        if ref not in artifact_refs:
+            artifact_refs.append(ref)
+        shard_status = str(shard_artifact.get("status") or "").lower()
+        if shard_status not in _VALID_SHARD_STATUSES:
+            unknown.append(shard_name)
+            reason_codes.append(f"{shard_name}:required_shard_status_unknown")
+            continue
+        if shard_status == "fail":
+            failed.append(shard_name)
+            reason_codes.append(f"{shard_name}:required_shard_failed")
+        elif shard_status == "missing":
+            missing.append(shard_name)
+            reason_codes.append(f"{shard_name}:required_shard_missing")
+        elif shard_status == "unknown":
+            unknown.append(shard_name)
+            reason_codes.append(f"{shard_name}:required_shard_unknown")
+        elif shard_status == "skipped":
+            skipped.append(shard_name)
+            if shard_name not in allowed_skipped:
+                reason_codes.append(f"{shard_name}:required_shard_skipped")
+        else:  # pass
+            shard_refs = shard_artifact.get("output_artifact_refs") or []
+            if not shard_refs:
+                reason_codes.append(
+                    f"{shard_name}:pass_shard_missing_output_artifact_refs"
+                )
+                failed.append(shard_name)
+            for r in shard_refs:
+                if isinstance(r, str) and r and r not in artifact_refs:
+                    artifact_refs.append(r)
+        # Non-pass shard MUST carry reason_codes per upstream contract; if
+        # the artifact violates that, surface a CLP-side observation.
+        if shard_status != "pass" and not shard_artifact.get("reason_codes"):
+            reason_codes.append(
+                f"{shard_name}:non_pass_shard_missing_reason_codes"
+            )
+
+    # Other (non-required) per-shard artifacts referenced by the summary
+    # are still surfaced as artifact refs so consumers can audit the full
+    # shard set without re-reading the summary.
+    for ref in summary.get("shard_artifact_refs") or []:
+        if isinstance(ref, str) and ref and ref not in artifact_refs:
+            artifact_refs.append(ref)
+
+    evidence["evl_shard_artifact_refs"] = artifact_refs
+    evidence["evl_missing_shards"] = sorted(set(missing))
+    evidence["evl_failed_shards"] = sorted(set(failed))
+    evidence["evl_unknown_shards"] = sorted(set(unknown))
+    evidence["evl_skipped_shards"] = sorted(set(skipped))
+    evidence["evl_shard_reason_codes"] = list(reason_codes)
+
+    if failed or missing or unknown:
+        status = "block"
+    elif any(s not in allowed_skipped for s in skipped):
+        status = "block"
+    elif summary_overall == "block":
+        # Summary's own observation says block — surface it even if our
+        # required-shard scan came up clean (defensive fail-closed).
+        status = "block"
+        for blocking_reason in summary_blocking:
+            if isinstance(blocking_reason, str) and blocking_reason:
+                if blocking_reason not in reason_codes:
+                    reason_codes.append(blocking_reason)
+    elif summary_overall not in {"pass", "block"}:
+        status = "block"
+        reason_codes.append(f"summary_overall_status_{summary_overall or 'empty'}")
+
+    if status == "pass":
+        evidence["evl_shard_status"] = "pass"
+    else:
+        # Distinguish unknown summary state from an explicit block.
+        if summary_overall in {"pass", "block"}:
+            evidence["evl_shard_status"] = "block"
+        else:
+            evidence["evl_shard_status"] = "unknown"
+
+    if status == "block":
+        if missing or unknown:
+            failure_class = "evl_shard_evidence_missing"
+        else:
+            failure_class = "evl_required_shard_failed"
+        next_action = "repair_failing_or_missing_shards"
+        if not reason_codes:
+            reason_codes.append("evl_shard_evidence_block")
+
+    evidence["evl_shard_reason_codes"] = list(reason_codes)
+
+    output_ref = summary_ref or (
+        str(shard_dir.relative_to(repo_root)) if shard_dir.is_dir() else None
+    )
+    check = build_check(
+        check_name="evl_shard_artifacts",
+        command="(consume outputs/pr_test_shards/*.json + summary)",
+        status=status,
+        output_ref=output_ref,
+        failure_class=failure_class,
+        reason_codes=reason_codes,
+        next_action=next_action,
+    )
+    return evidence, check

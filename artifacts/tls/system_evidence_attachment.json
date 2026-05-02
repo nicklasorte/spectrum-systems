@@ -614,6 +614,7 @@
           "scripts/build_dashboard_3ls_with_tls.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
+          "scripts/run_core_loop_pre_pr_gate.py",
           "scripts/run_done_certification.py",
           "scripts/run_eval_ci_gate.py",
           "scripts/run_pr_test_shards.py",
@@ -650,7 +651,7 @@
           "tests/test_authority_drift_regression.py"
         ]
       },
-      "evidence_count": 114,
+      "evidence_count": 115,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
