@@ -56,8 +56,8 @@
           "docs/review-actions/F3L-01_fix_actions.md",
           "docs/review-actions/F3L-02_fix_actions.md",
           "docs/review-actions/F3L-03_fix_actions.md",
-          "docs/review-actions/M3L-03_fix_actions.md",
-          "docs/review-actions/PLAN-AEX-001-2026-04-12.md"
+          "docs/review-actions/F3L-04_fix_actions.md",
+          "docs/review-actions/M3L-03_fix_actions.md"
         ],
         "modules": [
           "spectrum_systems/aex/__init__.py",
@@ -595,6 +595,7 @@
           "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/failure_trace.py",
           "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/eval_regression_intake.py",
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_3ls_path_measurement.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
@@ -602,8 +603,7 @@
           "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/authority_preflight_expanded.py",
-          "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
-          "spectrum_systems/modules/runtime/bne02_full_wave.py"
+          "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -622,6 +622,7 @@
           "scripts/run_done_certification.py",
           "scripts/run_eval_ci_gate.py",
           "scripts/run_pr_test_shards.py",
+          "scripts/run_pre_pr_reliability_gate.py",
           "scripts/run_rax_redteam_arch_01.py",
           "scripts/run_rax_redteam_harness_01.py",
           "scripts/validate_system_registry.py",
@@ -646,16 +647,16 @@
           "tests/mvp-6/extraction-eval-gate.test.ts",
           "tests/mvp-9/draft-eval-gate.test.ts",
           "tests/prl/test_eval_generator.py",
+          "tests/prl/test_eval_regression_intake.py",
           "tests/prl/test_failure_classifier.py",
           "tests/test_3ls_phase2_context_eval.py",
           "tests/test_agent_3ls_path_measurement.py",
           "tests/test_agent_core_loop_proof.py",
           "tests/test_agent_instruction_apr_m3l_required.py",
-          "tests/test_agent_pr_precheck.py",
-          "tests/test_authority_drift_regression.py"
+          "tests/test_agent_pr_precheck.py"
         ]
       },
-      "evidence_count": 117,
+      "evidence_count": 118,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -1299,6 +1300,7 @@
           "docs/review-actions/F3L-01_fix_actions.md",
           "docs/review-actions/F3L-02_fix_actions.md",
           "docs/review-actions/F3L-03_fix_actions.md",
+          "docs/review-actions/F3L-04_fix_actions.md",
           "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CANONICAL-ID-STANDARD-REFINED-2026-03-18.md",
@@ -1307,8 +1309,7 @@
           "docs/review-actions/PLAN-FIX-01-cycle-runner-promotion-regression.md",
           "docs/review-actions/PLAN-IFB-001-2026-04-15.md",
           "docs/review-actions/PLAN-PMH-002-2026-04-16.md",
-          "docs/review-actions/PLAN-PMH-003-2026-04-17.md",
-          "docs/review-actions/PLAN-PRA-NSX-PRG-001-2026-04-17.md"
+          "docs/review-actions/PLAN-PMH-003-2026-04-17.md"
         ],
         "modules": [
           "spectrum_systems/aex/observability_emitter.py",
@@ -2041,6 +2042,7 @@
           "docs/review-actions/F3L-01_fix_actions.md",
           "docs/review-actions/F3L-02_fix_actions.md",
           "docs/review-actions/F3L-03_fix_actions.md",
+          "docs/review-actions/F3L-04_fix_actions.md",
           "docs/review-actions/PAR-CI-01_fix_actions.md",
           "docs/review-actions/PLAN-BATCH-FRE-001-2026-04-12.md",
           "docs/review-actions/PLAN-RAX-FRE-SERIAL-01-2026-04-12.md",
@@ -2052,13 +2054,15 @@
           "docs/reviews/CLP-02_require_pre_pr_gate_redteam.md",
           "docs/reviews/F3L-01_redteam.md",
           "docs/reviews/F3L-02_redteam.md",
-          "docs/reviews/F3L-03_redteam.md"
+          "docs/reviews/F3L-03_redteam.md",
+          "docs/reviews/F3L-04_redteam.md"
         ],
         "modules": [
           "spectrum_systems/modules/prl/__init__.py",
           "spectrum_systems/modules/prl/artifact_builder.py",
           "spectrum_systems/modules/prl/clp_consumer.py",
           "spectrum_systems/modules/prl/eval_generator.py",
+          "spectrum_systems/modules/prl/eval_regression_intake.py",
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/prl/failure_parser.py",
           "spectrum_systems/modules/prl/repair_generator.py",
@@ -2089,6 +2093,7 @@
           "tests/prl/__init__.py",
           "tests/prl/test_artifact_builder.py",
           "tests/prl/test_eval_generator.py",
+          "tests/prl/test_eval_regression_intake.py",
           "tests/prl/test_failure_classifier.py",
           "tests/prl/test_failure_parser.py",
           "tests/prl/test_pre_pr_gate.py",
@@ -2108,7 +2113,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 75,
+      "evidence_count": 79,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"
@@ -2314,6 +2319,7 @@
           "docs/review-actions/F3L-01_fix_actions.md",
           "docs/review-actions/F3L-02_fix_actions.md",
           "docs/review-actions/F3L-03_fix_actions.md",
+          "docs/review-actions/F3L-04_fix_actions.md",
           "docs/review-actions/M3L-03_fix_actions.md",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
@@ -2324,8 +2330,7 @@
           "docs/review-actions/PLAN-PMH-003-2026-04-17.md",
           "docs/review-actions/PLAN-PRA-NSX-PRG-001-2026-04-17.md",
           "docs/review-actions/PLAN-R100-001-2026-04-15.md",
-          "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
-          "docs/review-actions/PLAN-RWA-001-2026-04-16.md"
+          "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md"
         ],
         "modules": [
           "spectrum_systems/aex/admission_replay.py",

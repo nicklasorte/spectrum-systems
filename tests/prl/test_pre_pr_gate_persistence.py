@@ -652,6 +652,145 @@ def test_index_disk_round_trip_preserves_evidence_hash(tmp_path: Path) -> None:
     assert payload["evidence_hash"] == expected
 
 
+# ---------------------------------------------------------------------------
+# F3L-04 — eval-regression intake record persistence
+# ---------------------------------------------------------------------------
+
+
+def test_run_gate_writes_eval_regression_intake_record(tmp_path: Path) -> None:
+    """prl_eval_regression_intake_record.json is written and validates."""
+    import jsonschema
+
+    run_gate = _import_run_gate()
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-test-intake-persist",
+            trace_id="trace-test-intake-persist",
+            skip_pytest=True,
+            output_dir=tmp_path,
+        )
+    intake_path = tmp_path / "prl_eval_regression_intake_record.json"
+    assert intake_path.is_file()
+    payload = json.loads(intake_path.read_text(encoding="utf-8"))
+    assert payload["artifact_type"] == "prl_eval_regression_intake_record"
+    assert payload["source_system"] == "PRL"
+    assert payload["authority_scope"] == "observation_only"
+    assert payload["intake_status"] == "present"
+    assert payload["coverage_intent"] == "regression_candidate"
+    assert payload["candidate_count"] >= 1
+    assert payload["eval_candidate_refs"], (
+        "intake_status=present requires non-empty eval_candidate_refs"
+    )
+    assert payload["prl_artifact_index_ref"]
+    assert payload["evidence_hash"].startswith("sha256-")
+    schema = json.loads(
+        Path(
+            "contracts/schemas/prl_eval_regression_intake_record.schema.json"
+        ).read_text(encoding="utf-8")
+    )
+    jsonschema.validate(payload, schema)
+
+
+def test_intake_record_links_back_to_failure_packets_and_index(
+    tmp_path: Path,
+) -> None:
+    """Intake record's failure-packet refs and index ref must match files
+    PRL actually persisted in the same run."""
+    run_gate = _import_run_gate()
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-test-intake-links",
+            trace_id="trace-test-intake-links",
+            skip_pytest=True,
+            output_dir=tmp_path,
+        )
+    intake = json.loads(
+        (tmp_path / "prl_eval_regression_intake_record.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    index_ref = intake["prl_artifact_index_ref"]
+    assert "prl_artifact_index.json" in index_ref
+    assert intake["source_failure_packet_refs"], (
+        "intake must bind back to source failure packets"
+    )
+    for fp_ref in intake["source_failure_packet_refs"]:
+        assert fp_ref.endswith(".json")
+        assert "failure_packets/" in fp_ref
+
+
+def test_clean_run_writes_missing_intake_record(tmp_path: Path) -> None:
+    """A clean run still writes an intake record with intake_status=missing
+    and coverage_intent=not_applicable, with no_failures_detected reason."""
+    run_gate = _import_run_gate()
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (0, "")
+        run_gate(
+            run_id="run-test-intake-clean",
+            trace_id="trace-test-intake-clean",
+            skip_pytest=True,
+            output_dir=tmp_path,
+        )
+    intake = json.loads(
+        (tmp_path / "prl_eval_regression_intake_record.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert intake["intake_status"] == "missing"
+    assert intake["coverage_intent"] == "not_applicable"
+    assert "no_failures_detected" in intake["reason_codes"]
+
+
+def test_intake_record_evidence_hash_changes_when_candidates_change(
+    tmp_path: Path,
+) -> None:
+    """Different failure surfaces produce different evidence hashes so
+    repeated failures can be distinguished as distinct regression intake
+    evidence."""
+    run_gate = _import_run_gate()
+    out_a = tmp_path / "a"
+    out_b = tmp_path / "b"
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (0, "")
+        run_gate(
+            run_id="run-clean-intake",
+            trace_id="trace-clean-intake",
+            skip_pytest=True,
+            output_dir=out_a,
+        )
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-fail-intake",
+            trace_id="trace-fail-intake",
+            skip_pytest=True,
+            output_dir=out_b,
+        )
+    clean = json.loads(
+        (out_a / "prl_eval_regression_intake_record.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    failed = json.loads(
+        (out_b / "prl_eval_regression_intake_record.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert clean["evidence_hash"] != failed["evidence_hash"]
+    assert clean["intake_status"] == "missing"
+    assert failed["intake_status"] == "present"
+
+
 def test_partial_index_yields_reason_codes() -> None:
     """An index with reason_codes propagates them to APU evaluation."""
     from spectrum_systems.modules.runtime.agent_pr_update_policy import (

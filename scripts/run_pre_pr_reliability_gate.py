@@ -41,6 +41,14 @@ Output (F3L-03):
   read it as the canonical entrypoint into the PRL evidence chain on
   disk. PRL retains classification, repair-candidate, and
   eval-candidate authority; the index does not introduce a new gate.
+
+  F3L-04 — additionally writes ``prl_eval_regression_intake_record.json``
+  alongside the index. The record proves PRL eval candidates produced
+  from CLP/PRL failures have been routed into governed regression-
+  coverage intake. PRL emits the candidate/intake evidence only; final
+  eval acceptance, coverage, and dataset semantics remain with EVL per
+  ``docs/architecture/system_registry.md``. Authority scope:
+  observation_only.
 """
 
 from __future__ import annotations
@@ -76,6 +84,10 @@ from spectrum_systems.modules.prl.eval_generator import (
     generate_eval_case_candidate,
     advance_to_eval_case,
     build_generation_record,
+)
+from spectrum_systems.modules.prl.eval_regression_intake import (
+    CandidateIntake,
+    build_eval_regression_intake_record,
 )
 from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 from spectrum_systems.utils.deterministic_id import deterministic_id
@@ -426,6 +438,11 @@ def run_gate(
     repair_candidate_refs: list[str] = []
     eval_candidate_refs: list[str] = []
     blocking_reasons: list[str] = []
+    # F3L-04 — track per-candidate intake metadata so the eval-regression
+    # intake record can list accepted/rejected refs, attach reason codes
+    # for unknown failure classes, and bind back to source failure packets.
+    intake_candidates: list[CandidateIntake] = []
+    intake_failure_packet_paths: list[str] = []
 
     # F3L-03 — track persisted file paths grouped by index field so the
     # prl_artifact_index can list pure file refs (no <type>:<id> entries).
@@ -537,6 +554,16 @@ def run_gate(
         eval_candidate_refs.append(f"eval_case_candidate:{candidate['id']}")
         if candidate_path:
             eval_candidate_refs.append(candidate_path)
+        if candidate_path is not None:
+            intake_candidates.append(
+                CandidateIntake(
+                    ref=candidate_path,
+                    failure_class=classification.failure_class,
+                    gate_eligible=bool(candidate.get("gate_eligible", False)),
+                )
+            )
+        if packet_path:
+            intake_failure_packet_paths.append(packet_path)
         if classification.gate_signal == "failed_gate":
             blocking_reasons.append(
                 f"{classification.failure_class}: {parsed.normalized_message}"
@@ -621,6 +648,16 @@ def run_gate(
             eval_candidate_refs.append(f"eval_case_candidate:{candidate['id']}")
             if candidate_path:
                 eval_candidate_refs.append(candidate_path)
+            if candidate_path is not None:
+                intake_candidates.append(
+                    CandidateIntake(
+                        ref=candidate_path,
+                        failure_class=classification.failure_class,
+                        gate_eligible=bool(candidate.get("gate_eligible", False)),
+                    )
+                )
+            if packet_path:
+                intake_failure_packet_paths.append(packet_path)
 
             if classification.gate_signal == "failed_gate":
                 blocking_reasons.append(
@@ -669,6 +706,26 @@ def run_gate(
         index_path = output_dir / "prl_artifact_index.json"
         index_path.write_text(
             json.dumps(index, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        try:
+            index_ref = str(index_path.relative_to(REPO_ROOT))
+        except ValueError:
+            index_ref = str(index_path)
+
+        intake_record = build_eval_regression_intake_record(
+            run_id=run_id,
+            trace_id=trace_id,
+            candidates=intake_candidates,
+            source_failure_packet_refs=intake_failure_packet_paths,
+            prl_artifact_index_ref=index_ref,
+            prl_gate_result_ref=gate_result_ref,
+            gate_recommendation=gate_recommendation,
+        )
+        _emit(intake_record)
+        intake_path = output_dir / "prl_eval_regression_intake_record.json"
+        intake_path.write_text(
+            json.dumps(intake_record, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
     return gate_result
