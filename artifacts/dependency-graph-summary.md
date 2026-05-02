@@ -89,6 +89,7 @@
 - artifact_validation_decision [coordination] producers: —; consumers: —; Governed artifact for contract `artifact_validation_decision`.
 - assumption_register [work] producers: —; consumers: —; Governed artifact for contract `assumption_register`.
 - async_wait_record [governance] producers: —; consumers: —; Governed artifact for contract `async_wait_record`.
+- authority_authoring_check_record [governance] producers: —; consumers: —; Governed artifact for contract `authority_authoring_check_record`.
 - authority_preflight_failure_packet [governance] producers: —; consumers: —; Governed artifact for contract `authority_preflight_failure_packet`.
 - authority_repair_candidate [governance] producers: —; consumers: —; Governed artifact for contract `authority_repair_candidate`.
 - authority_repair_execution_record [governance] producers: —; consumers: —; Governed artifact for contract `authority_repair_execution_record`.
@@ -871,6 +872,7 @@
 - prg_signal_prioritization_record [governance] producers: —; consumers: —; Governed artifact for contract `prg_signal_prioritization_record`.
 - prg_smallest_safe_next_batch_recommendation [governance] producers: —; consumers: —; Governed artifact for contract `prg_smallest_safe_next_batch_recommendation`.
 - prioritized_adoption_candidate_set [coordination] producers: —; consumers: —; Governed artifact for contract `prioritized_adoption_candidate_set`.
+- prl_artifact_index [governance] producers: —; consumers: —; Governed artifact for contract `prl_artifact_index`.
 - prl_eval_case [governance] producers: —; consumers: —; Governed artifact for contract `prl_eval_case`.
 - prl_eval_generation_record [governance] producers: —; consumers: —; Governed artifact for contract `prl_eval_generation_record`.
 - prl_gate_result [governance] producers: —; consumers: —; Governed artifact for contract `prl_gate_result`.
@@ -1435,6 +1437,7 @@
 - artifact_validation_decision [coordination] intended consumers: —; artifacts: artifact_validation_decision
 - assumption_register [work] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: assumption_register
 - async_wait_record [governance] intended consumers: spectrum-systems; artifacts: async_wait_record
+- authority_authoring_check_record [governance] intended consumers: spectrum-systems; artifacts: authority_authoring_check_record
 - authority_preflight_failure_packet [governance] intended consumers: spectrum-systems; artifacts: authority_preflight_failure_packet
 - authority_repair_candidate [governance] intended consumers: spectrum-systems; artifacts: authority_repair_candidate
 - authority_repair_execution_record [governance] intended consumers: spectrum-systems; artifacts: authority_repair_execution_record
@@ -2208,6 +2211,7 @@
 - prg_signal_prioritization_record [governance] intended consumers: spectrum-systems; artifacts: prg_signal_prioritization_record
 - prg_smallest_safe_next_batch_recommendation [governance] intended consumers: spectrum-systems; artifacts: prg_smallest_safe_next_batch_recommendation
 - prioritized_adoption_candidate_set [coordination] intended consumers: spectrum-systems; artifacts: prioritized_adoption_candidate_set
+- prl_artifact_index [governance] intended consumers: spectrum-systems; artifacts: prl_artifact_index
 - prl_eval_case [governance] intended consumers: spectrum-systems; artifacts: prl_eval_case
 - prl_eval_generation_record [governance] intended consumers: spectrum-systems; artifacts: prl_eval_generation_record
 - prl_gate_result [governance] intended consumers: spectrum-systems; artifacts: prl_gate_result
