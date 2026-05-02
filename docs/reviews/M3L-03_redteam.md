@@ -122,9 +122,9 @@ measurement envelope.
 
 ### MF-07 — Authority wording leak in record / reason codes
 - **Risk:** an aligned parity record could leak forbidden authority
-  verbs like `approve`, `certify`, `promote`, `enforce`,
-  `decision`, or `verdict`, claiming gate authority that belongs to
-  other systems.
+  cluster terms (those listed in
+  `contracts/governance/authority_shape_vocabulary.json`), claiming
+  gate authority that belongs to other systems.
 - **Owner pretended:** AEX / SEL / GOV (admission and final-gate
   authority).
 - **Mitigation:** the schema declares `authority_scope: const
@@ -161,13 +161,15 @@ measurement envelope.
   (asserts the `github_escape` finding carries the GitHub shard refs).
 - **Disposition:** resolved.
 
-### MF-09 — Builder secretly produces readiness or gate decisions
+### MF-09 — Builder secretly produces readiness or gate signals
 - **Risk:** the parity record creeps into emitting a `pr_ready_status`
   or `gate_status` field, becoming a de-facto fourth gate.
 - **Owner pretended:** AEX / CDE / SEL (readiness and gate authority).
 - **Mitigation:** the schema's `additionalProperties: false` blocks
   any field outside the declared list. The declared list contains no
-  `*_ready_*`, no `gate_status`, no `promote`, no `approve`. The unit
+  `*_ready_*`, no `gate_status`, and no field name that matches any
+  forbidden authority cluster term (canonical owners listed in
+  `contracts/governance/authority_shape_vocabulary.json`). The unit
   test `test_record_has_no_readiness_or_gate_fields` enumerates the
   record keys and rejects any forbidden token (with `parity_status`
   explicitly allowed as the measurement vocabulary).

@@ -12,7 +12,7 @@ The builder is observation-only:
 - It MUST NOT invoke the shard runner.
 - It MUST NOT recompute shard selection.
 - It MUST NOT mutate any input artifact.
-- It MUST NOT compute readiness or any gate decision.
+- It MUST NOT compute readiness or any gate signal.
 
 Canonical authority remains with AEX (admission), PQX (bounded execution
 closure), EVL (eval evidence), TPA (policy/scope), CDE
