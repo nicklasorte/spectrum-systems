@@ -61,6 +61,7 @@ DEFAULT_AGENT_PR_READY_REL_PATH = (
     "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json"
 )
 DEFAULT_PRL_RESULT_REL_PATH = "outputs/prl/prl_gate_result.json"
+DEFAULT_PRL_ARTIFACT_INDEX_REL_PATH = "outputs/prl/prl_artifact_index.json"
 
 # Authority-safe vocabulary for the CLP gate status passthrough. APU never
 # emits a control signal of its own; it observes CLP's gate status only.
@@ -182,6 +183,18 @@ def load_prl_result(path: Path | None) -> dict[str, Any] | None:
     and eval-candidate authority. APU only observes the PRL artifact.
     """
     return _load_json_artifact(path, "prl_gate_result")
+
+
+def load_prl_artifact_index(path: Path | None) -> dict[str, Any] | None:
+    """Load a prl_artifact_index artifact (F3L-03).
+
+    The index is observation-only. It points at every PRL artifact
+    persisted to disk for a single PRL run so APU can ingest
+    file-backed refs without parsing the legacy stdout NDJSON. PRL
+    retains all classification, repair-candidate, and eval-candidate
+    authority.
+    """
+    return _load_json_artifact(path, "prl_artifact_index")
 
 
 def _missing_leg(reason: str) -> dict[str, Any]:
@@ -554,6 +567,8 @@ def evaluate_pr_update_ready(
     prl_result: Mapping[str, Any] | None = None,
     prl_result_ref: str | None = None,
     prl_auto_invocation: Mapping[str, Any] | None = None,
+    prl_artifact_index: Mapping[str, Any] | None = None,
+    prl_artifact_index_ref: str | None = None,
 ) -> dict[str, Any]:
     """Apply policy to CLP/AGL/PR-ready evidence. Returns the evaluation payload.
 
@@ -792,6 +807,57 @@ def evaluate_pr_update_ready(
         rules=rules,
     )
 
+    # F3L-03 — observe the PRL artifact index. When present, treat its
+    # file-backed refs as the canonical PRL evidence surface for replay.
+    # Stale or partial indexes surface reason codes; APU never claims PRL
+    # authority. Index presence is a readiness input only.
+    prl_index_present = isinstance(prl_artifact_index, Mapping)
+    prl_index_reason_codes: list[str] = []
+    prl_index_artifact_refs: list[str] = []
+    prl_index_failure_packet_refs: list[str] = []
+    prl_index_repair_candidate_refs: list[str] = []
+    prl_index_eval_candidate_refs: list[str] = []
+    prl_index_generation_record_refs: list[str] = []
+    if prl_index_present:
+        if prl_artifact_index.get("authority_scope") != "observation_only":
+            prl_index_reason_codes.append("prl_artifact_index_authority_scope_drift")
+        for code in prl_artifact_index.get("reason_codes") or []:
+            if isinstance(code, str) and code:
+                prl_index_reason_codes.append(code)
+        index_gate_ref = prl_artifact_index.get("prl_gate_result_ref")
+        if (
+            isinstance(index_gate_ref, str)
+            and prl_result_ref
+            and index_gate_ref != prl_result_ref
+        ):
+            prl_index_reason_codes.append("prl_artifact_index_gate_result_ref_mismatch")
+        prl_index_failure_packet_refs = [
+            str(r)
+            for r in (prl_artifact_index.get("failure_packet_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        prl_index_repair_candidate_refs = [
+            str(r)
+            for r in (prl_artifact_index.get("repair_candidate_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        prl_index_eval_candidate_refs = [
+            str(r)
+            for r in (prl_artifact_index.get("eval_candidate_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        prl_index_generation_record_refs = [
+            str(r)
+            for r in (prl_artifact_index.get("generation_record_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        if prl_artifact_index_ref:
+            prl_index_artifact_refs.append(prl_artifact_index_ref)
+        prl_index_artifact_refs.extend(prl_index_failure_packet_refs)
+        prl_index_artifact_refs.extend(prl_index_repair_candidate_refs)
+        prl_index_artifact_refs.extend(prl_index_eval_candidate_refs)
+        prl_index_artifact_refs.extend(prl_index_generation_record_refs)
+
     if (
         repo_mut_value
         and clp_status == CLP_STATUS_BLOCK
@@ -810,6 +876,25 @@ def evaluate_pr_update_ready(
                 }
             )
         for code in prl_observation["blocking_reasons"]:
+            if code not in reasons:
+                reasons.append(code)
+        # F3L-03 — when CLP blocks repo-mutating work, require an
+        # observation-only PRL artifact index so APU can ingest
+        # file-backed refs rather than parsing stdout NDJSON.
+        if rules.get("repo_mutating_clp_block_requires_prl_artifact_index", True):
+            if not prl_index_present:
+                if "prl_artifact_index_missing_for_clp_block" not in reasons:
+                    reasons.append("prl_artifact_index_missing_for_clp_block")
+                follow_up.append(
+                    {
+                        "owner_system": "PRL",
+                        "action_type": "produce_prl_artifact_index",
+                        "reason_code": "prl_artifact_index_missing_for_clp_block",
+                        "source_failure_ref": clp_result_ref
+                        or DEFAULT_CLP_RESULT_REL_PATH,
+                    }
+                )
+        for code in prl_index_reason_codes:
             if code not in reasons:
                 reasons.append(code)
     else:
@@ -932,7 +1017,14 @@ def evaluate_pr_update_ready(
         "prl_failure_packet_refs": prl_observation["failure_packet_refs"],
         "prl_repair_candidate_refs": prl_observation["repair_candidate_refs"],
         "prl_eval_candidate_refs": prl_observation["eval_candidate_refs"],
-        "prl_artifact_refs": prl_observation["artifact_refs"],
+        "prl_artifact_refs": prl_observation["artifact_refs"]
+        + [r for r in prl_index_artifact_refs if r not in prl_observation["artifact_refs"]],
+        "prl_artifact_index_status": "present" if prl_index_present else "missing",
+        "prl_artifact_index_reason_codes": list(prl_index_reason_codes),
+        "prl_artifact_index_failure_packet_refs": prl_index_failure_packet_refs,
+        "prl_artifact_index_repair_candidate_refs": prl_index_repair_candidate_refs,
+        "prl_artifact_index_eval_candidate_refs": prl_index_eval_candidate_refs,
+        "prl_artifact_index_generation_record_refs": prl_index_generation_record_refs,
     }
 
 
@@ -946,6 +1038,7 @@ def build_agent_pr_update_ready_result(
     agl_record_ref: str | None,
     agent_pr_ready_result_ref: str | None,
     prl_result_ref: str | None = None,
+    prl_artifact_index_ref: str | None = None,
     prl_auto_invocation: Mapping[str, Any] | None = None,
     source_artifact_refs: Iterable[str] | None = None,
     trace_refs: Iterable[str] | None = None,
@@ -965,6 +1058,7 @@ def build_agent_pr_update_ready_result(
         agl_record_ref,
         agent_pr_ready_result_ref,
         prl_result_ref,
+        prl_artifact_index_ref,
         policy_ref,
     ):
         if ref and ref not in sources:
@@ -984,6 +1078,10 @@ def build_agent_pr_update_ready_result(
         "agl_record_ref": agl_record_ref,
         "agent_pr_ready_result_ref": agent_pr_ready_result_ref,
         "prl_result_ref": prl_result_ref,
+        "prl_artifact_index_ref": prl_artifact_index_ref,
+        "prl_artifact_index_status": evaluation.get(
+            "prl_artifact_index_status", "missing"
+        ),
         "prl_auto_invocation": dict(prl_auto_invocation) if prl_auto_invocation else None,
         "prl_evidence_status": evaluation.get("prl_evidence_status", "missing"),
         "prl_gate_recommendation": evaluation.get("prl_gate_recommendation"),

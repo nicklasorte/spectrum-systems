@@ -41,6 +41,7 @@ from spectrum_systems.modules.runtime.agent_pr_update_policy import (  # noqa: E
     DEFAULT_CLP_RESULT_REL_PATH,
     DEFAULT_OUTPUT_REL_PATH,
     DEFAULT_POLICY_REL_PATH,
+    DEFAULT_PRL_ARTIFACT_INDEX_REL_PATH,
     DEFAULT_PRL_RESULT_REL_PATH,
     PolicyLoadError,
     build_agent_pr_update_ready_result,
@@ -49,6 +50,7 @@ from spectrum_systems.modules.runtime.agent_pr_update_policy import (  # noqa: E
     load_agl_record,
     load_clp_result,
     load_policy,
+    load_prl_artifact_index,
     load_prl_result,
     readiness_status_to_exit_code,
 )
@@ -91,6 +93,18 @@ def _parse_args() -> argparse.Namespace:
             "repo_mutating; in that case absence of PRL evidence yields "
             "readiness_status=not_ready. PRL retains all classification, "
             "repair-candidate, and eval-candidate authority."
+        ),
+    )
+    parser.add_argument(
+        "--prl-artifact-index",
+        default=DEFAULT_PRL_ARTIFACT_INDEX_REL_PATH,
+        help=(
+            "F3L-03 — path to a prl_artifact_index artifact. The index is "
+            "the canonical entrypoint into the file-backed PRL evidence "
+            "chain. APU consumes file-backed PRL refs from the index "
+            "rather than parsing the legacy stdout NDJSON. PRL retains "
+            "all classification, repair-candidate, and eval-candidate "
+            "authority."
         ),
     )
     parser.add_argument(
@@ -180,6 +194,7 @@ def main() -> int:
     agl_path = (REPO_ROOT / args.agl_record).resolve()
     pr_ready_path = (REPO_ROOT / args.agent_pr_ready).resolve()
     prl_path = (REPO_ROOT / args.prl_result).resolve()
+    prl_index_path = (REPO_ROOT / args.prl_artifact_index).resolve()
 
     clp_result = load_clp_result(clp_path)
     agl_record = load_agl_record(agl_path)
@@ -203,6 +218,7 @@ def main() -> int:
     )
 
     prl_result = load_prl_result(prl_path)
+    prl_artifact_index = load_prl_artifact_index(prl_index_path)
 
     def _ref(path: Path, loaded: object | None) -> str | None:
         if loaded is None and not path.is_file():
@@ -216,6 +232,7 @@ def main() -> int:
     agl_ref = _ref(agl_path, agl_record)
     pr_ready_ref = _ref(pr_ready_path, agent_pr_ready)
     prl_ref = _ref(prl_path, prl_result)
+    prl_index_ref = _ref(prl_index_path, prl_artifact_index)
 
     auto_invocation_record = auto_invocation.to_dict()
 
@@ -232,6 +249,8 @@ def main() -> int:
         prl_result=prl_result,
         prl_result_ref=prl_ref,
         prl_auto_invocation=auto_invocation_record,
+        prl_artifact_index=prl_artifact_index,
+        prl_artifact_index_ref=prl_index_ref,
     )
     artifact = build_agent_pr_update_ready_result(
         work_item_id=args.work_item_id,
@@ -242,6 +261,7 @@ def main() -> int:
         agl_record_ref=agl_ref,
         agent_pr_ready_result_ref=pr_ready_ref,
         prl_result_ref=prl_ref,
+        prl_artifact_index_ref=prl_index_ref,
         prl_auto_invocation=auto_invocation_record,
     )
     validate_artifact(artifact, "agent_pr_update_ready_result")

@@ -70,6 +70,12 @@
     "prl_result_ref": {
       "type": ["string", "null"]
     },
+    "prl_artifact_index_ref": {
+      "type": ["string", "null"]
+    },
+    "prl_artifact_index_status": {
+      "enum": ["present", "missing"]
+    },
     "prl_evidence_status": {
       "enum": ["present", "partial", "missing", "unknown"]
     },
@@ -117,6 +123,9 @@
           "type": ["integer", "null"]
         },
         "prl_gate_result_path": {
+          "type": ["string", "null"]
+        },
+        "prl_artifact_index_path": {
           "type": ["string", "null"]
         },
         "log_excerpt": {

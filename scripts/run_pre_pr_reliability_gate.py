@@ -22,6 +22,7 @@ Output (F3L-03):
   path so APU and replay consumers do not depend on the stdout NDJSON:
 
     <output-dir>/prl_gate_result.json                 — final gate result
+    <output-dir>/prl_artifact_index.json              — index of all persisted refs
     <output-dir>/captures/<id>.json                   — pr_failure_capture_record
     <output-dir>/failure_packets/<id>.json            — pre_pr_failure_packet
     <output-dir>/repair_candidates/<id>.json          — prl_repair_candidate
@@ -34,6 +35,12 @@ Output (F3L-03):
   filesystem paths so APU can ingest them directly without parsing
   NDJSON. Existing ``<artifact_type>:<id>`` style refs continue to be
   emitted alongside the file paths to preserve backwards compatibility.
+
+  ``prl_artifact_index.json`` is an observation-only index that points
+  at every artifact persisted by this run. APU and replay consumers
+  read it as the canonical entrypoint into the PRL evidence chain on
+  disk. PRL retains classification, repair-candidate, and
+  eval-candidate authority; the index does not introduce a new gate.
 """
 
 from __future__ import annotations
@@ -73,6 +80,7 @@ from spectrum_systems.modules.prl.eval_generator import (
 from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
+import hashlib
 import jsonschema
 
 _PRL_SCHEMA_DIR = REPO_ROOT / "contracts" / "schemas"
@@ -85,6 +93,16 @@ _PRL_ARTIFACT_SUBDIRS: dict[str, str] = {
     "eval_case_candidate": "eval_candidates",
     "prl_eval_case": "eval_cases",
     "prl_eval_generation_record": "eval_generation_records",
+}
+
+# F3L-03 — Mapping from artifact_type to the index field that lists its refs.
+_PRL_INDEX_FIELDS: dict[str, str] = {
+    "pr_failure_capture_record": "capture_record_refs",
+    "pre_pr_failure_packet": "failure_packet_refs",
+    "prl_repair_candidate": "repair_candidate_refs",
+    "eval_case_candidate": "eval_candidate_refs",
+    "prl_eval_case": "eval_case_refs",
+    "prl_eval_generation_record": "generation_record_refs",
 }
 
 DEFAULT_PRL_OUTPUT_DIR = "outputs/prl"
@@ -174,6 +192,118 @@ def _load_gate_schema() -> dict[str, Any]:
         raise FileNotFoundError(f"prl_gate_result schema missing — fail-closed: {path}")
     with path.open() as f:
         return json.load(f)
+
+
+def _load_index_schema() -> dict[str, Any]:
+    path = _PRL_SCHEMA_DIR / "prl_artifact_index.schema.json"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"prl_artifact_index schema missing — fail-closed: {path}"
+        )
+    with path.open() as f:
+        return json.load(f)
+
+
+def _build_artifact_index(
+    *,
+    run_id: str,
+    trace_id: str,
+    gate_recommendation: str | None,
+    persisted: dict[str, list[str]],
+    prl_gate_result_ref: str,
+    clp_result_ref: str | None,
+) -> dict[str, Any]:
+    """Build a deterministic ``prl_artifact_index`` artifact.
+
+    The index is observation-only. It points at every PRL artifact
+    persisted to disk for this run so APU and replay consumers can
+    reconstruct the PRL evidence chain from the file system alone,
+    without parsing the legacy stdout NDJSON. PRL retains all
+    classification, repair-candidate, and eval-candidate authority;
+    the index does not introduce a new gate.
+    """
+    capture_refs = sorted(set(persisted.get("capture_record_refs", []) or []))
+    failure_packet_refs = sorted(set(persisted.get("failure_packet_refs", []) or []))
+    repair_refs = sorted(set(persisted.get("repair_candidate_refs", []) or []))
+    eval_candidate_refs = sorted(set(persisted.get("eval_candidate_refs", []) or []))
+    eval_case_refs = sorted(set(persisted.get("eval_case_refs", []) or []))
+    generation_refs = sorted(set(persisted.get("generation_record_refs", []) or []))
+
+    counts = {
+        "failure_packets": len(failure_packet_refs),
+        "repair_candidates": len(repair_refs),
+        "eval_candidates": len(eval_candidate_refs),
+        "generation_records": len(generation_refs),
+        "capture_records": len(capture_refs),
+        "eval_cases": len(eval_case_refs),
+    }
+
+    reason_codes: list[str] = []
+    if not prl_gate_result_ref:
+        reason_codes.append("prl_gate_result_ref_missing")
+    if (
+        counts["failure_packets"] > 0
+        and counts["repair_candidates"] == 0
+        and gate_recommendation in {"failed_gate", "gate_hold"}
+    ):
+        reason_codes.append("repair_candidates_missing_for_failure_packets")
+    if (
+        counts["failure_packets"] > 0
+        and counts["eval_candidates"] == 0
+        and gate_recommendation in {"failed_gate", "gate_hold"}
+    ):
+        reason_codes.append("eval_candidates_missing_for_failure_packets")
+
+    hash_payload = {
+        "prl_gate_result_ref": prl_gate_result_ref,
+        "clp_result_ref": clp_result_ref,
+        "failure_packet_refs": failure_packet_refs,
+        "repair_candidate_refs": repair_refs,
+        "eval_candidate_refs": eval_candidate_refs,
+        "generation_record_refs": generation_refs,
+        "capture_record_refs": capture_refs,
+        "eval_case_refs": eval_case_refs,
+    }
+    serialized = json.dumps(hash_payload, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
+    evidence_hash = "sha256-" + hashlib.sha256(serialized).hexdigest()
+
+    artifact_id = deterministic_id(
+        prefix="prl-index",
+        payload=hash_payload,
+        namespace="prl::index",
+    )
+
+    artifact: dict[str, Any] = {
+        "artifact_type": "prl_artifact_index",
+        "schema_version": "1.0.0",
+        "id": artifact_id,
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "generated_at": _now_iso(),
+        "clp_result_ref": clp_result_ref,
+        "prl_gate_result_ref": prl_gate_result_ref,
+        "failure_packet_refs": failure_packet_refs,
+        "repair_candidate_refs": repair_refs,
+        "eval_candidate_refs": eval_candidate_refs,
+        "generation_record_refs": generation_refs,
+        "capture_record_refs": capture_refs,
+        "eval_case_refs": eval_case_refs,
+        "artifact_counts": counts,
+        "evidence_hash": evidence_hash,
+        "reason_codes": reason_codes,
+        "authority_scope": "observation_only",
+        "gate_recommendation": gate_recommendation,
+    }
+    schema = _load_index_schema()
+    try:
+        jsonschema.validate(artifact, schema)
+    except jsonschema.ValidationError as exc:
+        raise ValueError(
+            f"prl_artifact_index schema validation failed: {exc.message}"
+        ) from exc
+    return artifact
 
 
 def _build_gate_result(
@@ -297,6 +427,25 @@ def run_gate(
     eval_candidate_refs: list[str] = []
     blocking_reasons: list[str] = []
 
+    # F3L-03 — track persisted file paths grouped by index field so the
+    # prl_artifact_index can list pure file refs (no <type>:<id> entries).
+    persisted_paths: dict[str, list[str]] = {
+        "capture_record_refs": [],
+        "failure_packet_refs": [],
+        "repair_candidate_refs": [],
+        "eval_candidate_refs": [],
+        "eval_case_refs": [],
+        "generation_record_refs": [],
+    }
+
+    def _record(artifact: dict[str, Any]) -> str | None:
+        path = _persist_artifact(artifact, output_dir=output_dir)
+        if path:
+            field = _PRL_INDEX_FIELDS.get(str(artifact.get("artifact_type")))
+            if field:
+                persisted_paths[field].append(path)
+        return path
+
     if output_dir is not None:
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -334,7 +483,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(capture)
-        _persist_artifact(capture, output_dir=output_dir)
+        _record(capture)
         packet = build_failure_packet(
             capture_record=capture,
             classification=classification,
@@ -342,7 +491,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(packet)
-        packet_path = _persist_artifact(packet, output_dir=output_dir)
+        packet_path = _record(packet)
         repair = generate_repair_candidate(
             failure_packet=packet,
             classification=classification,
@@ -350,7 +499,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(repair)
-        repair_path = _persist_artifact(repair, output_dir=output_dir)
+        repair_path = _record(repair)
         candidate = generate_eval_case_candidate(
             failure_packet=packet,
             classification=classification,
@@ -358,7 +507,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(candidate)
-        candidate_path = _persist_artifact(candidate, output_dir=output_dir)
+        candidate_path = _record(candidate)
         gated = advance_to_eval_case(
             candidate=candidate,
             classification=classification,
@@ -367,7 +516,7 @@ def run_gate(
         )
         if gated is not None:
             _emit(gated)
-            _persist_artifact(gated, output_dir=output_dir)
+            _record(gated)
         gen_record = build_generation_record(
             failure_packet=packet,
             candidate=candidate,
@@ -376,7 +525,7 @@ def run_gate(
             trace_id=trace_id,
         )
         _emit(gen_record)
-        _persist_artifact(gen_record, output_dir=output_dir)
+        _record(gen_record)
         all_signals.append(classification.gate_signal)
         failure_classes.append(classification.failure_class)
         failure_packet_refs.append(f"pre_pr_failure_packet:{packet['id']}")
@@ -412,7 +561,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(capture)
-            _persist_artifact(capture, output_dir=output_dir)
+            _record(capture)
 
             packet = build_failure_packet(
                 capture_record=capture,
@@ -421,7 +570,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(packet)
-            packet_path = _persist_artifact(packet, output_dir=output_dir)
+            packet_path = _record(packet)
 
             repair = generate_repair_candidate(
                 failure_packet=packet,
@@ -430,7 +579,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(repair)
-            repair_path = _persist_artifact(repair, output_dir=output_dir)
+            repair_path = _record(repair)
 
             candidate = generate_eval_case_candidate(
                 failure_packet=packet,
@@ -439,7 +588,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(candidate)
-            candidate_path = _persist_artifact(candidate, output_dir=output_dir)
+            candidate_path = _record(candidate)
 
             gated = advance_to_eval_case(
                 candidate=candidate,
@@ -449,7 +598,7 @@ def run_gate(
             )
             if gated is not None:
                 _emit(gated)
-                _persist_artifact(gated, output_dir=output_dir)
+                _record(gated)
 
             gen_record = build_generation_record(
                 failure_packet=packet,
@@ -459,7 +608,7 @@ def run_gate(
                 trace_id=trace_id,
             )
             _emit(gen_record)
-            _persist_artifact(gen_record, output_dir=output_dir)
+            _record(gen_record)
 
             all_signals.append(classification.gate_signal)
             failure_classes.append(classification.failure_class)
@@ -496,6 +645,30 @@ def run_gate(
         gate_result_path = output_dir / "prl_gate_result.json"
         gate_result_path.write_text(
             json.dumps(gate_result, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        try:
+            gate_result_ref = str(gate_result_path.relative_to(REPO_ROOT))
+        except ValueError:
+            gate_result_ref = str(gate_result_path)
+        clp_result_ref: str | None = None
+        if clp_result_path is not None:
+            try:
+                clp_result_ref = str(clp_result_path.relative_to(REPO_ROOT))
+            except ValueError:
+                clp_result_ref = str(clp_result_path)
+        index = _build_artifact_index(
+            run_id=run_id,
+            trace_id=trace_id,
+            gate_recommendation=gate_recommendation,
+            persisted=persisted_paths,
+            prl_gate_result_ref=gate_result_ref,
+            clp_result_ref=clp_result_ref,
+        )
+        _emit(index)
+        index_path = output_dir / "prl_artifact_index.json"
+        index_path.write_text(
+            json.dumps(index, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
     return gate_result

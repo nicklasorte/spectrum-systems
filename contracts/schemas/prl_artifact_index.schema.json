@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prl/prl_artifact_index.schema.json",
+  "title": "PRL Artifact Index",
+  "description": "F3L-03 — observation-only index of all PRL artifacts written to a single PRL run output directory. Each ref points to a file persisted by scripts/run_pre_pr_reliability_gate.py so APU and replay consumers can reconstruct the full PRL evidence chain from disk alone, without parsing the legacy stdout NDJSON stream. PRL retains all classification, repair-candidate, and eval-candidate authority. The index is observation-only: it does not introduce a new gate, change CLP gate-status authority, or shift APU's observation-only role. Canonical authority remains with the systems declared in docs/architecture/system_registry.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "run_id",
+    "trace_id",
+    "generated_at",
+    "prl_gate_result_ref",
+    "failure_packet_refs",
+    "repair_candidate_refs",
+    "eval_candidate_refs",
+    "generation_record_refs",
+    "capture_record_refs",
+    "eval_case_refs",
+    "artifact_counts",
+    "evidence_hash",
+    "reason_codes",
+    "authority_scope"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prl_artifact_index"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^prl-index-[a-f0-9]{16}$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "clp_result_ref": {
+      "type": ["string", "null"]
+    },
+    "prl_gate_result_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_packet_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "repair_candidate_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "eval_candidate_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "generation_record_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "capture_record_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "eval_case_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "artifact_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "failure_packets",
+        "repair_candidates",
+        "eval_candidates",
+        "generation_records",
+        "capture_records",
+        "eval_cases"
+      ],
+      "properties": {
+        "failure_packets": { "type": "integer", "minimum": 0 },
+        "repair_candidates": { "type": "integer", "minimum": 0 },
+        "eval_candidates": { "type": "integer", "minimum": 0 },
+        "generation_records": { "type": "integer", "minimum": 0 },
+        "capture_records": { "type": "integer", "minimum": 0 },
+        "eval_cases": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "evidence_hash": {
+      "type": "string",
+      "pattern": "^sha256-[a-f0-9]{64}$"
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "authority_scope": {
+      "const": "observation_only"
+    },
+    "gate_recommendation": {
+      "type": ["string", "null"],
+      "enum": ["passed_gate", "gate_warn", "gate_hold", "failed_gate", null]
+    }
+  }
+}

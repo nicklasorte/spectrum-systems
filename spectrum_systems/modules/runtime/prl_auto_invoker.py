@@ -53,6 +53,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_PRL_RUNNER_REL_PATH = "scripts/run_pre_pr_reliability_gate.py"
 DEFAULT_PRL_OUTPUT_DIR_REL_PATH = "outputs/prl"
 DEFAULT_PRL_GATE_RESULT_REL_PATH = "outputs/prl/prl_gate_result.json"
+DEFAULT_PRL_ARTIFACT_INDEX_REL_PATH = "outputs/prl/prl_artifact_index.json"
 
 
 def _utc_now_iso() -> str:
@@ -73,6 +74,7 @@ class PrlAutoInvocationRecord:
     command: str | None = None
     exit_code: int | None = None
     prl_gate_result_path: str | None = None
+    prl_artifact_index_path: str | None = None
     log_excerpt: str | None = None
     reason_codes: list[str] = field(default_factory=list)
     invoked_at: str = field(default_factory=_utc_now_iso)
@@ -85,6 +87,7 @@ class PrlAutoInvocationRecord:
             "command": self.command,
             "exit_code": self.exit_code,
             "prl_gate_result_path": self.prl_gate_result_path,
+            "prl_artifact_index_path": self.prl_artifact_index_path,
             "log_excerpt": self.log_excerpt,
             "reason_codes": list(self.reason_codes),
             "invoked_at": self.invoked_at,
@@ -270,6 +273,16 @@ def auto_run_prl_if_clp_blocked(
     exit_code = int(getattr(proc, "returncode", 0))
     log_excerpt = _tail_excerpt(stdout + ("\n" + stderr if stderr else ""))
 
+    index_path = output_dir / "prl_artifact_index.json"
+
+    def _index_rel_path() -> str | None:
+        if not index_path.is_file():
+            return None
+        try:
+            return str(index_path.relative_to(repo_root))
+        except ValueError:
+            return str(index_path)
+
     gate_result = _extract_gate_result_from_stdout(stdout)
     if gate_result is None:
         # If PRL did not produce a gate result on stdout but already wrote one
@@ -293,6 +306,7 @@ def auto_run_prl_if_clp_blocked(
                         if prl_path.is_relative_to(repo_root)
                         else prl_path
                     ),
+                    prl_artifact_index_path=_index_rel_path(),
                     log_excerpt=log_excerpt,
                     reason_codes=[],
                     auto_run_enabled=auto_run_enabled,
@@ -337,6 +351,7 @@ def auto_run_prl_if_clp_blocked(
         command=cmd_str,
         exit_code=exit_code,
         prl_gate_result_path=rel_path,
+        prl_artifact_index_path=_index_rel_path(),
         log_excerpt=log_excerpt,
         reason_codes=[],
         auto_run_enabled=auto_run_enabled,

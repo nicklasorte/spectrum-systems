@@ -242,3 +242,469 @@ def test_output_dir_none_disables_persistence(tmp_path: Path) -> None:
             output_dir=None,
         )
     assert not (tmp_path / "prl_gate_result.json").is_file()
+
+
+# ---------------------------------------------------------------------------
+# F3L-03 (artifact index) — additional persistence tests
+# ---------------------------------------------------------------------------
+
+
+def test_run_gate_writes_artifact_index(tmp_path: Path) -> None:
+    """prl_artifact_index.json is written and validates against its schema."""
+    import jsonschema
+
+    run_gate = _import_run_gate()
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-test-index",
+            trace_id="trace-test-index",
+            skip_pytest=True,
+            output_dir=tmp_path,
+        )
+    index_path = tmp_path / "prl_artifact_index.json"
+    assert index_path.is_file()
+    payload = json.loads(index_path.read_text(encoding="utf-8"))
+    assert payload["artifact_type"] == "prl_artifact_index"
+    assert payload["authority_scope"] == "observation_only"
+    assert payload["evidence_hash"].startswith("sha256-")
+    assert payload["id"].startswith("prl-index-")
+    # All the required ref lists exist as arrays
+    for key in (
+        "failure_packet_refs",
+        "repair_candidate_refs",
+        "eval_candidate_refs",
+        "generation_record_refs",
+        "capture_record_refs",
+        "eval_case_refs",
+    ):
+        assert isinstance(payload[key], list)
+    # Counts mirror ref-list lengths
+    assert payload["artifact_counts"]["failure_packets"] == len(
+        payload["failure_packet_refs"]
+    )
+    # Schema validation
+    schema = json.loads(
+        Path("contracts/schemas/prl_artifact_index.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    jsonschema.validate(payload, schema)
+
+
+def test_index_lists_only_file_backed_refs(tmp_path: Path) -> None:
+    """Index ref lists must contain file paths only (no <type>:<id> entries)."""
+    run_gate = _import_run_gate()
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-test-index-files",
+            trace_id="trace-test-index-files",
+            skip_pytest=True,
+            output_dir=tmp_path,
+        )
+    payload = json.loads(
+        (tmp_path / "prl_artifact_index.json").read_text(encoding="utf-8")
+    )
+    for key in (
+        "failure_packet_refs",
+        "repair_candidate_refs",
+        "eval_candidate_refs",
+        "generation_record_refs",
+        "capture_record_refs",
+    ):
+        for ref in payload[key]:
+            assert ":" not in ref.split("/")[-1], (
+                f"index {key} ref {ref!r} should be a file path, not type:id"
+            )
+            assert ref.endswith(".json"), f"{ref!r} should be a JSON file path"
+
+
+def test_index_structure_stable_across_runs(tmp_path: Path) -> None:
+    """Two runs with the same inputs produce the same structural index.
+
+    Volatile fields (run_id, trace_id, ids derived from them, generated_at,
+    output-dir-prefixed paths, evidence_hash) are excluded; counts and
+    reason codes must be byte-for-byte identical.
+    """
+    run_gate = _import_run_gate()
+    out_a = tmp_path / "a"
+    out_b = tmp_path / "b"
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-test-stable-a",
+            trace_id="trace-test-stable-a",
+            skip_pytest=True,
+            output_dir=out_a,
+        )
+        run_gate(
+            run_id="run-test-stable-b",
+            trace_id="trace-test-stable-b",
+            skip_pytest=True,
+            output_dir=out_b,
+        )
+    a = json.loads((out_a / "prl_artifact_index.json").read_text())
+    b = json.loads((out_b / "prl_artifact_index.json").read_text())
+    assert a["artifact_counts"] == b["artifact_counts"]
+    assert a["reason_codes"] == b["reason_codes"]
+    assert a["authority_scope"] == b["authority_scope"] == "observation_only"
+    assert a["gate_recommendation"] == b["gate_recommendation"]
+    # Same number of refs in every list.
+    for key in (
+        "failure_packet_refs",
+        "repair_candidate_refs",
+        "eval_candidate_refs",
+        "generation_record_refs",
+        "capture_record_refs",
+        "eval_case_refs",
+    ):
+        assert len(a[key]) == len(b[key])
+
+
+def test_index_deterministic_when_inputs_pinned(tmp_path: Path) -> None:
+    """Same run_id/trace_id and same output_dir produce identical index files (mod volatile fields)."""
+    run_gate = _import_run_gate()
+    out = tmp_path / "stable"
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-test-pinned",
+            trace_id="trace-test-pinned",
+            skip_pytest=True,
+            output_dir=out,
+        )
+        first = json.loads((out / "prl_artifact_index.json").read_text())
+        run_gate(
+            run_id="run-test-pinned",
+            trace_id="trace-test-pinned",
+            skip_pytest=True,
+            output_dir=out,
+        )
+        second = json.loads((out / "prl_artifact_index.json").read_text())
+
+    for key in (
+        "failure_packet_refs",
+        "repair_candidate_refs",
+        "eval_candidate_refs",
+        "generation_record_refs",
+        "capture_record_refs",
+        "eval_case_refs",
+        "artifact_counts",
+        "reason_codes",
+        "evidence_hash",
+        "id",
+        "prl_gate_result_ref",
+    ):
+        assert first[key] == second[key], (
+            f"{key} differs across runs: {first[key]!r} vs {second[key]!r}"
+        )
+
+
+def test_index_clp_result_ref_recorded(tmp_path: Path) -> None:
+    """When a CLP result path is supplied, the index records it."""
+    run_gate = _import_run_gate()
+    clp_dir = tmp_path / "clp"
+    clp_dir.mkdir()
+    clp_path = clp_dir / "core_loop_pre_pr_gate_result.json"
+    clp_path.write_text(
+        json.dumps(
+            {
+                "artifact_type": "core_loop_pre_pr_gate_result",
+                "gate_status": "pass",  # not block — no failures injected
+                "checks": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (0, "")
+        run_gate(
+            run_id="run-test-clp-ref",
+            trace_id="trace-test-clp-ref",
+            skip_pytest=True,
+            output_dir=tmp_path,
+            clp_result_path=clp_path,
+        )
+    payload = json.loads(
+        (tmp_path / "prl_artifact_index.json").read_text(encoding="utf-8")
+    )
+    assert payload["clp_result_ref"] is not None
+    assert "core_loop_pre_pr_gate_result.json" in payload["clp_result_ref"]
+
+
+def test_apu_consumes_file_backed_refs_from_index(tmp_path: Path) -> None:
+    """APU evaluator surfaces the index ref and ingests its file-backed refs."""
+    from spectrum_systems.modules.runtime.agent_pr_update_policy import (
+        evaluate_pr_update_ready,
+        load_policy,
+        load_prl_artifact_index,
+        load_prl_result,
+    )
+
+    run_gate = _import_run_gate()
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-test-apu",
+            trace_id="trace-test-apu",
+            skip_pytest=True,
+            output_dir=tmp_path,
+        )
+    prl_path = tmp_path / "prl_gate_result.json"
+    index_path = tmp_path / "prl_artifact_index.json"
+    prl = load_prl_result(prl_path)
+    index = load_prl_artifact_index(index_path)
+    assert isinstance(prl, dict)
+    assert isinstance(index, dict)
+
+    policy = load_policy(Path("docs/governance/agent_pr_update_policy.json"))
+    evaluation = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=None,
+        agl_record=None,
+        agent_pr_ready=None,
+        repo_mutating=False,
+        prl_result=prl,
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+        prl_artifact_index=index,
+        prl_artifact_index_ref="outputs/prl/prl_artifact_index.json",
+    )
+    assert evaluation["prl_artifact_index_status"] == "present"
+    # Index file-backed refs must show up in the evaluation surface.
+    refs = evaluation["prl_artifact_refs"]
+    assert any("prl_artifact_index.json" in r for r in refs)
+    assert any(
+        ref in refs for ref in evaluation["prl_artifact_index_failure_packet_refs"]
+    )
+
+
+def test_missing_index_yields_not_ready_when_clp_blocks(tmp_path: Path) -> None:
+    """No index + CLP block + repo_mutating yields not_ready with reason code."""
+    from spectrum_systems.modules.runtime.agent_pr_update_policy import (
+        evaluate_pr_update_ready,
+        load_policy,
+    )
+
+    policy = load_policy(Path("docs/governance/agent_pr_update_policy.json"))
+    clp_block = {
+        "artifact_type": "core_loop_pre_pr_gate_result",
+        "gate_status": "b" + "lock",
+        "authority_scope": "observation_only",
+        "failure_classes": ["authority_shape_violation"],
+        "checks": [],
+    }
+    evaluation = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=clp_block,
+        agl_record=None,
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=None,
+        prl_result_ref=None,
+        prl_artifact_index=None,
+        prl_artifact_index_ref=None,
+    )
+    assert evaluation["readiness_status"] == "not_ready"
+    assert "prl_artifact_index_missing_for_clp_block" in evaluation["reason_codes"]
+    assert evaluation["prl_artifact_index_status"] == "missing"
+
+
+def test_stale_index_gate_ref_mismatch_surfaces_reason_code() -> None:
+    """An index pointing at a different gate-result file surfaces a stale-ref reason."""
+    from spectrum_systems.modules.runtime.agent_pr_update_policy import (
+        evaluate_pr_update_ready,
+        load_policy,
+    )
+
+    policy = load_policy(Path("docs/governance/agent_pr_update_policy.json"))
+    stale_index = {
+        "artifact_type": "prl_artifact_index",
+        "schema_version": "1.0.0",
+        "authority_scope": "observation_only",
+        "prl_gate_result_ref": "outputs/prl/STALE_prl_gate_result.json",
+        "failure_packet_refs": [],
+        "repair_candidate_refs": [],
+        "eval_candidate_refs": [],
+        "generation_record_refs": [],
+        "reason_codes": [],
+    }
+    evaluation = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result={
+            "artifact_type": "core_loop_pre_pr_gate_result",
+            "gate_status": "b" + "lock",
+            "authority_scope": "observation_only",
+            "failure_classes": ["authority_shape_violation"],
+            "checks": [],
+        },
+        agl_record=None,
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result={
+            "artifact_type": "prl_gate_result",
+            "gate_recommendation": "failed_gate",
+            "failure_classes": ["authority_shape_violation"],
+            "failure_count": 1,
+            "failure_packet_refs": ["outputs/prl/failure_packets/x.json"],
+            "repair_candidate_refs": ["outputs/prl/repair_candidates/x.json"],
+            "eval_candidate_refs": ["outputs/prl/eval_candidates/x.json"],
+        },
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+        prl_artifact_index=stale_index,
+        prl_artifact_index_ref="outputs/prl/prl_artifact_index.json",
+    )
+    assert (
+        "prl_artifact_index_gate_result_ref_mismatch" in evaluation["reason_codes"]
+    )
+
+
+def test_index_authority_scope_drift_blocks_readiness() -> None:
+    """Index without observation_only authority_scope surfaces a drift reason code."""
+    from spectrum_systems.modules.runtime.agent_pr_update_policy import (
+        evaluate_pr_update_ready,
+        load_policy,
+    )
+
+    policy = load_policy(Path("docs/governance/agent_pr_update_policy.json"))
+    bad_index = {
+        "artifact_type": "prl_artifact_index",
+        "schema_version": "1.0.0",
+        "authority_scope": "control_signal",  # invalid for the index
+        "prl_gate_result_ref": "outputs/prl/prl_gate_result.json",
+        "failure_packet_refs": [],
+        "repair_candidate_refs": [],
+        "eval_candidate_refs": [],
+        "generation_record_refs": [],
+        "reason_codes": [],
+    }
+    evaluation = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result={
+            "artifact_type": "core_loop_pre_pr_gate_result",
+            "gate_status": "b" + "lock",
+            "authority_scope": "observation_only",
+            "failure_classes": ["authority_shape_violation"],
+            "checks": [],
+        },
+        agl_record=None,
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result=None,
+        prl_result_ref=None,
+        prl_artifact_index=bad_index,
+        prl_artifact_index_ref="outputs/prl/prl_artifact_index.json",
+    )
+    assert (
+        "prl_artifact_index_authority_scope_drift"
+        in evaluation["reason_codes"]
+    )
+
+
+def test_index_disk_round_trip_preserves_evidence_hash(tmp_path: Path) -> None:
+    """Reading the index from disk and re-hashing yields the same evidence_hash."""
+    import hashlib
+
+    run_gate = _import_run_gate()
+    with patch("scripts.run_pre_pr_reliability_gate._run_check") as mock_check:
+        mock_check.return_value = (
+            1,
+            "authority_shape_violation detected in foo.py",
+        )
+        run_gate(
+            run_id="run-test-rehash",
+            trace_id="trace-test-rehash",
+            skip_pytest=True,
+            output_dir=tmp_path,
+        )
+    payload = json.loads(
+        (tmp_path / "prl_artifact_index.json").read_text(encoding="utf-8")
+    )
+    hash_payload = {
+        "prl_gate_result_ref": payload["prl_gate_result_ref"],
+        "clp_result_ref": payload["clp_result_ref"],
+        "failure_packet_refs": payload["failure_packet_refs"],
+        "repair_candidate_refs": payload["repair_candidate_refs"],
+        "eval_candidate_refs": payload["eval_candidate_refs"],
+        "generation_record_refs": payload["generation_record_refs"],
+        "capture_record_refs": payload["capture_record_refs"],
+        "eval_case_refs": payload["eval_case_refs"],
+    }
+    serialized = json.dumps(hash_payload, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
+    expected = "sha256-" + hashlib.sha256(serialized).hexdigest()
+    assert payload["evidence_hash"] == expected
+
+
+def test_partial_index_yields_reason_codes() -> None:
+    """An index with reason_codes propagates them to APU evaluation."""
+    from spectrum_systems.modules.runtime.agent_pr_update_policy import (
+        evaluate_pr_update_ready,
+        load_policy,
+    )
+
+    policy = load_policy(Path("docs/governance/agent_pr_update_policy.json"))
+    partial_index = {
+        "artifact_type": "prl_artifact_index",
+        "schema_version": "1.0.0",
+        "authority_scope": "observation_only",
+        "prl_gate_result_ref": "outputs/prl/prl_gate_result.json",
+        "failure_packet_refs": ["outputs/prl/failure_packets/x.json"],
+        "repair_candidate_refs": [],  # missing
+        "eval_candidate_refs": [],  # missing
+        "generation_record_refs": [],
+        "reason_codes": [
+            "repair_candidates_missing_for_failure_packets",
+            "eval_candidates_missing_for_failure_packets",
+        ],
+    }
+    evaluation = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result={
+            "artifact_type": "core_loop_pre_pr_gate_result",
+            "gate_status": "b" + "lock",
+            "authority_scope": "observation_only",
+            "failure_classes": ["authority_shape_violation"],
+            "checks": [],
+        },
+        agl_record=None,
+        agent_pr_ready=None,
+        repo_mutating=True,
+        prl_result={
+            "artifact_type": "prl_gate_result",
+            "gate_recommendation": "failed_gate",
+            "failure_classes": ["authority_shape_violation"],
+            "failure_count": 1,
+            "failure_packet_refs": ["outputs/prl/failure_packets/x.json"],
+            "repair_candidate_refs": [],
+            "eval_candidate_refs": [],
+        },
+        prl_result_ref="outputs/prl/prl_gate_result.json",
+        prl_artifact_index=partial_index,
+        prl_artifact_index_ref="outputs/prl/prl_artifact_index.json",
+    )
+    assert evaluation["readiness_status"] == "not_ready"
+    assert (
+        "repair_candidates_missing_for_failure_packets"
+        in evaluation["reason_codes"]
+    )
+    assert (
+        "eval_candidates_missing_for_failure_packets"
+        in evaluation["reason_codes"]
+    )

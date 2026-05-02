@@ -12737,6 +12737,20 @@
       "notes": "PRL gate decision artifact summarizing pass/block outcome with trace references. Owned by PRL."
     },
     {
+      "artifact_type": "prl_artifact_index",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "schema_path": "contracts/schemas/prl_artifact_index.schema.json",
+      "example_path": "contracts/examples/prl_artifact_index.example.json",
+      "notes": "F3L-03 observation-only index of PRL artifacts persisted to a single PRL run output directory. Owned by PRL; consumed by APU and replay observers as file-backed evidence so they do not depend on the legacy stdout NDJSON stream. Authority scope: observation_only."
+    },
+    {
       "artifact_type": "prl_lrt_failure_packet",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
