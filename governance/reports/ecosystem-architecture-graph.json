@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-05-02T00:33:46Z",
+  "generated_at": "2026-05-02T09:44:54Z",
   "nodes": {
     "repositories": [
       {
@@ -3151,6 +3151,12 @@
       },
       {
         "id": "fused_signal_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "gate_shard_parity_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -7309,6 +7315,12 @@
       },
       {
         "id": "slo_umbrella_boundary_budget_breach_forecast",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "small_batch_risk_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

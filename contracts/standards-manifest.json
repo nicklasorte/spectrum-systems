@@ -17330,6 +17330,14 @@
       "example_path": "contracts/examples/agent_3ls_path_measurement_record.example.json",
       "artifact_class": "coordination",
       "introduced_in": "M3L-02"
+    },
+    {
+      "artifact_type": "gate_shard_parity_record",
+      "schema_version": "1.0.0",
+      "schema_path": "contracts/schemas/gate_shard_parity_record.schema.json",
+      "example_path": "contracts/examples/gate_shard_parity_record.example.json",
+      "artifact_class": "coordination",
+      "introduced_in": "M3L-03"
     }
   ]
 }
