@@ -43,6 +43,7 @@ from spectrum_systems.modules.runtime.agent_pr_update_policy import (  # noqa: E
     DEFAULT_POLICY_REL_PATH,
     DEFAULT_PRL_ARTIFACT_INDEX_REL_PATH,
     DEFAULT_PRL_RESULT_REL_PATH,
+    DEFAULT_SHARD_FIRST_READINESS_REL_PATH,
     PolicyLoadError,
     build_agent_pr_update_ready_result,
     evaluate_pr_update_ready,
@@ -52,6 +53,7 @@ from spectrum_systems.modules.runtime.agent_pr_update_policy import (  # noqa: E
     load_policy,
     load_prl_artifact_index,
     load_prl_result,
+    load_shard_first_readiness_observation,
     readiness_status_to_exit_code,
 )
 from spectrum_systems.modules.runtime.prl_auto_invoker import (  # noqa: E402
@@ -105,6 +107,18 @@ def _parse_args() -> argparse.Namespace:
             "rather than parsing the legacy stdout NDJSON. PRL retains "
             "all classification, repair-candidate, and eval-candidate "
             "authority."
+        ),
+    )
+    parser.add_argument(
+        "--shard-first-readiness",
+        default=DEFAULT_SHARD_FIRST_READINESS_REL_PATH,
+        help=(
+            "EVL-RT-05 — path to a pr_test_shard_first_readiness_observation "
+            "artifact. APU consumes this readiness observation directly when "
+            "supplied; otherwise APU falls back to the evl_shard_first_evidence "
+            "block recorded by CLP. APU does not run pytest, recompute shard "
+            "selection, or rebuild the observation. EVL retains all selection, "
+            "shard mapping, and shard-execution authority."
         ),
     )
     parser.add_argument(
@@ -195,10 +209,12 @@ def main() -> int:
     pr_ready_path = (REPO_ROOT / args.agent_pr_ready).resolve()
     prl_path = (REPO_ROOT / args.prl_result).resolve()
     prl_index_path = (REPO_ROOT / args.prl_artifact_index).resolve()
+    shard_first_path = (REPO_ROOT / args.shard_first_readiness).resolve()
 
     clp_result = load_clp_result(clp_path)
     agl_record = load_agl_record(agl_path)
     agent_pr_ready = load_agent_pr_ready(pr_ready_path)
+    shard_first_readiness = load_shard_first_readiness_observation(shard_first_path)
 
     repo_mutating = _resolve_repo_mutating(
         args.repo_mutating, clp_result=clp_result, agl_record=agl_record
@@ -233,6 +249,7 @@ def main() -> int:
     pr_ready_ref = _ref(pr_ready_path, agent_pr_ready)
     prl_ref = _ref(prl_path, prl_result)
     prl_index_ref = _ref(prl_index_path, prl_artifact_index)
+    shard_first_ref = _ref(shard_first_path, shard_first_readiness)
 
     auto_invocation_record = auto_invocation.to_dict()
 
@@ -251,6 +268,8 @@ def main() -> int:
         prl_auto_invocation=auto_invocation_record,
         prl_artifact_index=prl_artifact_index,
         prl_artifact_index_ref=prl_index_ref,
+        shard_first_readiness=shard_first_readiness,
+        shard_first_readiness_ref=shard_first_ref,
     )
     artifact = build_agent_pr_update_ready_result(
         work_item_id=args.work_item_id,
@@ -263,6 +282,7 @@ def main() -> int:
         prl_result_ref=prl_ref,
         prl_artifact_index_ref=prl_index_ref,
         prl_auto_invocation=auto_invocation_record,
+        shard_first_readiness_ref=shard_first_ref,
     )
     validate_artifact(artifact, "agent_pr_update_ready_result")
 
@@ -284,6 +304,9 @@ def main() -> int:
             if isinstance(artifact.get("prl_auto_invocation"), dict)
             else None
         ),
+        "shard_first_status": artifact["shard_first_status"],
+        "shard_first_evidence_status": artifact["shard_first_evidence_status"],
+        "shard_first_readiness_ref": artifact["shard_first_readiness_ref"],
         "output": str(output_path.relative_to(REPO_ROOT)),
     }
     print(json.dumps(summary, indent=2))

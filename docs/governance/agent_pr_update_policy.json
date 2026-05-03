@@ -51,6 +51,8 @@
   "required_agent_pr_ready_artifact_path_default": "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
   "required_prl_artifact_type": "prl_gate_result",
   "required_prl_artifact_path_default": "outputs/prl/prl_gate_result.json",
+  "required_shard_first_artifact_type": "pr_test_shard_first_readiness_observation",
+  "required_shard_first_artifact_path_default": "outputs/pr_test_shard_first_readiness/pr_test_shard_first_readiness_observation.json",
   "prl_known_repairable_failure_classes": [
     "pytest_selection_missing",
     "authority_shape_violation",
@@ -114,7 +116,11 @@
     "prl_known_repairable_failure_requires_repair_candidate_refs": true,
     "prl_known_repairable_failure_requires_eval_candidate_refs": true,
     "prl_blocking_gate_recommendation_blocks_pr_update_ready": true,
-    "prl_unknown_failure_yields_human_review_required": true
+    "prl_unknown_failure_yields_human_review_required": true,
+    "repo_mutating_requires_shard_first_evidence": true,
+    "shard_first_fallback_requires_reason_codes": true,
+    "shard_first_full_suite_requires_reason_codes": true,
+    "shard_first_pr_body_prose_is_not_evidence": true
   },
   "block_reason_codes": [
     "repo_mutating_unknown",
@@ -141,7 +147,21 @@
     "prl_repair_candidates_missing_for_repairable_failure",
     "prl_eval_candidates_missing_for_repairable_failure",
     "prl_gate_recommendation_blocks_pr_update_ready",
-    "prl_unknown_failure_class_observed"
+    "prl_unknown_failure_class_observed",
+    "shard_first_evidence_missing_for_repo_mutating",
+    "shard_first_evidence_partial_for_repo_mutating",
+    "shard_first_evidence_unknown_for_repo_mutating",
+    "shard_first_readiness_observation_missing",
+    "shard_first_readiness_observation_invalid",
+    "shard_first_status_missing_required_shard_refs",
+    "shard_first_status_inconsistent_with_fallback_signals",
+    "shard_first_status_partial",
+    "shard_first_status_missing",
+    "shard_first_status_unknown",
+    "shard_first_fallback_justified_missing_justification_ref",
+    "shard_first_fallback_justified_missing_reason_codes",
+    "shard_first_fallback_used_without_reason_codes",
+    "shard_first_full_suite_detected_without_reason_codes"
   ],
   "max_repair_attempts": 0,
   "must_not_do": [
@@ -160,6 +180,6 @@
     "downgrade_present_without_artifact_refs"
   ],
   "introduced_in": "APU-3LS-01",
-  "last_updated_in": "F3L-03",
-  "notes": "APU-3LS-01 policy (last updated by F3L-03). APU is observation-only and emits PR-update readiness observations. Canonical authority remains with AEX (admission), PQX (execution closure), EVL (eval evidence), TPA (policy/scope), CDE (continuation/closure), SEL (final gate signal), LIN (lineage), REP (replay), and GOV per docs/architecture/system_registry.md. APU consumes core_loop_pre_pr_gate_result (CLP), agent_core_loop_run_record (AGL), agent_pr_ready_result (CLP-02 guard), and prl_gate_result (PRL) as readiness inputs and emits an agent_pr_update_ready_result evidence artifact. APU enforces the artifact-backed evidence invariant: 'no artifact = it did not happen'. Claimed 3LS usage without artifact refs is invalid. PR body prose, comments, and CI success cannot substitute for artifact_refs. F3L-01 wires PRL failure-normalization evidence into APU so a CLP-blocked repo-mutating slice cannot be observed as PR-update ready until PRL evidence (gate result, failure packet refs, repair/eval candidate refs as applicable) is present. F3L-02 closes the manual seam between CLP gate detection and PRL by auto-invoking scripts/run_pre_pr_reliability_gate.py from the APU runner whenever CLP reports the blocking gate status on a repo-mutating slice with missing or stale PRL evidence; the invocation record is recorded as an observation on the readiness artifact. F3L-03 makes PRL artifact persistence deterministic by writing prl_gate_result.json plus per-artifact subdirectories (failure_packets/, repair_candidates/, eval_candidates/) under outputs/prl/, so APU and replay consumers ingest file-based evidence rather than parsing stdout NDJSON. PRL retains all classification, repair-candidate, and eval-candidate authority. AEX/PQX/CDE/SEL retain canonical signal authority and consume APU output as a readiness input only."
+  "last_updated_in": "EVL-RT-05",
+  "notes": "APU-3LS-01 policy (last updated by EVL-RT-05). APU is observation-only and emits PR-update readiness observations. Canonical authority remains with AEX (admission), PQX (execution closure), EVL (eval evidence), TPA (policy/scope), CDE (continuation/closure), SEL (final gate signal), LIN (lineage), REP (replay), and GOV per docs/architecture/system_registry.md. APU consumes core_loop_pre_pr_gate_result (CLP), agent_core_loop_run_record (AGL), agent_pr_ready_result (CLP-02 guard), prl_gate_result (PRL), and pr_test_shard_first_readiness_observation (EVL) as readiness inputs and emits an agent_pr_update_ready_result evidence artifact. APU enforces the artifact-backed evidence invariant: 'no artifact = it did not happen'. Claimed 3LS usage without artifact refs is invalid. PR body prose, comments, and CI success cannot substitute for artifact_refs. F3L-01 wires PRL failure-normalization evidence into APU so a CLP-blocked repo-mutating slice cannot be observed as PR-update ready until PRL evidence (gate result, failure packet refs, repair/eval candidate refs as applicable) is present. F3L-02 closes the manual seam between CLP gate detection and PRL by auto-invoking scripts/run_pre_pr_reliability_gate.py from the APU runner whenever CLP reports the blocking gate status on a repo-mutating slice with missing or stale PRL evidence; the invocation record is recorded as an observation on the readiness artifact. F3L-03 makes PRL artifact persistence deterministic by writing prl_gate_result.json plus per-artifact subdirectories (failure_packets/, repair_candidates/, eval_candidates/) under outputs/prl/, so APU and replay consumers ingest file-based evidence rather than parsing stdout NDJSON. EVL-RT-05 wires shard-first readiness evidence into APU so a repo-mutating slice cannot be observed as PR-update ready unless the shard-first readiness observation (or, when not supplied directly, the evl_shard_first_evidence block recorded by CLP) is present and consistent. APU surfaces shard_first_status, shard_first_evidence_status, shard_first_reason_codes, shard_first_fallback_used, shard_first_full_suite_detected, and shard_first_fallback_reason_codes on the agent_pr_update_ready_result. APU does not run pytest, recompute selection, or rebuild the observation. EVL retains all selection, shard mapping, and shard-execution authority. PRL retains all classification, repair-candidate, and eval-candidate authority. AEX/PQX/CDE/SEL retain canonical signal authority and consume APU output as a readiness input only."
 }

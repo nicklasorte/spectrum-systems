@@ -1102,10 +1102,10 @@
           "docs/review-actions/PLAN-R100-001-2026-04-15.md",
           "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
           "docs/review-actions/PLAN-TLS-STACK-02A-2026-04-26.md",
+          "docs/reviews/EVL-RT-05_redteam.md",
           "docs/reviews/MET-04-18-final-integration-review.md",
           "docs/reviews/NX_ALL_01_delivery_report.md",
-          "docs/reviews/OPR-TRN-01A_authority_failclosed.md",
-          "docs/reviews/RFX-SUPER-01-red-team-review.md"
+          "docs/reviews/OPR-TRN-01A_authority_failclosed.md"
         ],
         "modules": [
           "spectrum_systems/governance/authority_shape_early_gate.py",
@@ -1605,6 +1605,7 @@
           "spectrum_systems/modules/observability/trust_artifact_freshness.py",
           "spectrum_systems/modules/prl/failure_classifier.py",
           "spectrum_systems/modules/runtime/agent_core_loop_proof.py",
+          "spectrum_systems/modules/runtime/agent_pr_update_policy.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/alert_triggers.py",
           "spectrum_systems/modules/runtime/authority_repair_candidate_generator.py",
@@ -1617,8 +1618,7 @@
           "spectrum_systems/modules/runtime/observability_metrics.py",
           "spectrum_systems/modules/runtime/pmh_003_surfaces.py",
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",
-          "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py",
-          "spectrum_systems/modules/runtime/rfx_certification_gate.py"
+          "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -2057,7 +2057,7 @@
           "docs/reviews/EVL-RT-02_redteam.md",
           "docs/reviews/EVL-RT-03_redteam.md",
           "docs/reviews/EVL-RT-04_redteam.md",
-          "docs/reviews/F3L-01_redteam.md"
+          "docs/reviews/EVL-RT-05_redteam.md"
         ],
         "modules": [
           "spectrum_systems/modules/prl/__init__.py",
