@@ -48,5 +48,30 @@
       "rationale": "changed_scope is the slowest shard for this PR; observation only — operators may consider focused mapping or splitting this shard if it becomes a recurring bottleneck."
     }
   ],
+  "fallback_justification": {
+    "fallback_scope": "none",
+    "fallback_used": false,
+    "full_suite_detected": false,
+    "fallback_reason_codes": [],
+    "selection_coverage_ref": "outputs/selection_coverage/selection_coverage_record.json",
+    "shard_summary_ref": "outputs/pr_test_shards/pr_test_shards_summary.json",
+    "unmatched_changed_paths": [],
+    "missing_surface_mappings": [],
+    "selected_test_targets": [
+      "tests/test_pr_test_runtime_budget_observation.py",
+      "tests/test_pr_test_shards.py",
+      "tests/test_selection_coverage_record.py"
+    ],
+    "recommended_mapping_candidates": [],
+    "recommended_shard_candidates": [
+      {
+        "shard": "changed_scope",
+        "candidate_action": "review_mapping",
+        "observation_only": true,
+        "rationale": "changed_scope is the slowest shard for this PR; observation only — operators may consider focused mapping or splitting if it becomes a recurring bottleneck."
+      }
+    ],
+    "evidence_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
   "evidence_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 }

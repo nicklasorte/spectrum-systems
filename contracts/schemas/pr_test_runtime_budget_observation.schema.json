@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/pr_test_runtime_budget_observation.schema.json",
   "title": "PR Test Runtime Budget Observation",
-  "description": "EVL-RT-01 observation-only PR test runtime budget artifact. Records the changed files, selected test targets, shard durations, slowest shard, full-suite/fallback usage, the configured runtime budget in seconds, the resulting budget_status (within_budget | over_budget | unknown), reason codes, and improvement recommendations. The artifact reuses the existing pr_test_shards_summary and selection_coverage_record artifacts; the builder does not run pytest, mutate selection, or duplicate selector logic. authority_scope is observation_only: this artifact emits runtime, fallback, and recommendation observations only. Present shard evidence requires shard_summary_ref or at least one shard_result_refs entry; budget_status unknown requires reason_codes; full_suite_detected true requires fallback_reason_codes and surfaces it visibly. Improvement recommendations are observation-only and never reassign tests, change selection, or block PRs.",
+  "description": "EVL-RT-01 / EVL-RT-02 observation-only PR test runtime budget artifact. Records the changed files, selected test targets, shard durations, slowest shard, full-suite/fallback usage, the configured runtime budget in seconds, the resulting budget_status (within_budget | over_budget | unknown), reason codes, improvement recommendations, and a fallback_justification section that explains why broad/full-suite/shard fallback was used and which mapping/sharding improvements should be considered. The artifact reuses the existing pr_test_shards_summary and selection_coverage_record artifacts; the builder does not run pytest, mutate selection, or duplicate selector logic. authority_scope is observation_only: this artifact emits runtime, fallback, and recommendation observations only. Present shard evidence requires shard_summary_ref or at least one shard_result_refs entry; budget_status unknown requires reason_codes; full_suite_detected true requires fallback_reason_codes and surfaces it visibly. fallback_justification.fallback_used true requires fallback_reason_codes; fallback_justification.full_suite_detected true requires fallback_reason_codes; fallback_justification.fallback_scope unknown requires fallback_reason_codes; when fallback_justification.fallback_used or fallback_justification.full_suite_detected is true the section must reference selection_coverage_ref and/or shard_summary_ref. Improvement recommendations and recommended_mapping_candidates / recommended_shard_candidates are observation-only and never reassign tests, change selection, or block PRs.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -28,6 +28,7 @@
     "budget_status",
     "reason_codes",
     "improvement_recommendations",
+    "fallback_justification",
     "evidence_hash"
   ],
   "properties": {
@@ -176,6 +177,151 @@
         }
       }
     },
+    "fallback_justification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fallback_scope",
+        "fallback_used",
+        "full_suite_detected",
+        "fallback_reason_codes",
+        "selection_coverage_ref",
+        "shard_summary_ref",
+        "unmatched_changed_paths",
+        "missing_surface_mappings",
+        "selected_test_targets",
+        "recommended_mapping_candidates",
+        "recommended_shard_candidates",
+        "evidence_hash"
+      ],
+      "properties": {
+        "fallback_scope": {
+          "type": "string",
+          "enum": [
+            "none",
+            "shard_fallback",
+            "broad_pytest",
+            "full_suite",
+            "unknown"
+          ]
+        },
+        "fallback_used": {
+          "type": "boolean"
+        },
+        "full_suite_detected": {
+          "type": "boolean"
+        },
+        "fallback_reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "selection_coverage_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shard_summary_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unmatched_changed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "missing_surface_mappings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "selected_test_targets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "recommended_mapping_candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "candidate_test_targets",
+              "observation_only"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "candidate_test_targets": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "observation_only": {
+                "type": "boolean",
+                "const": true
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "recommended_shard_candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "shard",
+              "observation_only"
+            ],
+            "properties": {
+              "shard": {
+                "type": "string",
+                "minLength": 1
+              },
+              "candidate_action": {
+                "type": "string",
+                "enum": [
+                  "split_shard",
+                  "narrow_selection",
+                  "review_mapping",
+                  "review_runtime_budget"
+                ]
+              },
+              "observation_only": {
+                "type": "boolean",
+                "const": true
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "evidence_hash": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
     "evidence_hash": {
       "type": "string",
       "minLength": 1
@@ -272,6 +418,166 @@
           "fallback_reason_codes": {
             "type": "array",
             "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "fallback_justification.fallback_used true must surface at least one fallback_reason_code so fallback usage is never hidden in the justification section.",
+      "if": {
+        "properties": {
+          "fallback_justification": {
+            "properties": {
+              "fallback_used": {
+                "const": true
+              }
+            },
+            "required": [
+              "fallback_used"
+            ]
+          }
+        },
+        "required": [
+          "fallback_justification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fallback_justification": {
+            "properties": {
+              "fallback_reason_codes": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "fallback_justification.full_suite_detected true must surface at least one fallback_reason_code so full-suite usage is never hidden in the justification section.",
+      "if": {
+        "properties": {
+          "fallback_justification": {
+            "properties": {
+              "full_suite_detected": {
+                "const": true
+              }
+            },
+            "required": [
+              "full_suite_detected"
+            ]
+          }
+        },
+        "required": [
+          "fallback_justification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fallback_justification": {
+            "properties": {
+              "fallback_reason_codes": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "When fallback_justification.fallback_used or fallback_justification.full_suite_detected is true the section must reference at least one of selection_coverage_ref or shard_summary_ref so present fallback justification carries evidence refs.",
+      "if": {
+        "properties": {
+          "fallback_justification": {
+            "anyOf": [
+              {
+                "properties": {
+                  "fallback_used": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "fallback_used"
+                ]
+              },
+              {
+                "properties": {
+                  "full_suite_detected": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "full_suite_detected"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "fallback_justification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fallback_justification": {
+            "anyOf": [
+              {
+                "properties": {
+                  "selection_coverage_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "selection_coverage_ref"
+                ]
+              },
+              {
+                "properties": {
+                  "shard_summary_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "shard_summary_ref"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "description": "fallback_justification.fallback_scope unknown must carry at least one fallback_reason_code so unknown is never silently treated as none.",
+      "if": {
+        "properties": {
+          "fallback_justification": {
+            "properties": {
+              "fallback_scope": {
+                "const": "unknown"
+              }
+            },
+            "required": [
+              "fallback_scope"
+            ]
+          }
+        },
+        "required": [
+          "fallback_justification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fallback_justification": {
+            "properties": {
+              "fallback_reason_codes": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
           }
         }
       }

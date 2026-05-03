@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""EVL-RT-01 PR test runtime budget observation builder.
+"""EVL-RT-01 / EVL-RT-02 PR test runtime budget observation builder.
 
 Emits an observation-only ``pr_test_runtime_budget_observation`` artifact
 at ``outputs/pr_test_runtime_budget/pr_test_runtime_budget_observation.json``
@@ -15,7 +15,12 @@ that records, for a PR's already-measured pytest run:
   ``unknown``),
 - reason codes for ``unknown`` / ``over_budget`` / fallback usage,
 - observation-only improvement recommendations (slowest shard, full-suite
-  fallback, missing mapping signal, over-budget signal).
+  fallback, missing mapping signal, over-budget signal),
+- a ``fallback_justification`` section (EVL-RT-02) that records the
+  fallback scope (``none``/``shard_fallback``/``broad_pytest``/
+  ``full_suite``/``unknown``), the reason codes that triggered it, the
+  unmatched changed paths and missing surface mappings observed, the
+  recommended mapping candidates, and recommended shard candidates.
 
 The builder reuses existing artifacts. It does NOT:
 
@@ -255,6 +260,237 @@ def _resolve_selection(
     )
 
 
+def _resolve_unmatched_changed_paths(
+    coverage: dict[str, Any] | None,
+) -> list[str]:
+    if coverage is None:
+        return []
+    return sorted(set(_coerce_str_list(coverage.get("unmatched_changed_paths"))))
+
+
+def _resolve_missing_surface_mappings(
+    coverage: dict[str, Any] | None,
+) -> list[str]:
+    """Return paths whose surface rule attempts did not match.
+
+    Reads the canonical ``selection_coverage_record.attempted_surface_rules``
+    list and returns every governed path whose attempt failed. The
+    runtime budget builder is observation-only — it never attempts to
+    re-map those paths or invoke the canonical selector.
+    """
+    if coverage is None:
+        return []
+    rules = coverage.get("attempted_surface_rules")
+    if not isinstance(rules, list):
+        return []
+    missing: set[str] = set()
+    for rule in rules:
+        if not isinstance(rule, dict):
+            continue
+        matched = bool(rule.get("matched"))
+        if matched:
+            continue
+        path = rule.get("path")
+        if not isinstance(path, str) or not path:
+            continue
+        missing.add(path)
+    return sorted(missing)
+
+
+def _resolve_recommended_mapping_candidates(
+    coverage: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """Surface coverage-recorded mapping candidates as observation only.
+
+    The runtime budget builder does not generate new mapping candidates;
+    it only re-emits already-recorded recommendations from the
+    canonical ``selection_coverage_record``. Each candidate is forced to
+    ``observation_only=true`` and stripped of any non-schema fields so
+    no recommendation can claim authority.
+    """
+    if coverage is None:
+        return []
+    raw = coverage.get("recommended_mapping_candidates")
+    if not isinstance(raw, list):
+        return []
+    candidates: list[dict[str, Any]] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        path = entry.get("path")
+        targets = entry.get("candidate_test_targets")
+        if not isinstance(path, str) or not path:
+            continue
+        if not isinstance(targets, list):
+            continue
+        clean_targets = [
+            str(t) for t in targets if isinstance(t, str) and t
+        ]
+        candidate: dict[str, Any] = {
+            "path": path,
+            "candidate_test_targets": clean_targets,
+            "observation_only": True,
+        }
+        rationale = entry.get("rationale")
+        if isinstance(rationale, str) and rationale:
+            candidate["rationale"] = rationale
+        candidates.append(candidate)
+    return candidates
+
+
+def _classify_fallback_scope(
+    *,
+    full_suite_detected: bool,
+    fallback_used: bool,
+    coverage_present: bool,
+    summary_present: bool,
+    fallback_targets: list[str],
+) -> tuple[str, list[str]]:
+    """Return ``(fallback_scope, extra_reason_codes)``.
+
+    Scopes (in priority order):
+
+    - ``full_suite``: full-suite signal observed (``tests``, ``tests/``,
+      ``.``, or a known full-suite token).
+    - ``broad_pytest``: ``fallback_used`` true with broad fallback
+      targets (``select_all_tests`` or fallback targets matching a
+      full-suite token).
+    - ``shard_fallback``: ``fallback_used`` true with no broad fallback
+      tokens — selector reported a per-shard or git-diff-unavailable
+      fallback.
+    - ``unknown``: required inputs are missing so the scope cannot be
+      determined; reason codes are always emitted.
+    - ``none``: no fallback observed.
+    """
+    if full_suite_detected:
+        return "full_suite", []
+    if fallback_used:
+        broad_tokens = {"select_all_tests"} | set(_FULL_SUITE_TARGET_TOKENS)
+        for target in fallback_targets:
+            token = target.strip()
+            if token in broad_tokens:
+                return "broad_pytest", []
+            if any(t in token for t in _FULL_SUITE_FALLBACK_REASON_TOKENS):
+                return "broad_pytest", []
+        return "shard_fallback", []
+    if not coverage_present and not summary_present:
+        return "unknown", [
+            "fallback_scope_unknown_inputs_missing",
+        ]
+    if not coverage_present:
+        return "unknown", [
+            "fallback_scope_unknown_selection_coverage_missing",
+        ]
+    return "none", []
+
+
+def _build_recommended_shard_candidates(
+    *,
+    fallback_scope: str,
+    slowest_shard: str | None,
+    slowest_shard_duration_seconds: float | None,
+    runtime_budget_seconds: float | None,
+) -> list[dict[str, Any]]:
+    """Return observation-only shard improvement candidates.
+
+    Recommendations never reassign tests, mutate selection, or change
+    sharding. They are operator-facing observations only.
+    """
+    candidates: list[dict[str, Any]] = []
+    if fallback_scope == "full_suite":
+        candidates.append(
+            {
+                "shard": "all",
+                "candidate_action": "narrow_selection",
+                "observation_only": True,
+                "rationale": (
+                    "Full-suite fallback observed; operators may "
+                    "consider extending the canonical selector "
+                    "mappings so changed surfaces route to focused "
+                    "tests instead of falling back to the full suite."
+                ),
+            }
+        )
+    elif fallback_scope == "broad_pytest":
+        candidates.append(
+            {
+                "shard": "all",
+                "candidate_action": "narrow_selection",
+                "observation_only": True,
+                "rationale": (
+                    "Broad pytest fallback observed; operators may "
+                    "consider focused override mappings so the next "
+                    "PR run avoids the broad selection."
+                ),
+            }
+        )
+    elif fallback_scope == "shard_fallback":
+        candidates.append(
+            {
+                "shard": "all",
+                "candidate_action": "review_mapping",
+                "observation_only": True,
+                "rationale": (
+                    "Selector reported per-shard fallback; operators "
+                    "may inspect the override map to confirm the "
+                    "fallback is intentional and route to focused "
+                    "tests where possible."
+                ),
+            }
+        )
+
+    if slowest_shard and slowest_shard_duration_seconds is not None:
+        action = "split_shard"
+        if (
+            runtime_budget_seconds is not None
+            and slowest_shard_duration_seconds <= runtime_budget_seconds / 2
+        ):
+            action = "review_mapping"
+        candidates.append(
+            {
+                "shard": slowest_shard,
+                "candidate_action": action,
+                "observation_only": True,
+                "rationale": (
+                    f"{slowest_shard} is the slowest shard "
+                    f"({slowest_shard_duration_seconds:.3f}s); "
+                    "observation only — operators may consider focused "
+                    "mapping or splitting if it becomes a recurring "
+                    "bottleneck."
+                ),
+            }
+        )
+
+    return candidates
+
+
+def _compute_justification_evidence_hash(
+    *,
+    fallback_scope: str,
+    fallback_used: bool,
+    full_suite_detected: bool,
+    fallback_reason_codes: list[str],
+    selection_coverage_ref: str | None,
+    shard_summary_ref: str | None,
+    unmatched_changed_paths: list[str],
+    missing_surface_mappings: list[str],
+) -> str:
+    payload = {
+        "fallback_scope": fallback_scope,
+        "fallback_used": fallback_used,
+        "full_suite_detected": full_suite_detected,
+        "fallback_reason_codes": sorted(fallback_reason_codes),
+        "selection_coverage_ref": selection_coverage_ref,
+        "shard_summary_ref": shard_summary_ref,
+        "unmatched_changed_paths": sorted(unmatched_changed_paths),
+        "missing_surface_mappings": sorted(missing_surface_mappings),
+    }
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
+    return "sha256:" + hashlib.sha256(raw).hexdigest()
+
+
 def _resolve_shard_result_refs(
     summary: dict[str, Any] | None,
 ) -> list[str]:
@@ -423,6 +659,7 @@ def build_runtime_budget_observation(
     selection_coverage: dict[str, Any] | None,
     runtime_budget_seconds: float | None,
     shard_summary_ref: str | None,
+    selection_coverage_ref: str | None = None,
     created_at: str | None = None,
     record_id: str | None = None,
 ) -> dict[str, Any]:
@@ -497,6 +734,61 @@ def build_runtime_budget_observation(
         runtime_budget_seconds=runtime_budget_seconds,
     )
 
+    unmatched_changed_paths = _resolve_unmatched_changed_paths(selection_coverage)
+    missing_surface_mappings = _resolve_missing_surface_mappings(selection_coverage)
+    recommended_mapping_candidates = _resolve_recommended_mapping_candidates(
+        selection_coverage
+    )
+
+    fallback_scope, scope_reason_codes = _classify_fallback_scope(
+        full_suite_detected=full_suite_detected,
+        fallback_used=fallback_used,
+        coverage_present=selection_coverage is not None,
+        summary_present=shard_summary is not None,
+        fallback_targets=fallback_targets,
+    )
+
+    justification_reason_codes = sorted(
+        set(fallback_reason_codes) | set(scope_reason_codes)
+    )
+
+    effective_selection_coverage_ref = (
+        selection_coverage_ref if selection_coverage is not None else None
+    )
+
+    recommended_shard_candidates = _build_recommended_shard_candidates(
+        fallback_scope=fallback_scope,
+        slowest_shard=slowest_shard,
+        slowest_shard_duration_seconds=slowest_shard_duration_seconds,
+        runtime_budget_seconds=runtime_budget_seconds,
+    )
+
+    justification_evidence_hash = _compute_justification_evidence_hash(
+        fallback_scope=fallback_scope,
+        fallback_used=fallback_used,
+        full_suite_detected=full_suite_detected,
+        fallback_reason_codes=justification_reason_codes,
+        selection_coverage_ref=effective_selection_coverage_ref,
+        shard_summary_ref=shard_summary_ref if shard_summary is not None else None,
+        unmatched_changed_paths=unmatched_changed_paths,
+        missing_surface_mappings=missing_surface_mappings,
+    )
+
+    fallback_justification = {
+        "fallback_scope": fallback_scope,
+        "fallback_used": fallback_used,
+        "full_suite_detected": full_suite_detected,
+        "fallback_reason_codes": justification_reason_codes,
+        "selection_coverage_ref": effective_selection_coverage_ref,
+        "shard_summary_ref": shard_summary_ref if shard_summary is not None else None,
+        "unmatched_changed_paths": unmatched_changed_paths,
+        "missing_surface_mappings": missing_surface_mappings,
+        "selected_test_targets": selected_test_targets,
+        "recommended_mapping_candidates": recommended_mapping_candidates,
+        "recommended_shard_candidates": recommended_shard_candidates,
+        "evidence_hash": justification_evidence_hash,
+    }
+
     artifact = {
         "artifact_type": "pr_test_runtime_budget_observation",
         "schema_version": "1.0.0",
@@ -520,6 +812,7 @@ def build_runtime_budget_observation(
         "budget_status": budget_status,
         "reason_codes": reason_codes,
         "improvement_recommendations": recommendations,
+        "fallback_justification": fallback_justification,
         "evidence_hash": evidence_hash,
     }
     return artifact
@@ -584,6 +877,11 @@ def main() -> int:
     shard_summary_ref = (
         _ref_relative(shard_summary_path) if shard_summary is not None else None
     )
+    selection_coverage_ref = (
+        _ref_relative(selection_coverage_path)
+        if selection_coverage is not None
+        else None
+    )
 
     artifact = build_runtime_budget_observation(
         base_ref=args.base_ref,
@@ -592,6 +890,7 @@ def main() -> int:
         selection_coverage=selection_coverage,
         runtime_budget_seconds=args.runtime_budget_seconds,
         shard_summary_ref=shard_summary_ref,
+        selection_coverage_ref=selection_coverage_ref,
     )
 
     validate_artifact(artifact, "pr_test_runtime_budget_observation")
@@ -606,6 +905,9 @@ def main() -> int:
                 "slowest_shard": artifact["slowest_shard"],
                 "full_suite_detected": artifact["full_suite_detected"],
                 "fallback_used": artifact["fallback_used"],
+                "fallback_scope": artifact["fallback_justification"][
+                    "fallback_scope"
+                ],
                 "reason_codes": artifact["reason_codes"],
                 "output": _ref_relative(output_path),
             },
