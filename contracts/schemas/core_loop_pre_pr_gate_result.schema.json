@@ -107,6 +107,9 @@
     },
     "evl_shard_evidence": {
       "$ref": "#/$defs/evl_shard_evidence"
+    },
+    "evl_shard_first_evidence": {
+      "$ref": "#/$defs/evl_shard_first_evidence"
     }
   },
   "allOf": [
@@ -148,7 +151,8 @@
             "tls_generated_artifact_freshness",
             "contract_preflight",
             "selected_tests",
-            "evl_shard_artifacts"
+            "evl_shard_artifacts",
+            "evl_shard_first_readiness"
           ]
         },
         "owner_system": {
@@ -267,6 +271,66 @@
           "items": { "type": "string", "minLength": 1 }
         },
         "evl_shard_reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evl_shard_first_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Narrow EVL shard-first readiness evidence section consumed from outputs/pr_test_shard_first_readiness/. CLP records the shard-first readiness observation as pre-PR evidence; it does not recompute selection or rebuild the observation. evl_shard_first_status mirrors the upstream observation's shard_first_status.",
+      "required": [
+        "evl_shard_first_observation_ref",
+        "evl_shard_first_status",
+        "evl_shard_first_required_shard_refs",
+        "evl_shard_first_missing_shard_refs",
+        "evl_shard_first_failed_shard_refs",
+        "evl_shard_first_fallback_used",
+        "evl_shard_first_full_suite_detected",
+        "evl_shard_first_fallback_justification_ref",
+        "evl_shard_first_fallback_reason_codes",
+        "evl_shard_first_reason_codes"
+      ],
+      "properties": {
+        "evl_shard_first_observation_ref": {
+          "type": ["string", "null"]
+        },
+        "evl_shard_first_status": {
+          "enum": [
+            "shard_first",
+            "fallback_justified",
+            "missing",
+            "partial",
+            "unknown"
+          ]
+        },
+        "evl_shard_first_required_shard_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_shard_first_missing_shard_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_shard_first_failed_shard_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_shard_first_fallback_used": {
+          "type": "boolean"
+        },
+        "evl_shard_first_full_suite_detected": {
+          "type": "boolean"
+        },
+        "evl_shard_first_fallback_justification_ref": {
+          "type": ["string", "null"]
+        },
+        "evl_shard_first_fallback_reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evl_shard_first_reason_codes": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
         }

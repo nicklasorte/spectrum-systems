@@ -42,6 +42,7 @@ from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (  # noqa: E4
     build_check,
     build_gate_result,
     consume_shard_artifacts,
+    consume_shard_first_readiness_observation,
     diff_hash_maps,
     gate_status_to_exit_code,
     hash_paths,
@@ -483,6 +484,60 @@ def _check_evl_shard_artifacts(
     return evidence, check
 
 
+def _check_evl_shard_first_readiness(
+    *,
+    output_dir: Path,
+    base_ref: str,
+    head_ref: str,
+    observation_rel_path: str,
+    allowed_fallback_reason_codes: list[str],
+    invoke_builder_if_missing: bool,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """CLP-side EVL shard-first readiness observation consumer.
+
+    CLP reads the existing
+    ``pr_test_shard_first_readiness_observation`` artifact emitted by
+    ``scripts/build_pr_test_shard_first_readiness_observation.py``. CLP
+    does NOT run pytest, recompute selection, or rebuild the
+    observation. Per the active CLP policy, the builder may be invoked
+    here only as an evidence-production convenience when the
+    observation is absent — the artifact emitted is still the canonical
+    pre-PR shard-first observation surface.
+    """
+    observation_path = (REPO_ROOT / observation_rel_path).resolve()
+
+    if not observation_path.is_file() and invoke_builder_if_missing:
+        log_path = output_dir / "evl_shard_first_readiness_builder.log"
+        cmd = [
+            sys.executable,
+            "scripts/build_pr_test_shard_first_readiness_observation.py",
+            "--base-ref",
+            base_ref,
+            "--head-ref",
+            head_ref,
+            "--output",
+            observation_rel_path,
+        ]
+        _run_subcommand(cmd=cmd, log_path=log_path)
+
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=observation_path,
+        repo_root=REPO_ROOT,
+        allowed_fallback_reason_codes=tuple(allowed_fallback_reason_codes),
+    )
+
+    obs_path = output_dir / "evl_shard_first_readiness_observation.json"
+    write_json(
+        obs_path,
+        {
+            "artifact_type": "evl_shard_first_readiness_observation",
+            "authority_scope": "observation_only",
+            "evl_shard_first_evidence": evidence,
+        },
+    )
+    return evidence, check
+
+
 def _check_selected_tests(
     *, changed_files: list[str], output_dir: Path
 ) -> dict[str, Any]:
@@ -586,6 +641,19 @@ def main() -> int:
         shard_policy.get("invoke_runner_if_missing", False)
     )
 
+    shard_first_policy = policy.get("evl_shard_first_readiness_evidence") or {}
+    shard_first_observation_rel_path: str = str(
+        shard_first_policy.get("observation_path")
+        or "outputs/pr_test_shard_first_readiness/"
+        "pr_test_shard_first_readiness_observation.json"
+    )
+    shard_first_allowed_fallback_reason_codes: list[str] = list(
+        shard_first_policy.get("allowed_fallback_reason_codes") or []
+    )
+    shard_first_invoke_builder_if_missing: bool = bool(
+        shard_first_policy.get("invoke_builder_if_missing", False)
+    )
+
     try:
         changed_files = resolve_changed_files(
             repo_root=REPO_ROOT,
@@ -643,6 +711,20 @@ def main() -> int:
         )
         checks.append(evl_shard_check)
 
+    evl_shard_first_evidence: dict[str, Any] | None = None
+    if "evl_shard_first_readiness" not in skip:
+        evl_shard_first_evidence, evl_shard_first_check = (
+            _check_evl_shard_first_readiness(
+                output_dir=output_dir,
+                base_ref=args.base_ref,
+                head_ref=args.head_ref,
+                observation_rel_path=shard_first_observation_rel_path,
+                allowed_fallback_reason_codes=shard_first_allowed_fallback_reason_codes,
+                invoke_builder_if_missing=shard_first_invoke_builder_if_missing,
+            )
+        )
+        checks.append(evl_shard_first_check)
+
     emitted_path = output_dir / "core_loop_pre_pr_gate_result.json"
     source_artifacts = list(args.source_artifact or [])
     if policy_ref not in source_artifacts:
@@ -659,6 +741,7 @@ def main() -> int:
         emitted_artifacts=[str(emitted_path.relative_to(REPO_ROOT))],
         generated_at=utc_now_iso(),
         evl_shard_evidence=evl_shard_evidence,
+        evl_shard_first_evidence=evl_shard_first_evidence,
     )
     validate_artifact(artifact, "core_loop_pre_pr_gate_result")
     write_json(emitted_path, artifact)

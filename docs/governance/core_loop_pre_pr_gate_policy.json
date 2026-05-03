@@ -48,7 +48,8 @@
     "tls_generated_artifact_freshness_observation",
     "contract_preflight_observation",
     "selected_tests_observation",
-    "evl_shard_artifacts_observation"
+    "evl_shard_artifacts_observation",
+    "evl_shard_first_readiness_observation"
   ],
   "allowed_warn_reason_codes": [],
   "block_reason_codes": [
@@ -79,7 +80,21 @@
     "evl_required_shard_unknown",
     "evl_required_shard_skipped",
     "evl_pass_shard_missing_artifact_refs",
-    "evl_non_pass_shard_missing_reason_codes"
+    "evl_non_pass_shard_missing_reason_codes",
+    "evl_shard_first_readiness_missing",
+    "evl_shard_first_readiness_invalid",
+    "evl_shard_first_readiness_partial",
+    "evl_shard_first_readiness_unknown",
+    "evl_shard_first_readiness_fallback_unjustified",
+    "evl_shard_first_readiness_shard_refs_empty",
+    "pr_test_shard_first_readiness_observation_missing",
+    "pr_test_shard_first_readiness_observation_invalid",
+    "shard_first_status_missing_required_shard_refs",
+    "shard_first_status_inconsistent_with_fallback_signals",
+    "fallback_justified_status_missing_fallback_justification_ref",
+    "fallback_justified_status_missing_fallback_reason_codes",
+    "fallback_signal_without_fallback_justification_ref",
+    "fallback_signal_without_fallback_reason_codes"
   ],
   "max_repair_attempts": 0,
   "rules": {
@@ -99,7 +114,12 @@
     "evl_shard_missing_blocks": true,
     "evl_shard_failed_blocks": true,
     "evl_shard_unknown_blocks": true,
-    "evl_shard_skipped_blocks_unless_allowed": true
+    "evl_shard_skipped_blocks_unless_allowed": true,
+    "evl_shard_first_readiness_required": true,
+    "evl_shard_first_missing_blocks": true,
+    "evl_shard_first_partial_blocks": true,
+    "evl_shard_first_unknown_blocks": true,
+    "evl_shard_first_fallback_without_justification_blocks": true
   },
   "evl_shard_evidence": {
     "required_shards": [
@@ -110,6 +130,12 @@
     "allowed_skipped_shards": [],
     "invoke_runner_if_missing": false,
     "notes": "CLP consumes existing pr_test_shard_result and pr_test_shards_summary artifacts from outputs/pr_test_shards/. CLP does not recompute shard results. invoke_runner_if_missing controls whether CLP may invoke scripts/run_pr_test_shards.py when the summary is absent; the canonical shard runner remains owned by EVL."
+  },
+  "evl_shard_first_readiness_evidence": {
+    "observation_path": "outputs/pr_test_shard_first_readiness/pr_test_shard_first_readiness_observation.json",
+    "allowed_fallback_reason_codes": [],
+    "invoke_builder_if_missing": false,
+    "notes": "CLP consumes the existing pr_test_shard_first_readiness_observation artifact emitted by scripts/build_pr_test_shard_first_readiness_observation.py (EVL-RT-03). CLP does not run pytest, recompute selection, or rebuild the observation. allowed_fallback_reason_codes lets TPA name fallback codes that may downgrade an otherwise-pass fallback_justified observation to warn; default empty (no allow-list). invoke_builder_if_missing controls whether CLP may invoke the builder when the observation is absent; canonical ownership of the builder, selector, shard runner, runtime budget observation, and policy remains with the systems declared in docs/architecture/system_registry.md."
   },
   "must_not_do": [
     "claim_review_observation_authority",

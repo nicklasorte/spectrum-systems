@@ -184,3 +184,88 @@ def test_policy_max_repair_attempts_is_zero():
     """CLP-02 must not auto-fix. PRL/FRE/CDE/PQX own repair authority."""
     policy = load_policy(POLICY_PATH)
     assert policy["max_repair_attempts"] == 0
+
+
+# ---------------------------------------------------------------------------
+# EVL-RT-04: shard-first readiness in CLP policy
+# ---------------------------------------------------------------------------
+
+
+def test_policy_lists_shard_first_readiness_observation_alias():
+    policy = load_policy(POLICY_PATH)
+    aliases = set(policy["required_check_observations"])
+    assert "evl_shard_first_readiness_observation" in aliases
+
+
+def test_policy_block_codes_cover_shard_first_failures():
+    policy = load_policy(POLICY_PATH)
+    blocks = set(policy["block_reason_codes"])
+    for code in {
+        "evl_shard_first_readiness_missing",
+        "evl_shard_first_readiness_invalid",
+        "evl_shard_first_readiness_partial",
+        "evl_shard_first_readiness_unknown",
+        "evl_shard_first_readiness_fallback_unjustified",
+        "evl_shard_first_readiness_shard_refs_empty",
+        "pr_test_shard_first_readiness_observation_missing",
+        "pr_test_shard_first_readiness_observation_invalid",
+        "fallback_signal_without_fallback_justification_ref",
+        "fallback_signal_without_fallback_reason_codes",
+    }:
+        assert code in blocks, code
+
+
+def test_policy_rules_include_shard_first_invariants():
+    policy = load_policy(POLICY_PATH)
+    rules = policy["rules"]
+    assert rules["evl_shard_first_readiness_required"] is True
+    assert rules["evl_shard_first_missing_blocks"] is True
+    assert rules["evl_shard_first_partial_blocks"] is True
+    assert rules["evl_shard_first_unknown_blocks"] is True
+    assert rules["evl_shard_first_fallback_without_justification_blocks"] is True
+
+
+def test_policy_shard_first_evidence_section():
+    policy = load_policy(POLICY_PATH)
+    section = policy.get("evl_shard_first_readiness_evidence")
+    assert isinstance(section, dict)
+    assert (
+        section["observation_path"]
+        == "outputs/pr_test_shard_first_readiness/"
+        "pr_test_shard_first_readiness_observation.json"
+    )
+    assert isinstance(section.get("allowed_fallback_reason_codes"), list)
+    assert section.get("invoke_builder_if_missing") is False
+    notes = section.get("notes") or ""
+    # Authority-safe vocabulary in the policy notes.
+    forbidden = {
+        "approve",
+        "approval",
+        "certify",
+        "certification",
+        "promote",
+        "promotion",
+        "enforce",
+        "enforcement",
+        "verdict",
+    }
+    lowered = notes.lower()
+    for term in forbidden:
+        assert term not in lowered, term
+
+
+def test_policy_authority_safe_vocabulary_overall():
+    """Overall scan: no authority-binding verbs leak into the policy file."""
+    text = POLICY_PATH.read_text(encoding="utf-8").lower()
+    forbidden_phrases = {
+        '"approve"',
+        '"certify"',
+        '"promote"',
+        '"enforce"',
+        '"verdict"',
+        '"decide"',
+        '"authorize"',
+        "binding authority",
+    }
+    for phrase in forbidden_phrases:
+        assert phrase not in text, phrase

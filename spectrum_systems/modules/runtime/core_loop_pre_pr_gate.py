@@ -31,6 +31,7 @@ REQUIRED_CHECK_NAMES: tuple[str, ...] = (
     "contract_preflight",
     "selected_tests",
     "evl_shard_artifacts",
+    "evl_shard_first_readiness",
 )
 
 # Re-exported gate-status constants. CLP-02 modules consume these so they do
@@ -53,6 +54,7 @@ CHECK_OWNER: dict[str, str] = {
     "contract_preflight": "EVL",
     "selected_tests": "EVL",
     "evl_shard_artifacts": "EVL",
+    "evl_shard_first_readiness": "EVL",
 }
 
 KNOWN_FAILURE_CLASSES: frozenset[str] = frozenset(
@@ -81,6 +83,12 @@ KNOWN_FAILURE_CLASSES: frozenset[str] = frozenset(
         "evl_required_shard_skipped",
         "evl_pass_shard_missing_artifact_refs",
         "evl_non_pass_shard_missing_reason_codes",
+        "evl_shard_first_readiness_missing",
+        "evl_shard_first_readiness_invalid",
+        "evl_shard_first_readiness_partial",
+        "evl_shard_first_readiness_unknown",
+        "evl_shard_first_readiness_fallback_unjustified",
+        "evl_shard_first_readiness_shard_refs_empty",
     }
 )
 
@@ -256,6 +264,7 @@ def build_gate_result(
     generated_at: str | None = None,
     gate_id: str | None = None,
     evl_shard_evidence: dict[str, Any] | None = None,
+    evl_shard_first_evidence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble a fully-validated ``core_loop_pre_pr_gate_result`` payload."""
     if agent_type not in {"codex", "claude", "other", "unknown"}:
@@ -304,6 +313,8 @@ def build_gate_result(
     }
     if evl_shard_evidence is not None:
         payload["evl_shard_evidence"] = dict(evl_shard_evidence)
+    if evl_shard_first_evidence is not None:
+        payload["evl_shard_first_evidence"] = dict(evl_shard_first_evidence)
     return payload
 
 
@@ -581,6 +592,285 @@ def consume_shard_artifacts(
         output_ref=output_ref,
         failure_class=failure_class,
         reason_codes=reason_codes,
+        next_action=next_action,
+    )
+    return evidence, check
+
+
+# ---------------------------------------------------------------------------
+# EVL shard-first readiness observation consumption (EVL-RT-04)
+# ---------------------------------------------------------------------------
+#
+# CLP consumes the existing
+# ``pr_test_shard_first_readiness_observation`` artifact emitted by the
+# EVL-RT-03 builder. CLP does not run pytest, recompute selection, or
+# rebuild the shard-first observation. CLP records the observation as
+# pre-PR evidence and surfaces a derived ``evl_shard_first_readiness``
+# check for ``evaluate_gate``.
+#
+# Authority scope: observation_only. CLP only consumes artifact-backed
+# shard-first / fallback observations; canonical authorities for the
+# selector, shard runner, runtime budget observation, and policy remain
+# with the systems declared in ``docs/architecture/system_registry.md``.
+
+_VALID_SHARD_FIRST_STATUSES: frozenset[str] = frozenset(
+    {"shard_first", "fallback_justified", "missing", "partial", "unknown"}
+)
+
+
+def _empty_shard_first_evidence() -> dict[str, Any]:
+    return {
+        "evl_shard_first_observation_ref": None,
+        "evl_shard_first_status": "unknown",
+        "evl_shard_first_required_shard_refs": [],
+        "evl_shard_first_missing_shard_refs": [],
+        "evl_shard_first_failed_shard_refs": [],
+        "evl_shard_first_fallback_used": False,
+        "evl_shard_first_full_suite_detected": False,
+        "evl_shard_first_fallback_justification_ref": None,
+        "evl_shard_first_fallback_reason_codes": [],
+        "evl_shard_first_reason_codes": [],
+    }
+
+
+def _read_shard_first_observation(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if (
+        payload.get("artifact_type")
+        != "pr_test_shard_first_readiness_observation"
+    ):
+        return None
+    return payload
+
+
+def consume_shard_first_readiness_observation(
+    *,
+    observation_path: Path,
+    repo_root: Path,
+    allowed_fallback_reason_codes: tuple[str, ...] | list[str] = (),
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Consume an existing shard-first readiness observation artifact.
+
+    Returns ``(evidence, check)`` derived from the observation. CLP does
+    not re-run pytest, recompute selection, or rebuild the observation;
+    a missing observation always produces a block check.
+
+    Behavior (fail-closed):
+
+    - missing observation file -> block (``evl_shard_first_readiness_missing``).
+    - unreadable / wrong artifact_type -> block (``evl_shard_first_readiness_invalid``).
+    - shard_first_status=shard_first with empty required_shard_refs -> block.
+    - shard_first_status=fallback_justified with valid fallback refs and
+      reason codes -> pass.
+    - fallback_used or full_suite_detected without
+      ``fallback_justification_ref`` or empty ``fallback_reason_codes``
+      -> block (``evl_shard_first_readiness_fallback_unjustified``).
+    - shard_first_status=partial -> block.
+    - shard_first_status=missing -> block.
+    - shard_first_status=unknown -> block.
+    """
+    evidence = _empty_shard_first_evidence()
+    try:
+        rel_path = str(observation_path.relative_to(repo_root))
+    except ValueError:
+        rel_path = str(observation_path)
+
+    observation = _read_shard_first_observation(observation_path)
+    if observation is None:
+        evidence["evl_shard_first_observation_ref"] = rel_path
+        if not observation_path.is_file():
+            failure_class = "evl_shard_first_readiness_missing"
+            reason_codes = ["pr_test_shard_first_readiness_observation_missing"]
+        else:
+            failure_class = "evl_shard_first_readiness_invalid"
+            reason_codes = ["pr_test_shard_first_readiness_observation_invalid"]
+        evidence["evl_shard_first_reason_codes"] = list(reason_codes)
+        evidence["evl_shard_first_status"] = "unknown"
+        check = build_check(
+            check_name="evl_shard_first_readiness",
+            command=(
+                "(read outputs/pr_test_shard_first_readiness/"
+                "pr_test_shard_first_readiness_observation.json)"
+            ),
+            status="block",
+            output_ref=rel_path,
+            failure_class=failure_class,
+            reason_codes=reason_codes,
+            next_action=(
+                "run scripts/build_pr_test_shard_first_readiness_observation.py "
+                "to emit the observation"
+            ),
+        )
+        return evidence, check
+
+    evidence["evl_shard_first_observation_ref"] = rel_path
+    raw_status = str(observation.get("shard_first_status") or "").lower()
+    if raw_status not in _VALID_SHARD_FIRST_STATUSES:
+        evidence["evl_shard_first_status"] = "unknown"
+        reason_codes = ["pr_test_shard_first_readiness_observation_invalid"]
+        evidence["evl_shard_first_reason_codes"] = list(reason_codes)
+        check = build_check(
+            check_name="evl_shard_first_readiness",
+            command="(consume pr_test_shard_first_readiness_observation)",
+            status="block",
+            output_ref=rel_path,
+            failure_class="evl_shard_first_readiness_invalid",
+            reason_codes=reason_codes,
+            next_action="repair_pr_test_shard_first_readiness_observation",
+        )
+        return evidence, check
+
+    required_shard_refs = [
+        r for r in (observation.get("required_shard_refs") or []) if isinstance(r, str)
+    ]
+    missing_shard_refs = [
+        r for r in (observation.get("missing_shard_refs") or []) if isinstance(r, str)
+    ]
+    failed_shard_refs = [
+        r for r in (observation.get("failed_shard_refs") or []) if isinstance(r, str)
+    ]
+    fallback_used = bool(observation.get("fallback_used"))
+    full_suite_detected = bool(observation.get("full_suite_detected"))
+    fallback_justification_ref = observation.get("fallback_justification_ref")
+    if not isinstance(fallback_justification_ref, str) or not fallback_justification_ref:
+        fallback_justification_ref = None
+    fallback_reason_codes = [
+        r for r in (observation.get("fallback_reason_codes") or []) if isinstance(r, str)
+    ]
+    upstream_reason_codes = [
+        r for r in (observation.get("reason_codes") or []) if isinstance(r, str)
+    ]
+
+    evidence["evl_shard_first_status"] = raw_status
+    evidence["evl_shard_first_required_shard_refs"] = list(required_shard_refs)
+    evidence["evl_shard_first_missing_shard_refs"] = list(missing_shard_refs)
+    evidence["evl_shard_first_failed_shard_refs"] = list(failed_shard_refs)
+    evidence["evl_shard_first_fallback_used"] = fallback_used
+    evidence["evl_shard_first_full_suite_detected"] = full_suite_detected
+    evidence["evl_shard_first_fallback_justification_ref"] = fallback_justification_ref
+    evidence["evl_shard_first_fallback_reason_codes"] = list(fallback_reason_codes)
+
+    derived_reason_codes: list[str] = list(upstream_reason_codes)
+    failure_class: str | None = None
+    next_action = "none"
+    status = "pass"
+
+    fallback_signalled = fallback_used or full_suite_detected
+    fallback_justified_ok = bool(fallback_justification_ref) and bool(fallback_reason_codes)
+
+    if raw_status == "shard_first":
+        if fallback_signalled:
+            status = "block"
+            failure_class = "evl_shard_first_readiness_fallback_unjustified"
+            derived_reason_codes.append(
+                "shard_first_status_inconsistent_with_fallback_signals"
+            )
+        elif not required_shard_refs:
+            status = "block"
+            failure_class = "evl_shard_first_readiness_shard_refs_empty"
+            derived_reason_codes.append(
+                "shard_first_status_missing_required_shard_refs"
+            )
+        next_action = (
+            "repair_pr_test_shard_first_readiness_observation"
+            if status == "block"
+            else "none"
+        )
+    elif raw_status == "fallback_justified":
+        if not fallback_justified_ok:
+            status = "block"
+            failure_class = "evl_shard_first_readiness_fallback_unjustified"
+            if not fallback_justification_ref:
+                derived_reason_codes.append(
+                    "fallback_justified_status_missing_fallback_justification_ref"
+                )
+            if not fallback_reason_codes:
+                derived_reason_codes.append(
+                    "fallback_justified_status_missing_fallback_reason_codes"
+                )
+            next_action = "repair_pr_test_shard_first_readiness_observation"
+    elif raw_status == "partial":
+        status = "block"
+        failure_class = "evl_shard_first_readiness_partial"
+        if not derived_reason_codes:
+            derived_reason_codes.append(
+                "shard_first_status_partial_without_upstream_reason_codes"
+            )
+        next_action = "repair_pr_test_shard_first_readiness_observation"
+    elif raw_status == "missing":
+        status = "block"
+        failure_class = "evl_shard_first_readiness_missing"
+        if not derived_reason_codes:
+            derived_reason_codes.append(
+                "shard_first_status_missing_without_upstream_reason_codes"
+            )
+        next_action = "produce_shard_first_readiness_observation"
+    elif raw_status == "unknown":
+        status = "block"
+        failure_class = "evl_shard_first_readiness_unknown"
+        if not derived_reason_codes:
+            derived_reason_codes.append(
+                "shard_first_status_unknown_without_upstream_reason_codes"
+            )
+        next_action = "repair_pr_test_shard_first_readiness_observation"
+
+    # Independent fail-closed: if fallback is signalled at all without
+    # justification, surface a block even if status is fallback_justified
+    # somehow inconsistent with that.
+    if fallback_signalled and not fallback_justified_ok and status != "block":
+        status = "block"
+        failure_class = "evl_shard_first_readiness_fallback_unjustified"
+        if not fallback_justification_ref:
+            derived_reason_codes.append(
+                "fallback_signal_without_fallback_justification_ref"
+            )
+        if not fallback_reason_codes:
+            derived_reason_codes.append(
+                "fallback_signal_without_fallback_reason_codes"
+            )
+        next_action = "repair_pr_test_shard_first_readiness_observation"
+
+    # Allow-list-based warn: a fallback_justified observation whose
+    # fallback_reason_codes are all in allowed_fallback_reason_codes
+    # passes. Anything else stays at status (pass/block). This keeps CLP
+    # observation-only — TPA owns the policy that names allow-listed
+    # codes.
+    if (
+        status == "pass"
+        and raw_status == "fallback_justified"
+        and allowed_fallback_reason_codes
+    ):
+        allowed = set(allowed_fallback_reason_codes)
+        not_allowed = [c for c in fallback_reason_codes if c not in allowed]
+        if not_allowed:
+            status = "warn"
+            failure_class = "evl_shard_first_readiness_fallback_unjustified"
+            for code in not_allowed:
+                if code not in derived_reason_codes:
+                    derived_reason_codes.append(code)
+            next_action = "tpa_review_fallback_reason_codes"
+
+    # Deduplicate while preserving order.
+    deduped: list[str] = []
+    for code in derived_reason_codes:
+        if code and code not in deduped:
+            deduped.append(code)
+    evidence["evl_shard_first_reason_codes"] = deduped
+
+    check = build_check(
+        check_name="evl_shard_first_readiness",
+        command="(consume pr_test_shard_first_readiness_observation)",
+        status=status,
+        output_ref=rel_path,
+        failure_class=failure_class,
+        reason_codes=deduped,
         next_action=next_action,
     )
     return evidence, check
