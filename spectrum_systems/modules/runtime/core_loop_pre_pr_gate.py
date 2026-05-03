@@ -608,10 +608,11 @@ def consume_shard_artifacts(
 # pre-PR evidence and surfaces a derived ``evl_shard_first_readiness``
 # check for ``evaluate_gate``.
 #
-# Authority scope: observation_only. CLP only consumes artifact-backed
-# shard-first / fallback observations; canonical authorities for the
-# selector, shard runner, runtime budget observation, and policy remain
-# with the systems declared in ``docs/architecture/system_registry.md``.
+# This consumer is observation-only. It does not own admission,
+# execution closure, eval certification, policy adjudication, control
+# decision, or final compliance enforcement. Those authorities remain
+# with AEX, PQX, EVL, TPA, CDE, and SEL respectively (per
+# ``docs/architecture/system_registry.md``).
 
 _VALID_SHARD_FIRST_STATUSES: frozenset[str] = frozenset(
     {"shard_first", "fallback_justified", "missing", "partial", "unknown"}
