@@ -70,10 +70,12 @@ test added or updated, the command run, and the disposition.
 ## Finding F-EVL-RT-04-03 — Authority-shape preservation
 
 - finding ID: `F-EVL-RT-04-03`
-- description: Adding a new CLP check could have leaked
-  authority-binding vocabulary (approve, certify, promote, enforce,
-  decide, authorize) into CLP code, schema, policy, runner, or
-  tests, contrary to CLP's observation-only scope.
+- description: Adding a new CLP check could have leaked reserved
+  owner-authority verbs into CLP code, schema, policy, runner, or
+  tests, contrary to CLP's observation-only scope. The canonical
+  reserved-vocabulary list lives in
+  `contracts/governance/authority_shape_vocabulary.json` and is
+  scanned by `scripts/run_authority_shape_preflight.py`.
 - files changed:
   - `spectrum_systems/modules/runtime/core_loop_pre_pr_gate.py`
   - `scripts/run_core_loop_pre_pr_gate.py`

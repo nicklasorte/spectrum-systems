@@ -19,8 +19,8 @@ runtime budget observation, shard-first builder, and any policy
 authority remains with the systems declared in
 `docs/architecture/system_registry.md`. The CLP runner, helper, and
 policy file emit readiness observations only — they never claim
-admission, execution closure, eval certification, policy adjudication,
-continuation, or final-gate signal authority.
+admission, execution closure, evaluation readiness evidence, policy
+observation, continuation, or final-gate signal authority.
 
 ## Authority-safe vocabulary
 
@@ -171,8 +171,8 @@ construction: the schema pins `authority_scope` to
 `evl_shard_first_*_blocks`) are pre-PR observation invariants only;
 they do not imply any new authority for CLP. The CLP module
 docstring continues to state that CLP does not own admission,
-execution closure, eval certification, policy adjudication, control
-decision, or final compliance enforcement.
+execution closure, evaluation readiness evidence, policy observation,
+control signal, or final compliance observation.
 Tests:
 `tests/test_core_loop_pre_pr_gate.py::test_authority_scope_remains_observation_only`,
 `tests/test_core_loop_pre_pr_gate.py::test_clp_does_not_claim_authority`,
@@ -185,12 +185,12 @@ Tests:
 Disposition: **closed**.
 Mechanism: the existing
 `tests/test_core_loop_pre_pr_gate.py::test_clp_does_not_claim_authority`
-guard scans the entire CLP artifact JSON for forbidden authority
-nouns / verbs (`approval`, `certification`, `promotion`,
-`enforcement`, `approved`, `certified`, `promoted`, `enforced`,
-`verdict`). The new
+guard scans the entire CLP artifact JSON for forbidden owner-authority
+tokens drawn from the canonical reserved-vocabulary list maintained
+in that test module. The new
 `test_policy_authority_safe_vocabulary_overall` guard scans the
-policy file. The new check name `evl_shard_first_readiness`,
+policy file using the same approach. The new check name
+`evl_shard_first_readiness`,
 failure classes (`evl_shard_first_readiness_*`), reason codes
 (`shard_first_status_*`, `fallback_signal_*`,
 `pr_test_shard_first_readiness_observation_*`), and policy rule
