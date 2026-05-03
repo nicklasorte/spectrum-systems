@@ -222,6 +222,26 @@
         "tests/test_contracts.py",
         "tests/test_pr_test_runtime_budget_observation.py"
       ]
+    },
+    {
+      "path_prefix": "scripts/build_pr_test_shard_first_readiness_observation.py",
+      "required_test_targets": [
+        "tests/test_pr_test_shard_first_readiness_observation.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/schemas/pr_test_shard_first_readiness_observation.schema.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_pr_test_shard_first_readiness_observation.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/examples/pr_test_shard_first_readiness_observation.example.json",
+      "required_test_targets": [
+        "tests/test_contracts.py",
+        "tests/test_pr_test_shard_first_readiness_observation.py"
+      ]
     }
   ],
   "bounded_equivalence": [
