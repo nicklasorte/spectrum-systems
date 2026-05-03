@@ -19,7 +19,7 @@ otherwise it falls back to the `evl_shard_first_evidence` block
 recorded by CLP. APU never runs pytest, recomputes shard selection,
 or rebuilds the observation. Canonical authority for selection,
 shard execution, shard mapping, runtime budget observation,
-shard-first builder, and any policy decisions remains with the
+shard-first builder, and any policy ownership remains with the
 systems declared in `docs/architecture/system_registry.md`. APU emits
 PR-update readiness observations only — it never claims admission,
 execution closure, evaluation evidence, policy, continuation, or
@@ -182,8 +182,8 @@ continues to forbid `claim_admission_authority`,
 `claim_replay_authority`, and `treat_pr_body_as_evidence`. EVL,
 CLP, and the canonical owners declared in
 `docs/architecture/system_registry.md` retain selection, shard
-execution, shard mapping, eval certification, and final-gate
-authority.
+execution, shard mapping, evaluation evidence ownership, and
+final-gate authority.
 Tests:
 `tests/test_check_agent_pr_update_ready.py::test_apu_artifact_authority_scope_observation_only`,
 `tests/test_check_agent_pr_update_ready.py::test_apu_artifact_does_not_claim_owner_authority`.
@@ -196,9 +196,9 @@ reason codes, and policy rule names use authority-safe vocabulary
 throughout. The new
 `test_apu_artifact_preserves_authority_safe_vocabulary` test scans
 the entire APU artifact JSON for forbidden owner-authority tokens
-(`approved`, `certified`, `promoted`, `enforced`, `approval`,
-`certification`, `promotion`, `enforcement`, `adjudication`,
-`authorization`, `verdict`). The existing
+drawn from the canonical reserved-vocabulary list maintained in the
+test module (covering the owner-authority clusters governed by GOV,
+SEL, REL, CDE, JDX, ENF, and HIT). The existing
 `test_apu_artifact_does_not_claim_owner_authority`,
 `test_example_does_not_claim_owner_authority`, and
 `test_apu_artifact_negated_authority_phrases_absent_from_pr_section`
