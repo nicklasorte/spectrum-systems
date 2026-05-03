@@ -62,6 +62,22 @@ DEFAULT_AGENT_PR_READY_REL_PATH = (
 )
 DEFAULT_PRL_RESULT_REL_PATH = "outputs/prl/prl_gate_result.json"
 DEFAULT_PRL_ARTIFACT_INDEX_REL_PATH = "outputs/prl/prl_artifact_index.json"
+DEFAULT_SHARD_FIRST_READINESS_REL_PATH = (
+    "outputs/pr_test_shard_first_readiness/"
+    "pr_test_shard_first_readiness_observation.json"
+)
+
+# EVL-RT-05 — APU surfaces shard-first readiness evidence as a PR-update
+# readiness input. APU does not run pytest, recompute selection, or rebuild
+# the shard-first observation. APU only observes the existing
+# pr_test_shard_first_readiness_observation artifact (or, when not supplied
+# directly, the evl_shard_first_evidence block recorded by CLP) and
+# surfaces shard-first status, fallback status, and reason codes on the
+# agent_pr_update_ready_result. Canonical authority for selection,
+# shard execution, and shard mapping remains with EVL.
+_VALID_SHARD_FIRST_STATUSES: frozenset[str] = frozenset(
+    {"shard_first", "fallback_justified", "missing", "partial", "unknown"}
+)
 
 # Authority-safe vocabulary for the CLP gate status passthrough. APU never
 # emits a control signal of its own; it observes CLP's gate status only.
@@ -195,6 +211,21 @@ def load_prl_artifact_index(path: Path | None) -> dict[str, Any] | None:
     authority.
     """
     return _load_json_artifact(path, "prl_artifact_index")
+
+
+def load_shard_first_readiness_observation(
+    path: Path | None,
+) -> dict[str, Any] | None:
+    """Load a pr_test_shard_first_readiness_observation artifact.
+
+    EVL-RT-05 — APU consumes the shard-first readiness observation as a
+    readiness input. The loader returns ``None`` when the artifact is
+    missing, unreadable, or not the expected artifact_type, so APU
+    treats prose, comments, or wrong-type files as missing evidence
+    rather than silently accepting them. EVL retains all selection,
+    shard mapping, and shard-execution authority.
+    """
+    return _load_json_artifact(path, "pr_test_shard_first_readiness_observation")
 
 
 def _missing_leg(reason: str) -> dict[str, Any]:
@@ -553,6 +584,256 @@ def _evaluate_prl_evidence(
     }
 
 
+def _empty_shard_first_observation() -> dict[str, Any]:
+    return {
+        "shard_first_status": "missing",
+        "shard_first_evidence_status": "missing",
+        "shard_first_observation_ref": None,
+        "shard_first_required_shard_refs": [],
+        "shard_first_missing_shard_refs": [],
+        "shard_first_failed_shard_refs": [],
+        "shard_first_fallback_used": False,
+        "shard_first_full_suite_detected": False,
+        "shard_first_fallback_justification_ref": None,
+        "shard_first_fallback_reason_codes": [],
+        "shard_first_reason_codes": [],
+        "shard_first_artifact_refs": [],
+        "shard_first_blocking_reasons": [],
+        "shard_first_source": "none",
+    }
+
+
+def _evaluate_shard_first_evidence(
+    *,
+    direct_observation: Mapping[str, Any] | None,
+    direct_observation_ref: str | None,
+    clp_result: Mapping[str, Any] | None,
+    clp_result_ref: str | None,
+) -> dict[str, Any]:
+    """Observe shard-first readiness evidence as a PR-update readiness input.
+
+    Prefers the direct ``pr_test_shard_first_readiness_observation``
+    artifact when supplied. When it is absent, falls back to the
+    ``evl_shard_first_evidence`` block recorded by CLP. APU never runs
+    pytest, recomputes shard selection, or rebuilds the observation;
+    EVL retains all selection, shard mapping, and shard-execution
+    authority. APU surfaces shard-first observations only.
+    """
+    out = _empty_shard_first_observation()
+    blocking: list[str] = []
+
+    direct_loaded = isinstance(direct_observation, Mapping)
+    direct_valid = (
+        direct_loaded
+        and direct_observation.get("artifact_type")
+        == "pr_test_shard_first_readiness_observation"
+    )
+
+    if direct_valid:
+        obs = direct_observation
+        out["shard_first_source"] = "direct"
+        out["shard_first_observation_ref"] = direct_observation_ref
+        if direct_observation_ref:
+            out["shard_first_artifact_refs"].append(direct_observation_ref)
+        raw_status = str(obs.get("shard_first_status") or "").lower()
+        required_shard_refs = [
+            str(r)
+            for r in (obs.get("required_shard_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        missing_shard_refs = [
+            str(r)
+            for r in (obs.get("missing_shard_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        failed_shard_refs = [
+            str(r)
+            for r in (obs.get("failed_shard_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        fallback_used = bool(obs.get("fallback_used"))
+        full_suite_detected = bool(obs.get("full_suite_detected"))
+        fallback_just_ref = obs.get("fallback_justification_ref")
+        if not isinstance(fallback_just_ref, str) or not fallback_just_ref:
+            fallback_just_ref = None
+        fallback_reason_codes = [
+            str(r)
+            for r in (obs.get("fallback_reason_codes") or [])
+            if isinstance(r, str) and r
+        ]
+        upstream_reason_codes = [
+            str(r)
+            for r in (obs.get("reason_codes") or [])
+            if isinstance(r, str) and r
+        ]
+    elif isinstance(clp_result, Mapping) and isinstance(
+        clp_result.get("evl_shard_first_evidence"), Mapping
+    ):
+        evidence = clp_result["evl_shard_first_evidence"]
+        out["shard_first_source"] = "clp"
+        ref_value = evidence.get("evl_shard_first_observation_ref")
+        if isinstance(ref_value, str) and ref_value:
+            out["shard_first_observation_ref"] = ref_value
+            out["shard_first_artifact_refs"].append(ref_value)
+        if clp_result_ref:
+            out["shard_first_artifact_refs"].append(clp_result_ref)
+        raw_status = str(evidence.get("evl_shard_first_status") or "").lower()
+        required_shard_refs = [
+            str(r)
+            for r in (evidence.get("evl_shard_first_required_shard_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        missing_shard_refs = [
+            str(r)
+            for r in (evidence.get("evl_shard_first_missing_shard_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        failed_shard_refs = [
+            str(r)
+            for r in (evidence.get("evl_shard_first_failed_shard_refs") or [])
+            if isinstance(r, str) and r
+        ]
+        fallback_used = bool(evidence.get("evl_shard_first_fallback_used"))
+        full_suite_detected = bool(
+            evidence.get("evl_shard_first_full_suite_detected")
+        )
+        fallback_just_ref = evidence.get("evl_shard_first_fallback_justification_ref")
+        if not isinstance(fallback_just_ref, str) or not fallback_just_ref:
+            fallback_just_ref = None
+        fallback_reason_codes = [
+            str(r)
+            for r in (evidence.get("evl_shard_first_fallback_reason_codes") or [])
+            if isinstance(r, str) and r
+        ]
+        upstream_reason_codes = [
+            str(r)
+            for r in (evidence.get("evl_shard_first_reason_codes") or [])
+            if isinstance(r, str) and r
+        ]
+    else:
+        # Direct artifact missing AND CLP did not record shard-first
+        # evidence — surface as missing. Loader returning None when an
+        # invalid file is supplied lands here too; we still record the
+        # caller's ref so the artifact remains traceable.
+        if direct_loaded and not direct_valid:
+            blocking.append("shard_first_observation_invalid")
+        if direct_observation_ref:
+            out["shard_first_observation_ref"] = direct_observation_ref
+            out["shard_first_artifact_refs"].append(direct_observation_ref)
+        out["shard_first_status"] = "missing"
+        out["shard_first_evidence_status"] = "missing"
+        out["shard_first_reason_codes"] = (
+            ["shard_first_readiness_observation_missing"]
+            if not blocking
+            else list(blocking)
+        )
+        out["shard_first_blocking_reasons"] = list(blocking) or [
+            "shard_first_readiness_observation_missing"
+        ]
+        return out
+
+    if raw_status not in _VALID_SHARD_FIRST_STATUSES:
+        out["shard_first_status"] = "unknown"
+        out["shard_first_evidence_status"] = "unknown"
+        out["shard_first_reason_codes"] = list(upstream_reason_codes) + [
+            "shard_first_readiness_observation_invalid"
+        ]
+        out["shard_first_blocking_reasons"] = ["shard_first_readiness_observation_invalid"]
+        out["shard_first_required_shard_refs"] = required_shard_refs
+        out["shard_first_missing_shard_refs"] = missing_shard_refs
+        out["shard_first_failed_shard_refs"] = failed_shard_refs
+        out["shard_first_fallback_used"] = fallback_used
+        out["shard_first_full_suite_detected"] = full_suite_detected
+        out["shard_first_fallback_justification_ref"] = fallback_just_ref
+        out["shard_first_fallback_reason_codes"] = fallback_reason_codes
+        return out
+
+    out["shard_first_status"] = raw_status
+    out["shard_first_required_shard_refs"] = required_shard_refs
+    out["shard_first_missing_shard_refs"] = missing_shard_refs
+    out["shard_first_failed_shard_refs"] = failed_shard_refs
+    out["shard_first_fallback_used"] = fallback_used
+    out["shard_first_full_suite_detected"] = full_suite_detected
+    out["shard_first_fallback_justification_ref"] = fallback_just_ref
+    out["shard_first_fallback_reason_codes"] = list(fallback_reason_codes)
+
+    derived_reasons: list[str] = list(upstream_reason_codes)
+
+    # Map status -> evidence status and surface invariants.
+    if raw_status == "shard_first":
+        if not required_shard_refs:
+            out["shard_first_evidence_status"] = "partial"
+            blocking.append("shard_first_status_missing_required_shard_refs")
+            derived_reasons.append("shard_first_status_missing_required_shard_refs")
+        else:
+            out["shard_first_evidence_status"] = "present"
+        if fallback_used or full_suite_detected:
+            out["shard_first_evidence_status"] = "partial"
+            blocking.append("shard_first_status_inconsistent_with_fallback_signals")
+            derived_reasons.append(
+                "shard_first_status_inconsistent_with_fallback_signals"
+            )
+    elif raw_status == "fallback_justified":
+        if not fallback_just_ref:
+            out["shard_first_evidence_status"] = "partial"
+            blocking.append("shard_first_fallback_justified_missing_justification_ref")
+            derived_reasons.append(
+                "shard_first_fallback_justified_missing_justification_ref"
+            )
+        elif not fallback_reason_codes:
+            out["shard_first_evidence_status"] = "partial"
+            blocking.append("shard_first_fallback_justified_missing_reason_codes")
+            derived_reasons.append(
+                "shard_first_fallback_justified_missing_reason_codes"
+            )
+        else:
+            out["shard_first_evidence_status"] = "present"
+            if fallback_just_ref not in out["shard_first_artifact_refs"]:
+                out["shard_first_artifact_refs"].append(fallback_just_ref)
+    elif raw_status == "partial":
+        out["shard_first_evidence_status"] = "partial"
+        if not derived_reasons:
+            derived_reasons.append("shard_first_status_partial_without_reason_codes")
+        blocking.append("shard_first_status_partial")
+    elif raw_status == "missing":
+        out["shard_first_evidence_status"] = "missing"
+        if not derived_reasons:
+            derived_reasons.append("shard_first_status_missing_without_reason_codes")
+        blocking.append("shard_first_status_missing")
+    elif raw_status == "unknown":
+        out["shard_first_evidence_status"] = "unknown"
+        if not derived_reasons:
+            derived_reasons.append("shard_first_status_unknown_without_reason_codes")
+        blocking.append("shard_first_status_unknown")
+
+    # Independent invariants on fallback / full-suite signals.
+    if fallback_used and not fallback_reason_codes:
+        blocking.append("shard_first_fallback_used_without_reason_codes")
+        derived_reasons.append("shard_first_fallback_used_without_reason_codes")
+        if out["shard_first_evidence_status"] == "present":
+            out["shard_first_evidence_status"] = "partial"
+    if full_suite_detected and not fallback_reason_codes:
+        blocking.append("shard_first_full_suite_detected_without_reason_codes")
+        derived_reasons.append(
+            "shard_first_full_suite_detected_without_reason_codes"
+        )
+        if out["shard_first_evidence_status"] == "present":
+            out["shard_first_evidence_status"] = "partial"
+
+    # Deduplicate while preserving order.
+    deduped_reasons: list[str] = []
+    for code in derived_reasons:
+        if code and code not in deduped_reasons:
+            deduped_reasons.append(code)
+    deduped_blocking: list[str] = []
+    for code in blocking:
+        if code and code not in deduped_blocking:
+            deduped_blocking.append(code)
+    out["shard_first_reason_codes"] = deduped_reasons
+    out["shard_first_blocking_reasons"] = deduped_blocking
+    return out
+
+
 def evaluate_pr_update_ready(
     *,
     policy: Mapping[str, Any],
@@ -569,6 +850,8 @@ def evaluate_pr_update_ready(
     prl_auto_invocation: Mapping[str, Any] | None = None,
     prl_artifact_index: Mapping[str, Any] | None = None,
     prl_artifact_index_ref: str | None = None,
+    shard_first_readiness: Mapping[str, Any] | None = None,
+    shard_first_readiness_ref: str | None = None,
 ) -> dict[str, Any]:
     """Apply policy to CLP/AGL/PR-ready evidence. Returns the evaluation payload.
 
@@ -907,6 +1190,53 @@ def evaluate_pr_update_ready(
     if prl_observation["human_review_required"]:
         human_review = True
 
+    # EVL-RT-05 — shard-first readiness observation.
+    # APU surfaces shard-first status, fallback status, and reason codes
+    # on agent_pr_update_ready_result. APU does not run pytest, recompute
+    # selection, or rebuild the observation. EVL retains all selection,
+    # shard mapping, and shard-execution authority.
+    shard_first_observation = _evaluate_shard_first_evidence(
+        direct_observation=shard_first_readiness,
+        direct_observation_ref=shard_first_readiness_ref,
+        clp_result=clp_dict,
+        clp_result_ref=clp_result_ref,
+    )
+    shard_first_required_for_repo_mutating = bool(
+        rules.get("repo_mutating_requires_shard_first_evidence", True)
+    )
+    if repo_mut_value and shard_first_required_for_repo_mutating:
+        ev_status = shard_first_observation["shard_first_evidence_status"]
+        if ev_status in {"missing", "partial", "unknown"}:
+            code = f"shard_first_evidence_{ev_status}_for_repo_mutating"
+            if code not in reasons:
+                reasons.append(code)
+            for blocking_code in shard_first_observation["shard_first_blocking_reasons"]:
+                if blocking_code and blocking_code not in reasons:
+                    reasons.append(blocking_code)
+            follow_up.append(
+                {
+                    "owner_system": "EVL",
+                    "action_type": "produce_shard_first_readiness_observation",
+                    "reason_code": code,
+                    "source_failure_ref": shard_first_readiness_ref
+                    or DEFAULT_SHARD_FIRST_READINESS_REL_PATH,
+                }
+            )
+        if (
+            shard_first_observation["shard_first_fallback_used"]
+            and not shard_first_observation["shard_first_fallback_reason_codes"]
+        ):
+            code = "shard_first_fallback_used_without_reason_codes"
+            if code not in reasons:
+                reasons.append(code)
+        if (
+            shard_first_observation["shard_first_full_suite_detected"]
+            and not shard_first_observation["shard_first_fallback_reason_codes"]
+        ):
+            code = "shard_first_full_suite_detected_without_reason_codes"
+            if code not in reasons:
+                reasons.append(code)
+
     # F3L-02 — auto-invocation observation. When the auto-invoker
     # attempted to run PRL but encountered an error, surface the
     # error reason codes so APU does not infer readiness from silence.
@@ -997,6 +1327,34 @@ def evaluate_pr_update_ready(
             "repair_candidate_refs": prl_observation["repair_candidate_refs"],
             "eval_candidate_refs": prl_observation["eval_candidate_refs"],
         },
+        "shard_first_evidence": {
+            "shard_first_status": shard_first_observation["shard_first_status"],
+            "shard_first_evidence_status": shard_first_observation[
+                "shard_first_evidence_status"
+            ],
+            "shard_first_observation_ref": shard_first_observation[
+                "shard_first_observation_ref"
+            ],
+            "shard_first_required_shard_refs": shard_first_observation[
+                "shard_first_required_shard_refs"
+            ],
+            "shard_first_fallback_used": shard_first_observation[
+                "shard_first_fallback_used"
+            ],
+            "shard_first_full_suite_detected": shard_first_observation[
+                "shard_first_full_suite_detected"
+            ],
+            "shard_first_fallback_justification_ref": shard_first_observation[
+                "shard_first_fallback_justification_ref"
+            ],
+            "shard_first_fallback_reason_codes": shard_first_observation[
+                "shard_first_fallback_reason_codes"
+            ],
+            "shard_first_reason_codes": shard_first_observation[
+                "shard_first_reason_codes"
+            ],
+            "shard_first_source": shard_first_observation["shard_first_source"],
+        },
     }
     evidence_hash = _evidence_hash(evidence_hash_input)
 
@@ -1025,6 +1383,36 @@ def evaluate_pr_update_ready(
         "prl_artifact_index_repair_candidate_refs": prl_index_repair_candidate_refs,
         "prl_artifact_index_eval_candidate_refs": prl_index_eval_candidate_refs,
         "prl_artifact_index_generation_record_refs": prl_index_generation_record_refs,
+        "shard_first_readiness_ref": shard_first_observation[
+            "shard_first_observation_ref"
+        ],
+        "shard_first_status": shard_first_observation["shard_first_status"],
+        "shard_first_evidence_status": shard_first_observation[
+            "shard_first_evidence_status"
+        ],
+        "shard_first_reason_codes": list(
+            shard_first_observation["shard_first_reason_codes"]
+        ),
+        "shard_first_fallback_used": shard_first_observation[
+            "shard_first_fallback_used"
+        ],
+        "shard_first_full_suite_detected": shard_first_observation[
+            "shard_first_full_suite_detected"
+        ],
+        "shard_first_fallback_reason_codes": list(
+            shard_first_observation["shard_first_fallback_reason_codes"]
+        ),
+        "shard_first_required_shard_refs": list(
+            shard_first_observation["shard_first_required_shard_refs"]
+        ),
+        "shard_first_fallback_justification_ref": shard_first_observation[
+            "shard_first_fallback_justification_ref"
+        ],
+        "shard_first_artifact_refs": list(
+            shard_first_observation["shard_first_artifact_refs"]
+        ),
+        "shard_first_required_for_repo_mutating": shard_first_required_for_repo_mutating,
+        "shard_first_source": shard_first_observation["shard_first_source"],
     }
 
 
@@ -1040,6 +1428,7 @@ def build_agent_pr_update_ready_result(
     prl_result_ref: str | None = None,
     prl_artifact_index_ref: str | None = None,
     prl_auto_invocation: Mapping[str, Any] | None = None,
+    shard_first_readiness_ref: str | None = None,
     source_artifact_refs: Iterable[str] | None = None,
     trace_refs: Iterable[str] | None = None,
     replay_refs: Iterable[str] | None = None,
@@ -1053,17 +1442,26 @@ def build_agent_pr_update_ready_result(
     evidence = dict(evaluation.get("evidence") or {})
     pr_section = _build_pr_evidence_section(evidence)
     sources = list(source_artifact_refs or [])
+    resolved_shard_first_ref = (
+        shard_first_readiness_ref
+        if shard_first_readiness_ref
+        else evaluation.get("shard_first_readiness_ref")
+    )
     for ref in (
         clp_result_ref,
         agl_record_ref,
         agent_pr_ready_result_ref,
         prl_result_ref,
         prl_artifact_index_ref,
+        resolved_shard_first_ref,
         policy_ref,
     ):
         if ref and ref not in sources:
             sources.append(ref)
     for ref in evaluation.get("prl_artifact_refs") or []:
+        if isinstance(ref, str) and ref and ref not in sources:
+            sources.append(ref)
+    for ref in evaluation.get("shard_first_artifact_refs") or []:
         if isinstance(ref, str) and ref and ref not in sources:
             sources.append(ref)
     artifact: dict[str, Any] = {
@@ -1094,6 +1492,24 @@ def build_agent_pr_update_ready_result(
         ),
         "prl_eval_candidate_refs": list(
             evaluation.get("prl_eval_candidate_refs") or []
+        ),
+        "shard_first_readiness_ref": resolved_shard_first_ref,
+        "shard_first_status": evaluation.get("shard_first_status", "missing"),
+        "shard_first_evidence_status": evaluation.get(
+            "shard_first_evidence_status", "missing"
+        ),
+        "shard_first_reason_codes": list(
+            evaluation.get("shard_first_reason_codes") or []
+        ),
+        "shard_first_fallback_used": bool(evaluation.get("shard_first_fallback_used")),
+        "shard_first_full_suite_detected": bool(
+            evaluation.get("shard_first_full_suite_detected")
+        ),
+        "shard_first_fallback_reason_codes": list(
+            evaluation.get("shard_first_fallback_reason_codes") or []
+        ),
+        "shard_first_required_for_repo_mutating": bool(
+            evaluation.get("shard_first_required_for_repo_mutating", True)
         ),
         "readiness_status": evaluation.get("readiness_status", "not_ready"),
         "clp_status": evaluation.get("clp_status"),

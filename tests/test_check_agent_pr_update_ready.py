@@ -55,8 +55,86 @@ def policy() -> dict[str, Any]:
     return load_policy(ROOT / DEFAULT_POLICY_REL_PATH)
 
 
+def _clean_shard_first_evidence_block() -> dict[str, Any]:
+    """Return a CLP-recorded evl_shard_first_evidence block for an all-pass CLP.
+
+    EVL-RT-05 — APU consumes the shard-first observation directly when
+    supplied; otherwise it falls back to this CLP-recorded block. EVL
+    retains canonical shard-first authority; this helper is only for
+    test scaffolding.
+    """
+    return {
+        "evl_shard_first_observation_ref": (
+            "outputs/pr_test_shard_first_readiness/"
+            "pr_test_shard_first_readiness_observation.json"
+        ),
+        "evl_shard_first_status": "shard_first",
+        "evl_shard_first_required_shard_refs": [
+            "outputs/pr_test_shards/changed_scope.json",
+            "outputs/pr_test_shards/contract.json",
+            "outputs/pr_test_shards/governance.json",
+        ],
+        "evl_shard_first_missing_shard_refs": [],
+        "evl_shard_first_failed_shard_refs": [],
+        "evl_shard_first_fallback_used": False,
+        "evl_shard_first_full_suite_detected": False,
+        "evl_shard_first_fallback_justification_ref": None,
+        "evl_shard_first_fallback_reason_codes": [],
+        "evl_shard_first_reason_codes": [],
+    }
+
+
+def _shard_first_observation(
+    *,
+    shard_first_status: str = "shard_first",
+    required_shard_refs: list[str] | None = None,
+    missing_shard_refs: list[str] | None = None,
+    failed_shard_refs: list[str] | None = None,
+    fallback_used: bool = False,
+    full_suite_detected: bool = False,
+    fallback_justification_ref: str | None = None,
+    fallback_reason_codes: list[str] | None = None,
+    reason_codes: list[str] | None = None,
+) -> dict[str, Any]:
+    if required_shard_refs is None:
+        required_shard_refs = [
+            "outputs/pr_test_shards/changed_scope.json",
+            "outputs/pr_test_shards/contract.json",
+            "outputs/pr_test_shards/governance.json",
+        ]
+    return {
+        "artifact_type": "pr_test_shard_first_readiness_observation",
+        "schema_version": "1.0.0",
+        "id": "pr-shard-first-test-001",
+        "created_at": "2026-05-03T00:00:00Z",
+        "authority_scope": "observation_only",
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "changed_files": ["scripts/x.py"],
+        "selection_coverage_ref": "outputs/selection_coverage/selection_coverage_record.json",
+        "shard_summary_ref": "outputs/pr_test_shards/pr_test_shards_summary.json",
+        "runtime_budget_observation_ref": (
+            "outputs/pr_test_runtime_budget/pr_test_runtime_budget_observation.json"
+        ),
+        "fallback_justification_ref": fallback_justification_ref,
+        "shard_first_status": shard_first_status,
+        "required_shard_refs": list(required_shard_refs),
+        "missing_shard_refs": list(missing_shard_refs or []),
+        "failed_shard_refs": list(failed_shard_refs or []),
+        "fallback_used": fallback_used,
+        "full_suite_detected": full_suite_detected,
+        "fallback_reason_codes": list(fallback_reason_codes or []),
+        "reason_codes": list(reason_codes or []),
+        "recommended_mapping_candidates": [],
+        "recommended_shard_candidates": [],
+        "evidence_hash": (
+            "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        ),
+    }
+
+
 def _all_pass_clp() -> dict[str, Any]:
-    return build_gate_result(
+    result = build_gate_result(
         work_item_id="APU-3LS-01-TEST",
         agent_type="claude",
         repo_mutating=True,
@@ -72,7 +150,9 @@ def _all_pass_clp() -> dict[str, Any]:
             )
             for name in REQUIRED_CHECK_NAMES
         ],
+        evl_shard_first_evidence=_clean_shard_first_evidence_block(),
     )
+    return result
 
 
 def _block_clp(check_name: str, failure_class: str, reason_code: str) -> dict[str, Any]:
@@ -105,6 +185,7 @@ def _block_clp(check_name: str, failure_class: str, reason_code: str) -> dict[st
         head_ref="HEAD",
         changed_files=["scripts/x.py"],
         checks=checks,
+        evl_shard_first_evidence=_clean_shard_first_evidence_block(),
     )
 
 
@@ -137,6 +218,7 @@ def _warn_clp(reason_code: str, *, check_name: str = "contract_enforcement") -> 
         head_ref="HEAD",
         changed_files=["scripts/x.py"],
         checks=checks,
+        evl_shard_first_evidence=_clean_shard_first_evidence_block(),
     )
 
 
@@ -1238,3 +1320,519 @@ def test_prl_auto_invocation_record_serialized_into_artifact(
         artifact["prl_auto_invocation"]["prl_gate_result_path"]
         == "outputs/prl/prl_gate_result.json"
     )
+
+
+# ---------------------------------------------------------------------------
+# EVL-RT-05 — Shard-first readiness evidence on APU PR-update readiness
+# ---------------------------------------------------------------------------
+
+
+def _clp_without_shard_first_block() -> dict[str, Any]:
+    """All-pass CLP without an evl_shard_first_evidence block.
+
+    Used to model "no direct shard-first artifact and CLP also did not
+    record one" — APU must observe this as missing evidence for
+    repo_mutating slices.
+    """
+    return build_gate_result(
+        work_item_id="APU-3LS-01-NO-SHARD-FIRST",
+        agent_type="claude",
+        repo_mutating=True,
+        base_ref="origin/main",
+        head_ref="HEAD",
+        changed_files=["scripts/x.py"],
+        checks=[
+            build_check(
+                check_name=name,
+                command="echo ok",
+                status="pass",
+                output_ref=f"outputs/{name}.json",
+            )
+            for name in REQUIRED_CHECK_NAMES
+        ],
+    )
+
+
+def test_repo_mutating_missing_shard_first_evidence_yields_not_ready(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #1: repo_mutating + missing shard-first evidence -> not_ready."""
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_clp_without_shard_first_block(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=None,
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert ev["shard_first_evidence_status"] == "missing"
+    assert "shard_first_evidence_missing_for_repo_mutating" in ev["reason_codes"]
+    assert "shard_first_readiness_observation_missing" in ev["reason_codes"]
+
+
+def test_repo_mutating_partial_shard_first_evidence_yields_not_ready(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #2 (partial): partial shard-first evidence + reason codes -> not_ready."""
+    obs = _shard_first_observation(
+        shard_first_status="partial",
+        required_shard_refs=[],
+        reason_codes=["shard_evidence_partial_required_shard_failed"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_clp_without_shard_first_block(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs,
+        shard_first_readiness_ref=(
+            "outputs/pr_test_shard_first_readiness/"
+            "pr_test_shard_first_readiness_observation.json"
+        ),
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert ev["shard_first_evidence_status"] == "partial"
+    assert "shard_first_evidence_partial_for_repo_mutating" in ev["reason_codes"]
+    assert ev["shard_first_reason_codes"]
+
+
+def test_repo_mutating_unknown_shard_first_evidence_yields_not_ready(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #2 (unknown): unknown shard-first status -> not_ready with reason codes."""
+    obs = _shard_first_observation(
+        shard_first_status="unknown",
+        required_shard_refs=[],
+        reason_codes=["shard_first_status_observed_as_unknown"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_clp_without_shard_first_block(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs,
+        shard_first_readiness_ref=(
+            "outputs/pr_test_shard_first_readiness/"
+            "pr_test_shard_first_readiness_observation.json"
+        ),
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert ev["shard_first_evidence_status"] == "unknown"
+    assert "shard_first_evidence_unknown_for_repo_mutating" in ev["reason_codes"]
+
+
+def test_repo_mutating_missing_status_shard_first_evidence_yields_not_ready(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #2 (missing): shard_first_status=missing -> not_ready with reason codes."""
+    obs = _shard_first_observation(
+        shard_first_status="missing",
+        required_shard_refs=[],
+        reason_codes=["shard_first_observation_marked_missing_by_evl"],
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_clp_without_shard_first_block(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs,
+        shard_first_readiness_ref=(
+            "outputs/pr_test_shard_first_readiness/"
+            "pr_test_shard_first_readiness_observation.json"
+        ),
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert ev["shard_first_evidence_status"] == "missing"
+    assert "shard_first_evidence_missing_for_repo_mutating" in ev["reason_codes"]
+
+
+def test_repo_mutating_shard_first_status_with_refs_allows_ready(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #3: shard_first_status=shard_first + refs -> APU may proceed."""
+    obs = _shard_first_observation()
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs,
+        shard_first_readiness_ref=(
+            "outputs/pr_test_shard_first_readiness/"
+            "pr_test_shard_first_readiness_observation.json"
+        ),
+    )
+    assert ev["readiness_status"] == "ready", ev["reason_codes"]
+    assert ev["shard_first_evidence_status"] == "present"
+    assert ev["shard_first_status"] == "shard_first"
+
+
+def test_repo_mutating_fallback_used_without_reason_codes_yields_not_ready(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #4: fallback_used=true with no fallback reason codes -> not_ready.
+
+    The schema rejects fallback_used=true without fallback_reason_codes,
+    but APU still surfaces it through the CLP-recorded block (which the
+    schema does not constrain) so APU is the artifact-backed observation
+    for the readiness consumer.
+    """
+    clp = build_gate_result(
+        work_item_id="APU-3LS-01-FALLBACK",
+        agent_type="claude",
+        repo_mutating=True,
+        base_ref="origin/main",
+        head_ref="HEAD",
+        changed_files=["scripts/x.py"],
+        checks=[
+            build_check(
+                check_name=name,
+                command="echo ok",
+                status="pass",
+                output_ref=f"outputs/{name}.json",
+            )
+            for name in REQUIRED_CHECK_NAMES
+        ],
+        evl_shard_first_evidence={
+            "evl_shard_first_observation_ref": (
+                "outputs/pr_test_shard_first_readiness/"
+                "pr_test_shard_first_readiness_observation.json"
+            ),
+            "evl_shard_first_status": "fallback_justified",
+            "evl_shard_first_required_shard_refs": [],
+            "evl_shard_first_missing_shard_refs": [],
+            "evl_shard_first_failed_shard_refs": [],
+            "evl_shard_first_fallback_used": True,
+            "evl_shard_first_full_suite_detected": False,
+            "evl_shard_first_fallback_justification_ref": (
+                "outputs/pr_test_runtime_budget/pr_test_runtime_budget_observation.json"
+            ),
+            "evl_shard_first_fallback_reason_codes": [],
+            "evl_shard_first_reason_codes": [],
+        },
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=clp,
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=None,
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "shard_first_fallback_used_without_reason_codes" in ev["reason_codes"]
+
+
+def test_repo_mutating_full_suite_detected_without_reason_codes_yields_not_ready(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #5: full_suite_detected=true with no fallback reason codes -> not_ready."""
+    clp = build_gate_result(
+        work_item_id="APU-3LS-01-FULLSUITE",
+        agent_type="claude",
+        repo_mutating=True,
+        base_ref="origin/main",
+        head_ref="HEAD",
+        changed_files=["scripts/x.py"],
+        checks=[
+            build_check(
+                check_name=name,
+                command="echo ok",
+                status="pass",
+                output_ref=f"outputs/{name}.json",
+            )
+            for name in REQUIRED_CHECK_NAMES
+        ],
+        evl_shard_first_evidence={
+            "evl_shard_first_observation_ref": (
+                "outputs/pr_test_shard_first_readiness/"
+                "pr_test_shard_first_readiness_observation.json"
+            ),
+            "evl_shard_first_status": "fallback_justified",
+            "evl_shard_first_required_shard_refs": [],
+            "evl_shard_first_missing_shard_refs": [],
+            "evl_shard_first_failed_shard_refs": [],
+            "evl_shard_first_fallback_used": False,
+            "evl_shard_first_full_suite_detected": True,
+            "evl_shard_first_fallback_justification_ref": (
+                "outputs/pr_test_runtime_budget/pr_test_runtime_budget_observation.json"
+            ),
+            "evl_shard_first_fallback_reason_codes": [],
+            "evl_shard_first_reason_codes": [],
+        },
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=clp,
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=None,
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "shard_first_full_suite_detected_without_reason_codes" in ev["reason_codes"]
+
+
+def test_pr_body_prose_cannot_substitute_for_shard_first_evidence(
+    policy: dict[str, Any], tmp_path: Path
+) -> None:
+    """EVL-RT-05 #6: PR-body prose JSON is not a valid shard-first observation.
+
+    The loader returns None for non-conformant artifact_types so APU
+    treats prose as missing rather than silently accepting it.
+    """
+    from spectrum_systems.modules.runtime.agent_pr_update_policy import (
+        load_shard_first_readiness_observation,
+    )
+
+    prose_path = tmp_path / "prose.json"
+    prose_path.write_text(
+        json.dumps(
+            {
+                "summary": "I ran shard-first selection",
+                "evidence": "see PR body",
+                "artifact_type": "pr_body_summary",
+            }
+        ),
+        encoding="utf-8",
+    )
+    loaded = load_shard_first_readiness_observation(prose_path)
+    assert loaded is None
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_clp_without_shard_first_block(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=loaded,
+    )
+    assert ev["readiness_status"] == "not_ready"
+    assert "shard_first_evidence_missing_for_repo_mutating" in ev["reason_codes"]
+
+
+def test_apu_does_not_run_pytest(monkeypatch: pytest.MonkeyPatch) -> None:
+    """EVL-RT-05 #7: APU must not invoke pytest from the policy module.
+
+    Smoke check: importing and running evaluate_pr_update_ready must not
+    spawn subprocess.run with a pytest-bearing argv. We patch
+    subprocess.run to raise — if APU calls it, the test fails.
+    """
+    import subprocess
+
+    real_run = subprocess.run
+
+    def boom(*args, **kwargs):  # noqa: ANN001, ANN002
+        argv = args[0] if args else kwargs.get("args")
+        if isinstance(argv, (list, tuple)) and any("pytest" in str(a) for a in argv):
+            raise AssertionError(f"APU spawned pytest: {argv}")
+        if isinstance(argv, str) and "pytest" in argv:
+            raise AssertionError(f"APU spawned pytest: {argv}")
+        return real_run(*args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", boom)
+    obs = _shard_first_observation()
+    ev = evaluate_pr_update_ready(
+        policy=load_policy(ROOT / DEFAULT_POLICY_REL_PATH),
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs,
+        shard_first_readiness_ref=(
+            "outputs/pr_test_shard_first_readiness/"
+            "pr_test_shard_first_readiness_observation.json"
+        ),
+    )
+    assert ev["readiness_status"] == "ready", ev["reason_codes"]
+
+
+def test_apu_does_not_recompute_shard_selection(policy: dict[str, Any]) -> None:
+    """EVL-RT-05 #8: APU passes through observed shard refs verbatim.
+
+    APU must not re-derive required_shard_refs. If a shard-first
+    observation supplies a specific list, APU surfaces exactly that
+    list on the readiness artifact.
+    """
+    custom_refs = ["outputs/pr_test_shards/x.json", "outputs/pr_test_shards/y.json"]
+    obs = _shard_first_observation(required_shard_refs=custom_refs)
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs,
+        shard_first_readiness_ref=(
+            "outputs/pr_test_shard_first_readiness/"
+            "pr_test_shard_first_readiness_observation.json"
+        ),
+    )
+    assert ev["shard_first_required_shard_refs"] == custom_refs
+
+
+def test_apu_artifact_includes_shard_first_refs_in_source_artifact_refs_and_hash(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #9: APU artifact carries shard-first refs in source_artifact_refs and the
+    shard-first inputs participate in evidence_hash.
+    """
+    obs_a = _shard_first_observation()
+    obs_b = _shard_first_observation(
+        required_shard_refs=[
+            "outputs/pr_test_shards/different_a.json",
+            "outputs/pr_test_shards/different_b.json",
+        ]
+    )
+    ref = (
+        "outputs/pr_test_shard_first_readiness/"
+        "pr_test_shard_first_readiness_observation.json"
+    )
+    ev_a = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs_a,
+        shard_first_readiness_ref=ref,
+    )
+    ev_b = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs_b,
+        shard_first_readiness_ref=ref,
+    )
+    artifact = build_agent_pr_update_ready_result(
+        work_item_id="EVL-RT-05-REFS",
+        agent_type="claude",
+        policy_ref=DEFAULT_POLICY_REL_PATH,
+        evaluation=ev_a,
+        clp_result_ref="outputs/clp.json",
+        agl_record_ref="outputs/agl.json",
+        agent_pr_ready_result_ref=None,
+        shard_first_readiness_ref=ref,
+    )
+    validate_artifact(artifact, "agent_pr_update_ready_result")
+    assert ref in artifact["source_artifact_refs"]
+    assert artifact["shard_first_readiness_ref"] == ref
+    # Different shard refs must change the evidence_hash.
+    assert ev_a["evidence_hash"] != ev_b["evidence_hash"]
+
+
+def test_apu_artifact_preserves_authority_safe_vocabulary(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05 #10: shard-first surfacing must not introduce reserved
+    authority verbs into APU output.
+    """
+    obs = _shard_first_observation()
+    ref = (
+        "outputs/pr_test_shard_first_readiness/"
+        "pr_test_shard_first_readiness_observation.json"
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs,
+        shard_first_readiness_ref=ref,
+    )
+    artifact = build_agent_pr_update_ready_result(
+        work_item_id="EVL-RT-05-AUTH",
+        agent_type="claude",
+        policy_ref=DEFAULT_POLICY_REL_PATH,
+        evaluation=ev,
+        clp_result_ref="outputs/clp.json",
+        agl_record_ref="outputs/agl.json",
+        agent_pr_ready_result_ref=None,
+        shard_first_readiness_ref=ref,
+    )
+    blob = json.dumps(artifact).lower()
+    forbidden = [
+        '"approved"',
+        '"certified"',
+        '"promoted"',
+        '"enforced"',
+        '"approval"',
+        '"certification"',
+        '"promotion"',
+        '"enforcement"',
+        '"adjudication"',
+        '"authorization"',
+        '"verdict"',
+    ]
+    for term in forbidden:
+        assert term not in blob, term
+
+
+def test_clp_recorded_shard_first_evidence_is_observed_when_no_direct_artifact(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05: APU falls back to CLP-recorded shard-first evidence when
+    no direct artifact is supplied. CLP's evl_shard_first_evidence block
+    is treated as the readiness input via clp source.
+    """
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=None,
+    )
+    assert ev["readiness_status"] == "ready", ev["reason_codes"]
+    assert ev["shard_first_evidence_status"] == "present"
+    assert ev["shard_first_status"] == "shard_first"
+    assert ev["shard_first_source"] == "clp"
+
+
+def test_apu_artifact_validates_with_shard_first_fields(
+    policy: dict[str, Any],
+) -> None:
+    """EVL-RT-05: The agent_pr_update_ready_result must validate with
+    shard-first fields populated and the schema must reject a
+    shard_first_evidence_status=present without shard_first_readiness_ref.
+    """
+    obs = _shard_first_observation()
+    ref = (
+        "outputs/pr_test_shard_first_readiness/"
+        "pr_test_shard_first_readiness_observation.json"
+    )
+    ev = evaluate_pr_update_ready(
+        policy=policy,
+        clp_result=_all_pass_clp(),
+        agl_record=_full_agl_record(all_present=True),
+        agent_pr_ready=None,
+        repo_mutating=True,
+        shard_first_readiness=obs,
+        shard_first_readiness_ref=ref,
+    )
+    artifact = build_agent_pr_update_ready_result(
+        work_item_id="EVL-RT-05-SCHEMA",
+        agent_type="claude",
+        policy_ref=DEFAULT_POLICY_REL_PATH,
+        evaluation=ev,
+        clp_result_ref="outputs/clp.json",
+        agl_record_ref="outputs/agl.json",
+        agent_pr_ready_result_ref=None,
+        shard_first_readiness_ref=ref,
+    )
+    validate_artifact(artifact, "agent_pr_update_ready_result")
+    assert artifact["shard_first_evidence_status"] == "present"
+    assert artifact["shard_first_readiness_ref"] == ref
+
+    # Schema must reject a present status without a ref.
+    bad = dict(artifact)
+    bad["shard_first_readiness_ref"] = None
+    with pytest.raises(Exception):
+        validate_artifact(bad, "agent_pr_update_ready_result")

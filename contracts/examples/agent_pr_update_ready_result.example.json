@@ -18,6 +18,14 @@
   "prl_failure_packet_refs": [],
   "prl_repair_candidate_refs": [],
   "prl_eval_candidate_refs": [],
+  "shard_first_readiness_ref": "outputs/pr_test_shard_first_readiness/pr_test_shard_first_readiness_observation.json",
+  "shard_first_status": "shard_first",
+  "shard_first_evidence_status": "present",
+  "shard_first_reason_codes": [],
+  "shard_first_fallback_used": false,
+  "shard_first_full_suite_detected": false,
+  "shard_first_fallback_reason_codes": [],
+  "shard_first_required_for_repo_mutating": true,
   "prl_auto_invocation": {
     "status": "skipped",
     "reason": "clp_not_blocking",
@@ -132,6 +140,7 @@
     "outputs/core_loop_pre_pr_gate/core_loop_pre_pr_gate_result.json",
     "outputs/agent_core_loop/agent_core_loop_run_record.json",
     "outputs/core_loop_pre_pr_gate/agent_pr_ready_result.json",
+    "outputs/pr_test_shard_first_readiness/pr_test_shard_first_readiness_observation.json",
     "docs/governance/agent_pr_update_policy.json"
   ],
   "evidence_hash": "sha256-example-deterministic-hash-0000000000000000000000000000",
