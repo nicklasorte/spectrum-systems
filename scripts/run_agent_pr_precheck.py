@@ -879,6 +879,161 @@ def evl_pr_test_shards(
     )
 
 
+def evl_pr_test_shard_first_readiness(
+    *,
+    repo_root: Path,
+    base_ref: str,
+    head_ref: str,
+    output_dir: Path,
+) -> CheckResult:
+    """EVL-RT-03 — emit and consume the shard-first readiness observation.
+
+    This check builds two observation-only artifacts in sequence using
+    already-emitted upstream artifacts (no pytest, no selection logic
+    duplicated):
+
+    1. ``pr_test_runtime_budget_observation`` from
+       ``pr_test_shards_summary`` and ``selection_coverage_record``
+       (EVL-RT-01 / EVL-RT-02);
+    2. ``pr_test_shard_first_readiness_observation`` from the shard
+       summary, selection coverage, and the runtime budget observation
+       (EVL-RT-03).
+
+    The check returns ``pass`` when ``shard_first_status`` is
+    ``shard_first`` or ``fallback_justified``; ``block`` when it is
+    ``missing``, ``partial``, or ``unknown`` (fallback used without
+    justification, or required shard evidence missing). The check never
+    runs pytest, never mutates selection, and never duplicates selector
+    logic.
+    """
+    from scripts.build_pr_test_runtime_budget_observation import (
+        DEFAULT_RUNTIME_BUDGET_SECONDS,
+        build_runtime_budget_observation,
+    )
+    from scripts.build_pr_test_shard_first_readiness_observation import (
+        build_shard_first_readiness_observation,
+    )
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    summary_path = repo_root / "outputs" / "pr_test_shards" / "pr_test_shards_summary.json"
+    coverage_path = repo_root / _SELECTION_COVERAGE_REL_PATH
+    runtime_budget_path = (
+        repo_root
+        / "outputs"
+        / "pr_test_runtime_budget"
+        / "pr_test_runtime_budget_observation.json"
+    )
+    readiness_path = (
+        repo_root
+        / "outputs"
+        / "pr_test_shard_first_readiness"
+        / "pr_test_shard_first_readiness_observation.json"
+    )
+    runtime_budget_path.parent.mkdir(parents=True, exist_ok=True)
+    readiness_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _load(path: Path) -> dict[str, Any] | None:
+        if not path.is_file():
+            return None
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+
+    summary = _load(summary_path)
+    coverage = _load(coverage_path)
+
+    summary_ref = (
+        str(summary_path.relative_to(repo_root)) if summary is not None else None
+    )
+    coverage_ref = (
+        str(coverage_path.relative_to(repo_root)) if coverage is not None else None
+    )
+
+    # Build (or refresh) the runtime budget observation so the
+    # shard-first readiness has a fallback_justification section to
+    # consume. The runtime budget builder does not run pytest; it only
+    # reads the existing summary and coverage artifacts.
+    runtime_budget_artifact = build_runtime_budget_observation(
+        base_ref=base_ref,
+        head_ref=head_ref,
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget_seconds=DEFAULT_RUNTIME_BUDGET_SECONDS,
+        shard_summary_ref=summary_ref,
+        selection_coverage_ref=coverage_ref,
+    )
+    validate_artifact(runtime_budget_artifact, "pr_test_runtime_budget_observation")
+    runtime_budget_path.write_text(
+        json.dumps(runtime_budget_artifact, indent=2) + "\n", encoding="utf-8"
+    )
+
+    runtime_budget_ref = str(runtime_budget_path.relative_to(repo_root))
+
+    readiness_artifact = build_shard_first_readiness_observation(
+        base_ref=base_ref,
+        head_ref=head_ref,
+        shard_summary=summary,
+        selection_coverage=coverage,
+        runtime_budget=runtime_budget_artifact,
+        shard_summary_ref=summary_ref,
+        selection_coverage_ref=coverage_ref,
+        runtime_budget_observation_ref=runtime_budget_ref,
+    )
+    validate_artifact(
+        readiness_artifact, "pr_test_shard_first_readiness_observation"
+    )
+    readiness_path.write_text(
+        json.dumps(readiness_artifact, indent=2) + "\n", encoding="utf-8"
+    )
+
+    readiness_ref = str(readiness_path.relative_to(repo_root))
+    artifact_refs = [readiness_ref, runtime_budget_ref]
+    if summary_ref:
+        artifact_refs.append(summary_ref)
+    if coverage_ref:
+        artifact_refs.append(coverage_ref)
+
+    status_value = readiness_artifact["shard_first_status"]
+    if status_value in {"shard_first", "fallback_justified"}:
+        return CheckResult(
+            check_name="evl_pr_test_shard_first_readiness",
+            phase="EVL",
+            command=(
+                "python scripts/build_pr_test_runtime_budget_observation.py && "
+                "python scripts/build_pr_test_shard_first_readiness_observation.py"
+            ),
+            status="pass",
+            exit_code=0,
+            output_artifact_refs=artifact_refs,
+            next_action="none",
+        )
+
+    reason_codes = list(readiness_artifact.get("reason_codes") or [])
+    if not reason_codes:
+        reason_codes = [f"shard_first_status_{status_value}"]
+    return CheckResult(
+        check_name="evl_pr_test_shard_first_readiness",
+        phase="EVL",
+        command=(
+            "python scripts/build_pr_test_runtime_budget_observation.py && "
+            "python scripts/build_pr_test_shard_first_readiness_observation.py"
+        ),
+        status="block",
+        exit_code=2,
+        output_artifact_refs=artifact_refs,
+        reason_codes=[
+            f"shard_first_status_{status_value}",
+            *reason_codes,
+        ],
+        next_action=(
+            "review fallback_justification or required_shard_refs in "
+            f"{readiness_ref}"
+        ),
+    )
+
+
 def cde_core_loop_pre_pr_gate(
     *, work_item_id: str, agent_type: str, base_ref: str, head_ref: str, output_dir: Path
 ) -> CheckResult:
@@ -1192,6 +1347,14 @@ def main() -> int:
             checks.append(evl_generated_artifact_freshness(output_dir=phase_output_dir))
             checks.append(
                 evl_pr_test_shards(
+                    repo_root=REPO_ROOT,
+                    base_ref=args.base_ref,
+                    head_ref=args.head_ref,
+                    output_dir=phase_output_dir,
+                )
+            )
+            checks.append(
+                evl_pr_test_shard_first_readiness(
                     repo_root=REPO_ROOT,
                     base_ref=args.base_ref,
                     head_ref=args.head_ref,

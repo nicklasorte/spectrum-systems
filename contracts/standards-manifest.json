@@ -10160,6 +10160,19 @@
       "notes": "EVL-RT-01 / EVL-RT-02 observation-only PR test runtime budget artifact. Records changed files, selected test targets, shard durations, slowest shard, full-suite/fallback usage, runtime budget seconds, budget_status (within_budget | over_budget | unknown), and a fallback_justification section explaining why broad/full-suite/shard fallback was used and what mapping/sharding improvements should be considered. Reuses pr_test_shards_summary and selection_coverage_record; the builder does not run pytest, mutate selection, or duplicate selector logic. Present shard evidence requires shard_summary_ref or shard_result_refs; budget_status unknown/over_budget require reason_codes; full_suite_detected/fallback_used true require fallback_reason_codes. fallback_justification.fallback_used or .full_suite_detected true requires fallback_reason_codes and at least one of selection_coverage_ref / shard_summary_ref; fallback_justification.fallback_scope unknown requires fallback_reason_codes. authority_scope: observation_only."
     },
     {
+      "artifact_type": "pr_test_shard_first_readiness_observation",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "EVL-RT-03",
+      "last_updated_in": "EVL-RT-03",
+      "example_path": "contracts/examples/pr_test_shard_first_readiness_observation.example.json",
+      "notes": "EVL-RT-03 observation-only PR test shard-first readiness artifact. Records whether the PR path is shard_first (focused selection backed by shard evidence refs) or fallback_justified (broad/full-suite usage explained by an existing fallback_justification observation in pr_test_runtime_budget_observation). Reuses pr_test_shards_summary, selection_coverage_record, and pr_test_runtime_budget_observation; the builder does not run pytest, mutate selection, or duplicate selector logic. shard_first_status shard_first requires required_shard_refs minItems 1 and fallback_used/full_suite_detected false; fallback_justified requires fallback_justification_ref and fallback_reason_codes; missing/partial/unknown require reason_codes; fallback_used true and full_suite_detected true each require fallback_justification_ref and fallback_reason_codes. authority_scope: observation_only."
+    },
+    {
       "artifact_type": "pr_test_shard_result",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
