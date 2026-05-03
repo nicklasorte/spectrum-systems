@@ -58,6 +58,7 @@ def _gate(
     *,
     repo_mutating: bool = True,
     evl_shard_evidence: dict | None = None,
+    evl_shard_first_evidence: dict | None = None,
 ) -> dict:
     art = build_gate_result(
         work_item_id="CLP-01-TEST",
@@ -68,6 +69,7 @@ def _gate(
         changed_files=["scripts/run_core_loop_pre_pr_gate.py"],
         checks=checks,
         evl_shard_evidence=evl_shard_evidence,
+        evl_shard_first_evidence=evl_shard_first_evidence,
     )
     validate_artifact(art, "core_loop_pre_pr_gate_result")
     return art
@@ -131,6 +133,7 @@ def test_check_names_cover_required_set():
         "contract_preflight",
         "selected_tests",
         "evl_shard_artifacts",
+        "evl_shard_first_readiness",
     }
     for name, owner in CHECK_OWNER.items():
         assert owner in {
@@ -1147,5 +1150,433 @@ def test_clp_evl_shard_evidence_field_is_optional_in_schema():
     bad = dict(art2)
     bad["evl_shard_evidence"] = dict(art2["evl_shard_evidence"])
     bad["evl_shard_evidence"]["evl_shard_status"] = "approved"
+    with pytest.raises(Exception):
+        validate_artifact(bad, "core_loop_pre_pr_gate_result")
+
+
+# ---------------------------------------------------------------------------
+# EVL-RT-04: shard-first readiness observation consumption
+# ---------------------------------------------------------------------------
+
+
+from spectrum_systems.modules.runtime.core_loop_pre_pr_gate import (  # noqa: E402
+    consume_shard_first_readiness_observation,
+)
+
+
+_SHARD_FIRST_OBSERVATION_REL = (
+    "outputs/pr_test_shard_first_readiness/"
+    "pr_test_shard_first_readiness_observation.json"
+)
+
+
+def _shard_first_observation(
+    *,
+    shard_first_status: str = "shard_first",
+    required_shard_refs: list[str] | None = None,
+    missing_shard_refs: list[str] | None = None,
+    failed_shard_refs: list[str] | None = None,
+    fallback_used: bool = False,
+    full_suite_detected: bool = False,
+    fallback_justification_ref: str | None = (
+        "outputs/pr_test_runtime_budget/pr_test_runtime_budget_observation.json"
+    ),
+    fallback_reason_codes: list[str] | None = None,
+    reason_codes: list[str] | None = None,
+) -> dict:
+    if required_shard_refs is None:
+        required_shard_refs = [
+            "outputs/pr_test_shards/contract.json",
+            "outputs/pr_test_shards/governance.json",
+            "outputs/pr_test_shards/changed_scope.json",
+        ]
+    return {
+        "artifact_type": "pr_test_shard_first_readiness_observation",
+        "schema_version": "1.0.0",
+        "id": "pr-shard-first-test-001",
+        "created_at": "2026-05-03T00:00:00Z",
+        "authority_scope": "observation_only",
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "changed_files": ["scripts/run_core_loop_pre_pr_gate.py"],
+        "selection_coverage_ref": "outputs/selection_coverage/selection_coverage_record.json",
+        "shard_summary_ref": "outputs/pr_test_shards/pr_test_shards_summary.json",
+        "runtime_budget_observation_ref": (
+            "outputs/pr_test_runtime_budget/pr_test_runtime_budget_observation.json"
+        ),
+        "fallback_justification_ref": fallback_justification_ref,
+        "shard_first_status": shard_first_status,
+        "required_shard_refs": list(required_shard_refs),
+        "missing_shard_refs": list(missing_shard_refs or []),
+        "failed_shard_refs": list(failed_shard_refs or []),
+        "fallback_used": fallback_used,
+        "full_suite_detected": full_suite_detected,
+        "fallback_reason_codes": list(fallback_reason_codes or []),
+        "reason_codes": list(reason_codes or []),
+        "recommended_mapping_candidates": [],
+        "recommended_shard_candidates": [],
+        "evidence_hash": (
+            "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        ),
+    }
+
+
+def _write_shard_first_observation(tmp_path: Path, payload: dict | None) -> Path:
+    obs_path = tmp_path / _SHARD_FIRST_OBSERVATION_REL
+    obs_path.parent.mkdir(parents=True, exist_ok=True)
+    if payload is not None:
+        obs_path.write_text(json.dumps(payload), encoding="utf-8")
+    return obs_path
+
+
+def test_clp_shard_first_blocks_when_observation_missing(tmp_path):
+    """1. Missing shard-first readiness observation blocks CLP for repo-mutating change."""
+    obs_path = _write_shard_first_observation(tmp_path, payload=None)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "block"
+    assert check["check_name"] == "evl_shard_first_readiness"
+    assert check["failure_class"] == "evl_shard_first_readiness_missing"
+    assert "pr_test_shard_first_readiness_observation_missing" in check["reason_codes"]
+    assert evidence["evl_shard_first_status"] == "unknown"
+
+
+def test_clp_shard_first_pass_for_shard_first_status_with_refs(tmp_path):
+    """2. shard_first status with valid shard refs passes CLP check."""
+    payload = _shard_first_observation(shard_first_status="shard_first")
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "pass"
+    assert check["failure_class"] is None
+    assert evidence["evl_shard_first_status"] == "shard_first"
+    assert evidence["evl_shard_first_required_shard_refs"]
+    assert evidence["evl_shard_first_fallback_used"] is False
+
+    art = _gate(
+        [c for c in _all_pass_checks() if c["check_name"] != "evl_shard_first_readiness"]
+        + [check],
+        evl_shard_first_evidence=evidence,
+    )
+    assert art["gate_status"] == "pass"
+    assert art["evl_shard_first_evidence"]["evl_shard_first_status"] == "shard_first"
+
+
+def test_clp_shard_first_pass_for_fallback_justified_with_refs_and_codes(tmp_path):
+    """3. fallback_justified with valid fallback refs and reason codes passes per current policy."""
+    payload = _shard_first_observation(
+        shard_first_status="fallback_justified",
+        required_shard_refs=[],
+        fallback_used=True,
+        fallback_reason_codes=["fallback_scope_full_suite_for_governed_change"],
+    )
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "pass"
+    assert evidence["evl_shard_first_status"] == "fallback_justified"
+    assert evidence["evl_shard_first_fallback_used"] is True
+    assert evidence["evl_shard_first_fallback_justification_ref"]
+    assert evidence["evl_shard_first_fallback_reason_codes"]
+
+
+def test_clp_shard_first_warns_on_fallback_codes_outside_allow_list(tmp_path):
+    """fallback_justified with codes outside policy allow-list -> warn (TPA review)."""
+    payload = _shard_first_observation(
+        shard_first_status="fallback_justified",
+        required_shard_refs=[],
+        fallback_used=True,
+        fallback_reason_codes=["unexpected_fallback_code"],
+    )
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+        allowed_fallback_reason_codes=("permitted_fallback_code",),
+    )
+    assert check["status"] == "warn"
+    assert "unexpected_fallback_code" in check["reason_codes"]
+    assert (
+        check["failure_class"]
+        == "evl_shard_first_readiness_fallback_unjustified"
+    )
+
+
+def test_clp_shard_first_blocks_on_missing_status(tmp_path):
+    """4a. missing shard-first status blocks CLP with reason_codes."""
+    payload = _shard_first_observation(
+        shard_first_status="missing",
+        required_shard_refs=[],
+        reason_codes=["shard_summary_artifact_missing"],
+    )
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "block"
+    assert check["failure_class"] == "evl_shard_first_readiness_missing"
+    assert check["reason_codes"]
+
+
+def test_clp_shard_first_blocks_on_partial_status(tmp_path):
+    """4b. partial shard-first status blocks CLP with reason_codes."""
+    payload = _shard_first_observation(
+        shard_first_status="partial",
+        required_shard_refs=[],
+        missing_shard_refs=["governance"],
+        reason_codes=["required_shard_refs_missing"],
+    )
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "block"
+    assert check["failure_class"] == "evl_shard_first_readiness_partial"
+    assert check["reason_codes"]
+
+
+def test_clp_shard_first_blocks_on_unknown_status(tmp_path):
+    """4c. unknown shard-first status blocks CLP with reason_codes."""
+    payload = _shard_first_observation(
+        shard_first_status="unknown",
+        required_shard_refs=[],
+        reason_codes=["runtime_budget_observation_missing_cannot_prove_shard_first"],
+    )
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "block"
+    assert check["failure_class"] == "evl_shard_first_readiness_unknown"
+    assert check["reason_codes"]
+
+
+def test_clp_shard_first_blocks_on_fallback_without_justification(tmp_path):
+    """5. fallback/full-suite detected without justification blocks CLP."""
+    payload = _shard_first_observation(
+        shard_first_status="shard_first",
+        full_suite_detected=True,
+        fallback_justification_ref=None,
+        fallback_reason_codes=[],
+    )
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "block"
+    assert (
+        check["failure_class"]
+        == "evl_shard_first_readiness_fallback_unjustified"
+    )
+    codes = check["reason_codes"]
+    assert any("fallback_signal" in c or "inconsistent" in c for c in codes)
+
+
+def test_clp_shard_first_blocks_on_shard_first_without_refs(tmp_path):
+    """shard_first status with empty required_shard_refs -> block."""
+    payload = _shard_first_observation(
+        shard_first_status="shard_first",
+        required_shard_refs=[],
+    )
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "block"
+    assert (
+        check["failure_class"]
+        == "evl_shard_first_readiness_shard_refs_empty"
+    )
+    assert any(
+        "missing_required_shard_refs" in c for c in check["reason_codes"]
+    )
+
+
+def test_clp_shard_first_blocks_on_invalid_artifact(tmp_path):
+    """An invalid (wrong artifact_type) observation blocks with invalid failure class."""
+    obs_path = tmp_path / _SHARD_FIRST_OBSERVATION_REL
+    obs_path.parent.mkdir(parents=True, exist_ok=True)
+    obs_path.write_text(
+        json.dumps({"artifact_type": "not_shard_first", "shard_first_status": "shard_first"}),
+        encoding="utf-8",
+    )
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "block"
+    assert check["failure_class"] == "evl_shard_first_readiness_invalid"
+
+
+def test_clp_shard_first_pr_prose_is_not_evidence(tmp_path):
+    """6. PR prose cannot substitute for the artifact.
+
+    Writing a text file at the observation path that contains every
+    authority-passing word still does not satisfy the artifact contract
+    — the JSON must parse and carry the canonical artifact_type.
+    """
+    obs_path = tmp_path / _SHARD_FIRST_OBSERVATION_REL
+    obs_path.parent.mkdir(parents=True, exist_ok=True)
+    obs_path.write_text(
+        "shard-first ready, all green, fallback_used=false, trust me",
+        encoding="utf-8",
+    )
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "block"
+    assert check["failure_class"] == "evl_shard_first_readiness_invalid"
+
+
+def test_clp_shard_first_does_not_run_pytest(tmp_path, monkeypatch):
+    """7. CLP does not run pytest for this check."""
+    import subprocess as _subprocess
+
+    def _explode(*args, **kwargs):  # noqa: ARG001
+        raise AssertionError(
+            "consume_shard_first_readiness_observation must not invoke subprocess"
+        )
+
+    monkeypatch.setattr(_subprocess, "run", _explode)
+    payload = _shard_first_observation(shard_first_status="shard_first")
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "pass"
+
+
+def test_clp_shard_first_does_not_recompute_selection(tmp_path, monkeypatch):
+    """8. CLP does not recompute selection for this check."""
+    import spectrum_systems.modules.runtime.pr_test_selection as pts
+
+    def _selector_explode(*args, **kwargs):  # noqa: ARG001
+        raise AssertionError(
+            "consume_shard_first_readiness_observation must not call selector"
+        )
+
+    for symbol in ("resolve_required_tests", "build_selection_coverage_record"):
+        if hasattr(pts, symbol):
+            monkeypatch.setattr(pts, symbol, _selector_explode)
+
+    payload = _shard_first_observation(shard_first_status="shard_first")
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    assert check["status"] == "pass"
+
+
+def test_clp_shard_first_preserves_observation_only_authority(tmp_path):
+    """9. Authority-safe vocabulary preserved with shard-first evidence attached."""
+    payload = _shard_first_observation(shard_first_status="shard_first")
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    evidence, check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+    art = _gate(
+        [c for c in _all_pass_checks() if c["check_name"] != "evl_shard_first_readiness"]
+        + [check],
+        evl_shard_first_evidence=evidence,
+    )
+    assert art["authority_scope"] == "observation_only"
+    forbidden = {
+        "approval",
+        "certification",
+        "promotion",
+        "enforcement",
+        "approved",
+        "certified",
+        "promoted",
+        "enforced",
+        "verdict",
+    }
+    payload_lower = json.dumps(art).lower()
+    for term in forbidden:
+        assert f'"{term}"' not in payload_lower, term
+    bad = dict(art)
+    bad["authority_scope"] = "binding"
+    with pytest.raises(Exception):
+        validate_artifact(bad, "core_loop_pre_pr_gate_result")
+
+
+def test_clp_shard_first_existing_required_checks_still_work(tmp_path):
+    """10. Existing CLP required checks still work alongside the new check."""
+    payload = _shard_first_observation(shard_first_status="shard_first")
+    obs_path = _write_shard_first_observation(tmp_path, payload=payload)
+    _, shard_first_check = consume_shard_first_readiness_observation(
+        observation_path=obs_path,
+        repo_root=tmp_path,
+    )
+
+    other_checks = [
+        c for c in _all_pass_checks() if c["check_name"] != "evl_shard_first_readiness"
+    ]
+    art = _gate(other_checks + [shard_first_check])
+    assert art["gate_status"] == "pass"
+
+    # Drop a different required check — gate should still block, proving
+    # the rest of the required-check logic is intact.
+    minus_one = [
+        c for c in other_checks if c["check_name"] != "authority_shape_preflight"
+    ] + [shard_first_check]
+    art_block = _gate(minus_one)
+    assert art_block["gate_status"] == "block"
+    assert art_block["first_failed_check"] == "authority_shape_preflight"
+
+
+def test_clp_shard_first_missing_required_check_blocks_repo_mutating(tmp_path):
+    """Drop the new shard-first check entirely — repo-mutating gate must block."""
+    checks = [
+        c
+        for c in _all_pass_checks()
+        if c["check_name"] != "evl_shard_first_readiness"
+    ]
+    art = _gate(checks)
+    assert art["gate_status"] == "block"
+    assert art["first_failed_check"] == "evl_shard_first_readiness"
+
+
+def test_clp_shard_first_evidence_field_optional_in_schema(tmp_path):
+    """Schema permits a CLP result without evl_shard_first_evidence (backwards
+    compat). Present-but-malformed evidence must be rejected."""
+    art = _gate(_all_pass_checks())
+    assert "evl_shard_first_evidence" not in art
+    validate_artifact(art, "core_loop_pre_pr_gate_result")
+
+    art2 = _gate(
+        _all_pass_checks(),
+        evl_shard_first_evidence={
+            "evl_shard_first_observation_ref": None,
+            "evl_shard_first_status": "shard_first",
+            "evl_shard_first_required_shard_refs": [],
+            "evl_shard_first_missing_shard_refs": [],
+            "evl_shard_first_failed_shard_refs": [],
+            "evl_shard_first_fallback_used": False,
+            "evl_shard_first_full_suite_detected": False,
+            "evl_shard_first_fallback_justification_ref": None,
+            "evl_shard_first_fallback_reason_codes": [],
+            "evl_shard_first_reason_codes": [],
+        },
+    )
+    validate_artifact(art2, "core_loop_pre_pr_gate_result")
+    bad = dict(art2)
+    bad["evl_shard_first_evidence"] = dict(art2["evl_shard_first_evidence"])
+    bad["evl_shard_first_evidence"]["evl_shard_first_status"] = "approved"
     with pytest.raises(Exception):
         validate_artifact(bad, "core_loop_pre_pr_gate_result")

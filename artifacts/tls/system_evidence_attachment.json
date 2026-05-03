@@ -2056,8 +2056,8 @@
           "docs/reviews/CLP-02_require_pre_pr_gate_redteam.md",
           "docs/reviews/EVL-RT-02_redteam.md",
           "docs/reviews/EVL-RT-03_redteam.md",
-          "docs/reviews/F3L-01_redteam.md",
-          "docs/reviews/F3L-02_redteam.md"
+          "docs/reviews/EVL-RT-04_redteam.md",
+          "docs/reviews/F3L-01_redteam.md"
         ],
         "modules": [
           "spectrum_systems/modules/prl/__init__.py",
