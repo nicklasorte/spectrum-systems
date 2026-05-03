@@ -1102,10 +1102,10 @@
           "docs/review-actions/PLAN-R100-001-2026-04-15.md",
           "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
           "docs/review-actions/PLAN-TLS-STACK-02A-2026-04-26.md",
+          "docs/reviews/EVL-RT-05_redteam.md",
           "docs/reviews/MET-04-18-final-integration-review.md",
           "docs/reviews/NX_ALL_01_delivery_report.md",
-          "docs/reviews/OPR-TRN-01A_authority_failclosed.md",
-          "docs/reviews/RFX-SUPER-01-red-team-review.md"
+          "docs/reviews/OPR-TRN-01A_authority_failclosed.md"
         ],
         "modules": [
           "spectrum_systems/governance/authority_shape_early_gate.py",
