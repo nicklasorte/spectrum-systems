@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pr_test_shard_first_readiness_observation.schema.json",
+  "title": "PR Test Shard-First Readiness Observation",
+  "description": "EVL-RT-03 observation-only PR test shard-first readiness artifact. Records, for a PR's already-measured shard run, whether the PR path is shard-first (focused selection with shard evidence) or fallback-justified (broad/full-suite usage explained by the existing fallback_justification observation in the runtime budget observation). Reuses the canonical pr_test_shards_summary, selection_coverage_record, and pr_test_runtime_budget_observation artifacts. The builder does not run pytest, mutate selection, or duplicate selector logic. authority_scope is observation_only: this artifact emits shard-first, runtime, and fallback observations only — it never holds admission, execution closure, eval evidence, policy, continuation, or final-gate signal. shard_first_status=shard_first requires at least one required_shard_refs entry, fallback_used=false, and full_suite_detected=false. shard_first_status=fallback_justified requires fallback_justification_ref and at least one fallback_reason_codes entry. shard_first_status=missing/partial/unknown requires at least one reason_codes entry. fallback_used=true requires fallback_justification_ref and at least one fallback_reason_codes entry. full_suite_detected=true requires fallback_justification_ref and at least one fallback_reason_codes entry. recommended_mapping_candidates and recommended_shard_candidates are observation-only and never reassign tests, change selection, or block PRs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "created_at",
+    "authority_scope",
+    "base_ref",
+    "head_ref",
+    "changed_files",
+    "selection_coverage_ref",
+    "shard_summary_ref",
+    "runtime_budget_observation_ref",
+    "fallback_justification_ref",
+    "shard_first_status",
+    "required_shard_refs",
+    "missing_shard_refs",
+    "failed_shard_refs",
+    "fallback_used",
+    "full_suite_detected",
+    "fallback_reason_codes",
+    "reason_codes",
+    "recommended_mapping_candidates",
+    "recommended_shard_candidates",
+    "evidence_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "pr_test_shard_first_readiness_observation"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_scope": {
+      "type": "string",
+      "const": "observation_only"
+    },
+    "base_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "head_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "selection_coverage_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shard_summary_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "runtime_budget_observation_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fallback_justification_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shard_first_status": {
+      "type": "string",
+      "enum": [
+        "shard_first",
+        "fallback_justified",
+        "missing",
+        "partial",
+        "unknown"
+      ]
+    },
+    "required_shard_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "missing_shard_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "failed_shard_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "fallback_used": {
+      "type": "boolean"
+    },
+    "full_suite_detected": {
+      "type": "boolean"
+    },
+    "fallback_reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommended_mapping_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "candidate_test_targets",
+          "observation_only"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "candidate_test_targets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "observation_only": {
+            "type": "boolean",
+            "const": true
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "recommended_shard_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "shard",
+          "observation_only"
+        ],
+        "properties": {
+          "shard": {
+            "type": "string",
+            "minLength": 1
+          },
+          "candidate_action": {
+            "type": "string",
+            "enum": [
+              "split_shard",
+              "narrow_selection",
+              "review_mapping",
+              "review_runtime_budget"
+            ]
+          },
+          "observation_only": {
+            "type": "boolean",
+            "const": true
+          },
+          "rationale": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "evidence_hash": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "description": "shard_first_status shard_first requires at least one required_shard_refs entry so a shard-first claim always carries shard evidence refs.",
+      "if": {
+        "properties": {
+          "shard_first_status": {
+            "const": "shard_first"
+          }
+        },
+        "required": [
+          "shard_first_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "required_shard_refs": {
+            "type": "array",
+            "minItems": 1
+          },
+          "fallback_used": {
+            "const": false
+          },
+          "full_suite_detected": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "description": "shard_first_status fallback_justified requires fallback_justification_ref and at least one fallback_reason_codes entry so fallback usage is never silent.",
+      "if": {
+        "properties": {
+          "shard_first_status": {
+            "const": "fallback_justified"
+          }
+        },
+        "required": [
+          "shard_first_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fallback_justification_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fallback_reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        },
+        "required": [
+          "fallback_justification_ref"
+        ]
+      }
+    },
+    {
+      "description": "shard_first_status missing must carry at least one reason_codes entry so missing is never silently treated as shard_first.",
+      "if": {
+        "properties": {
+          "shard_first_status": {
+            "const": "missing"
+          }
+        },
+        "required": [
+          "shard_first_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "shard_first_status partial must carry at least one reason_codes entry so partial readiness is never silent.",
+      "if": {
+        "properties": {
+          "shard_first_status": {
+            "const": "partial"
+          }
+        },
+        "required": [
+          "shard_first_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "shard_first_status unknown must carry at least one reason_codes entry so unknown is never silently treated as shard_first.",
+      "if": {
+        "properties": {
+          "shard_first_status": {
+            "const": "unknown"
+          }
+        },
+        "required": [
+          "shard_first_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "fallback_used true must carry fallback_justification_ref and at least one fallback_reason_codes entry so fallback usage cannot be silent.",
+      "if": {
+        "properties": {
+          "fallback_used": {
+            "const": true
+          }
+        },
+        "required": [
+          "fallback_used"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fallback_justification_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fallback_reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        },
+        "required": [
+          "fallback_justification_ref"
+        ]
+      }
+    },
+    {
+      "description": "full_suite_detected true must carry fallback_justification_ref and at least one fallback_reason_codes entry so full-suite usage cannot be silent.",
+      "if": {
+        "properties": {
+          "full_suite_detected": {
+            "const": true
+          }
+        },
+        "required": [
+          "full_suite_detected"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fallback_justification_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fallback_reason_codes": {
+            "type": "array",
+            "minItems": 1
+          }
+        },
+        "required": [
+          "fallback_justification_ref"
+        ]
+      }
+    }
+  ]
+}

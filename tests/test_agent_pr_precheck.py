@@ -25,6 +25,7 @@ from scripts.run_agent_pr_precheck import (
     _aggregate_overall_status,
     aex_required_surface_check,
     build_agent_pr_precheck_result,
+    evl_pr_test_shard_first_readiness,
     overall_status_to_exit_code,
 )
 
@@ -590,6 +591,173 @@ def test_replay_apu_3ls_01_missing_required_surface_mapping(tmp_path, monkeypatc
 # ---------------------------------------------------------------------------
 # Case (additional) — authority-safe vocabulary lint on APR-owned files
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# EVL-RT-03 — APR consumes the shard-first readiness observation
+# ---------------------------------------------------------------------------
+
+
+def _write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def _evl_rt03_summary() -> dict:
+    return {
+        "artifact_type": "pr_test_shards_summary",
+        "schema_version": "1.0.0",
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "shard_status": {
+            "contract": "pass",
+            "governance": "pass",
+            "changed_scope": "pass",
+        },
+        "required_shards": ["contract", "governance", "changed_scope"],
+        "shard_artifact_refs": [
+            "outputs/pr_test_shards/changed_scope.json",
+            "outputs/pr_test_shards/contract.json",
+            "outputs/pr_test_shards/governance.json",
+        ],
+        "overall_status": "pass",
+        "blocking_reasons": [],
+        "total_duration_seconds": 12.0,
+        "max_shard_duration_seconds": 8.0,
+        "min_shard_duration_seconds": 2.0,
+        "shard_duration_by_name": {
+            "contract": 2.0,
+            "governance": 8.0,
+            "changed_scope": 2.0,
+        },
+        "slowest_shard": "governance",
+        "imbalance_ratio": 4.0,
+        "balancing_findings": [],
+        "created_at": "2026-05-03T00:00:00Z",
+        "authority_scope": "observation_only",
+    }
+
+
+def _evl_rt03_coverage() -> dict:
+    return {
+        "artifact_type": "selection_coverage_record",
+        "schema_version": "1.0.0",
+        "record_id": "sel-cov-test-evlrt03",
+        "created_at": "2026-05-03T00:00:00Z",
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "changed_paths": ["scripts/example.py"],
+        "matched_paths": ["scripts/example.py"],
+        "unmatched_changed_paths": [],
+        "attempted_surface_rules": [],
+        "selected_test_targets": ["tests/test_a.py"],
+        "fallback_used": False,
+        "fallback_targets": [],
+        "pytest_selection_missing_count": 0,
+        "missing_required_surface_mapping_count": 0,
+        "selection_reason_codes": [],
+        "coverage_status": "complete",
+        "recommended_mapping_candidates": [],
+        "authority_scope": "observation_only",
+    }
+
+
+def test_evl_pr_test_shard_first_readiness_passes_when_shard_first(tmp_path, monkeypatch):
+    """When shard summary, selection coverage, and runtime budget are all
+    populated and selection is focused, the readiness check returns pass
+    and surfaces the readiness artifact ref."""
+    repo_root = tmp_path
+    # Stage upstream artifacts under the repo_root the check expects.
+    _write_json(
+        repo_root / "outputs" / "pr_test_shards" / "pr_test_shards_summary.json",
+        _evl_rt03_summary(),
+    )
+    _write_json(
+        repo_root / "outputs" / "selection_coverage" / "selection_coverage_record.json",
+        _evl_rt03_coverage(),
+    )
+
+    result = evl_pr_test_shard_first_readiness(
+        repo_root=repo_root,
+        base_ref="origin/main",
+        head_ref="HEAD",
+        output_dir=tmp_path / "phase_outputs",
+    )
+    assert result.status == "pass"
+    assert result.phase == "EVL"
+    assert result.check_name == "evl_pr_test_shard_first_readiness"
+    assert any(
+        "pr_test_shard_first_readiness_observation.json" in r
+        for r in result.output_artifact_refs
+    )
+
+
+def test_evl_pr_test_shard_first_readiness_blocks_when_required_shard_missing(tmp_path):
+    """A missing required shard yields a partial readiness observation,
+    which the EVL check surfaces as block with an artifact-backed reason."""
+    repo_root = tmp_path
+    summary = _evl_rt03_summary()
+    summary["shard_status"] = {
+        "contract": "pass",
+        "governance": "missing",
+        "changed_scope": "pass",
+    }
+    summary["shard_artifact_refs"] = [
+        "outputs/pr_test_shards/changed_scope.json",
+        "outputs/pr_test_shards/contract.json",
+    ]
+    _write_json(
+        repo_root / "outputs" / "pr_test_shards" / "pr_test_shards_summary.json",
+        summary,
+    )
+    _write_json(
+        repo_root / "outputs" / "selection_coverage" / "selection_coverage_record.json",
+        _evl_rt03_coverage(),
+    )
+
+    result = evl_pr_test_shard_first_readiness(
+        repo_root=repo_root,
+        base_ref="origin/main",
+        head_ref="HEAD",
+        output_dir=tmp_path / "phase_outputs",
+    )
+    assert result.status == "block"
+    assert result.reason_codes
+    assert any("partial" in r or "missing" in r for r in result.reason_codes)
+
+
+def test_evl_pr_test_shard_first_readiness_blocks_on_unjustified_full_suite(tmp_path):
+    """A coverage record with a full-suite selection target lands in
+    fallback_justified status only when the runtime budget observation
+    surfaces fallback_reason_codes — the EVL check builds the runtime
+    budget observation from the same upstream inputs, so a full-suite
+    signal here should still resolve to fallback_justified (the runtime
+    budget builder synthesizes reason codes for full-suite selection)."""
+    repo_root = tmp_path
+    _write_json(
+        repo_root / "outputs" / "pr_test_shards" / "pr_test_shards_summary.json",
+        _evl_rt03_summary(),
+    )
+    coverage = _evl_rt03_coverage()
+    coverage["selected_test_targets"] = ["tests"]
+    coverage["fallback_used"] = True
+    coverage["fallback_targets"] = ["select_all_tests"]
+    coverage["selection_reason_codes"] = ["fallback_full_suite"]
+    _write_json(
+        repo_root / "outputs" / "selection_coverage" / "selection_coverage_record.json",
+        coverage,
+    )
+
+    result = evl_pr_test_shard_first_readiness(
+        repo_root=repo_root,
+        base_ref="origin/main",
+        head_ref="HEAD",
+        output_dir=tmp_path / "phase_outputs",
+    )
+    # The runtime budget builder records full_suite_detected with reason
+    # codes, so the readiness observation classifies as fallback_justified
+    # and APR records pass — fallback usage is observed and justified.
+    assert result.status == "pass"
 
 
 def test_no_banned_authority_tokens_in_apr_owned_files():

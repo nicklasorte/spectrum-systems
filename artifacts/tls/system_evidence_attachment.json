@@ -616,6 +616,7 @@
           "scripts/build_dashboard_3ls_with_tls.py",
           "scripts/build_gate_shard_parity_record.py",
           "scripts/build_pr_test_runtime_budget_observation.py",
+          "scripts/build_pr_test_shard_first_readiness_observation.py",
           "scripts/check_agent_pr_update_ready.py",
           "scripts/run_agent_pr_precheck.py",
           "scripts/run_authority_authoring_check.py",
@@ -657,7 +658,7 @@
           "tests/test_agent_pr_precheck.py"
         ]
       },
-      "evidence_count": 119,
+      "evidence_count": 120,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "EVL"
@@ -1478,6 +1479,7 @@
         ],
         "scripts": [
           "scripts/build_pr_test_runtime_budget_observation.py",
+          "scripts/build_pr_test_shard_first_readiness_observation.py",
           "scripts/ingest-claude-review.js",
           "scripts/run_3ls_authority_preflight.py",
           "scripts/run_authenticity_hardgate_24_01.py",
@@ -1500,8 +1502,7 @@
           "scripts/validate-review-artifacts.js",
           "scripts/validate_ecosystem_registry.py",
           "scripts/validate_governance_manifest.py",
-          "scripts/validate_module_architecture.py",
-          "scripts/validate_orchestration_boundaries.py"
+          "scripts/validate_module_architecture.py"
         ],
         "tests": [
           "tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json",
@@ -2054,9 +2055,9 @@
           "docs/reviews/CLP-02_require_pre_pr_gate_final_report.md",
           "docs/reviews/CLP-02_require_pre_pr_gate_redteam.md",
           "docs/reviews/EVL-RT-02_redteam.md",
+          "docs/reviews/EVL-RT-03_redteam.md",
           "docs/reviews/F3L-01_redteam.md",
-          "docs/reviews/F3L-02_redteam.md",
-          "docs/reviews/F3L-03_redteam.md"
+          "docs/reviews/F3L-02_redteam.md"
         ],
         "modules": [
           "spectrum_systems/modules/prl/__init__.py",

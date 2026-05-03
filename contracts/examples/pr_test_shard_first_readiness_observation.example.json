@@ -1,0 +1,33 @@
+{
+  "artifact_type": "pr_test_shard_first_readiness_observation",
+  "schema_version": "1.0.0",
+  "id": "pr-shard-first-2026-05-03-example-001",
+  "created_at": "2026-05-03T00:00:00Z",
+  "authority_scope": "observation_only",
+  "base_ref": "origin/main",
+  "head_ref": "HEAD",
+  "changed_files": [
+    "scripts/build_pr_test_shard_first_readiness_observation.py",
+    "contracts/schemas/pr_test_shard_first_readiness_observation.schema.json",
+    "tests/test_pr_test_shard_first_readiness_observation.py"
+  ],
+  "selection_coverage_ref": "outputs/selection_coverage/selection_coverage_record.json",
+  "shard_summary_ref": "outputs/pr_test_shards/pr_test_shards_summary.json",
+  "runtime_budget_observation_ref": "outputs/pr_test_runtime_budget/pr_test_runtime_budget_observation.json",
+  "fallback_justification_ref": "outputs/pr_test_runtime_budget/pr_test_runtime_budget_observation.json",
+  "shard_first_status": "shard_first",
+  "required_shard_refs": [
+    "outputs/pr_test_shards/changed_scope.json",
+    "outputs/pr_test_shards/contract.json",
+    "outputs/pr_test_shards/governance.json"
+  ],
+  "missing_shard_refs": [],
+  "failed_shard_refs": [],
+  "fallback_used": false,
+  "full_suite_detected": false,
+  "fallback_reason_codes": [],
+  "reason_codes": [],
+  "recommended_mapping_candidates": [],
+  "recommended_shard_candidates": [],
+  "evidence_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+}

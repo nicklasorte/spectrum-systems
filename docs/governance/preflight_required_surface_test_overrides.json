@@ -357,5 +357,25 @@
   ],
   "docs/review-actions/EVL-RT-02_fix_actions.md": [
     "tests/test_pr_test_runtime_budget_observation.py"
+  ],
+  "scripts/build_pr_test_shard_first_readiness_observation.py": [
+    "tests/test_pr_test_shard_first_readiness_observation.py"
+  ],
+  "contracts/schemas/pr_test_shard_first_readiness_observation.schema.json": [
+    "tests/test_contracts.py",
+    "tests/test_pr_test_shard_first_readiness_observation.py"
+  ],
+  "contracts/examples/pr_test_shard_first_readiness_observation.example.json": [
+    "tests/test_contracts.py",
+    "tests/test_pr_test_shard_first_readiness_observation.py"
+  ],
+  "tests/test_pr_test_shard_first_readiness_observation.py": [
+    "tests/test_pr_test_shard_first_readiness_observation.py"
+  ],
+  "docs/reviews/EVL-RT-03_redteam.md": [
+    "tests/test_pr_test_shard_first_readiness_observation.py"
+  ],
+  "docs/review-actions/EVL-RT-03_fix_actions.md": [
+    "tests/test_pr_test_shard_first_readiness_observation.py"
   ]
 }
